@@ -1,0 +1,29 @@
+{
+    "commands.edit.error.name.noname": "Item doesn't have a custom name",
+    "commands.edit.error.lore.nolore": "Item doesn't have a lore",
+    "commands.edit.error.lore.outofbounds": "Index %s out of bounds for lore length %s",
+    "commands.edit.error.count.overflow": "Unable add to the stack",
+    "commands.edit.error.model.nomodel": "Item doesn't have a custom model data",
+
+    "commands.edit.name.get": "Item custom name: '%s'",
+    "commands.edit.name.set": "Item custom name was set to '%s'",
+    "commands.edit.name.reset": "Item custom name was reset",
+
+    "commands.edit.lore.get": "Item lore:",
+    "commands.edit.lore.getline": "Item lore at line %s: '%s'",
+    "commands.edit.lore.set": "Item lore at the line %s was set to '%s'",
+    "commands.edit.lore.insert": "Item lore line '%s' was inserted before line %s",
+    "commands.edit.lore.add": "Item lore line '%s' was added",
+    "commands.edit.lore.remove": "Item lore line %s was removed",
+    "commands.edit.lore.clear": "Item lore was cleared",
+    "commands.edit.lore.clearbefore": "Item lore before line %s was cleared",
+    "commands.edit.lore.clearafter": "Item lore after line %s was cleared",
+
+    "commands.edit.material.set": "Item material was set to %s",
+
+    "commands.edit.count.set": "Item count was set to %s",
+
+    "commands.edit.model.get": "Item custom model data: %s",
+    "commands.edit.model.set": "Item custom model data was set to %s",
+    "commands.edit.model.reset": "Item custom model data was reset"
+}

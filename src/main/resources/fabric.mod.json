@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "item-editor",
+	"version": "${version}",
+	"name": "Item Editor",
+	"description": "Allows to edit items in creative using commands",
+	"authors": [
+		"White_145"
+	],
+	"license": "MIT",
+	"icon": "assets/packet-logger/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"me.white.itemeditor.ItemEditor"
+		]
+	},
+	"mixins": [
+		"item-editor.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
