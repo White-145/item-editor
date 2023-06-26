@@ -9,7 +9,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.Utils;
+import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.EditCommand.Feedback;
+import me.white.itemeditor.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -24,8 +26,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class LoreNode {
-	private static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.lorenolore")).create();
-	private static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.loreoutofbounds", index, size));
+	private static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.lore.nolore")).create();
+	private static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.lore.outofbounds", index, size));
 	private static final String OUTPUT_GET = "commands.edit.lore.get";
 	private static final String OUTPUT_GET_LINE = "commands.edit.lore.getline";
 	private static final String OUTPUT_SET = "commands.edit.lore.set";
@@ -55,44 +57,44 @@ public class LoreNode {
 		display.put("Lore", lore);
 	}
 
-	private static ItemStack set(ItemStack item, int index, NbtString line) {
+	private static Feedback set(ItemStack item, int index, NbtString line) {
 		NbtList lore = getLore(item);
 		if (index < lore.size()) {
 			lore.set(index, line);
 		} else {
 			int off = index - lore.size();
 			for (int i = 0; i < off; ++i) {
-				lore.add(Utils.EMPTY_LINE);
+				lore.add(Colored.EMPTY_LINE);
 			}
 			lore.add(line);
 		}
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, 1);
 	}
 
-	private static ItemStack add(ItemStack item, NbtString line) {
+	private static Feedback add(ItemStack item, NbtString line) {
 		NbtList lore = getLore(item);
 		lore.add(line);
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, lore.size());
 	}
 
-	private static ItemStack insert(ItemStack item, int index, NbtString line) {
+	private static Feedback insert(ItemStack item, int index, NbtString line) {
 		NbtList lore = getLore(item);
 		if (index < lore.size()) {
 			lore.add(index, line);
 		} else {
 			int off = index - lore.size() - 1;
 			for (int i = 0; i < off; ++i) {
-				lore.add(Utils.EMPTY_LINE);
+				lore.add(Colored.EMPTY_LINE);
 			}
 			lore.add(line);
 		}
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, 1);
 	}
 
-	private static ItemStack remove(ItemStack item, int index) throws CommandSyntaxException {
+	private static Feedback remove(ItemStack item, int index) throws CommandSyntaxException {
 		NbtList lore = getLore(item);
 		if (index < lore.size()) {
 			lore.remove(index);
@@ -100,26 +102,27 @@ public class LoreNode {
 			throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 		}
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, 1);
 	}
 
-	private static ItemStack clear(ItemStack item) {
+	private static Feedback clear(ItemStack item) {
 		NbtList lore = getLore(item);
+		int prevSize = lore.size();
 		lore.clear();
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, prevSize);
 	}
 
-	private static ItemStack clearBefore(ItemStack item, int value) throws CommandSyntaxException {
+	private static Feedback clearBefore(ItemStack item, int value) throws CommandSyntaxException {
 		NbtList lore = getLore(item);
 		for (int i = 0; i < value; ++i) {
 			lore.remove(0);
 		}
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, 1);
 	}
 
-	private static ItemStack clearAfter(ItemStack item, int value) throws CommandSyntaxException {
+	private static Feedback clearAfter(ItemStack item, int value) throws CommandSyntaxException {
 		NbtList lore = getLore(item);
 		if (value >= lore.size()) {
 			throw OUT_OF_BOUNDS_EXCEPTION.create(value, lore.size());
@@ -129,11 +132,11 @@ public class LoreNode {
 			lore.remove(lore.size() - 1);
 		}
 		setLore(item, lore);
-		return item;
+		return new Feedback(item, off);
 	}
 
 	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource());
+		ItemStack item = EditCommand.getItemStack(context.getSource());
 		NbtCompound display = item.getSubNbt("display");
 		if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
 			throw NO_LORE_EXCEPTION;
@@ -153,11 +156,11 @@ public class LoreNode {
 			player.sendMessage(Text.empty().append(Text.empty().append(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(textLine));
 		}
 
-		return 1;
+		return lore.size();
 	}
 
 	public static int executeGetLine(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource());
+		ItemStack item = EditCommand.getItemStack(context.getSource());
 		int i = IntegerArgumentType.getInteger(context, "index");
 		NbtCompound display = item.getSubNbt("display");
 		if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
@@ -177,86 +180,96 @@ public class LoreNode {
 	}
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Utils.colorize(StringArgumentType.getString(context, "value"));
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Utils.setItemStack(context.getSource(), set(item, i, value));
+		Feedback result = set(item, i, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, valueColor));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Utils.setItemStack(context.getSource(), set(item, i, Utils.EMPTY_LINE));
+		Feedback result = set(item, i, Colored.EMPTY_LINE);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, ""));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Utils.setItemStack(context.getSource(), remove(item, i));
+		Feedback result = remove(item, i);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, i));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Text valueColor = Utils.colorize(StringArgumentType.getString(context, "value"));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Utils.setItemStack(context.getSource(), add(item, value));
+		Feedback result = add(item, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, valueColor));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeAddEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), add(item, Utils.EMPTY_LINE));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = add(item, Colored.EMPTY_LINE);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, ""));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeInsert(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Utils.colorize(StringArgumentType.getString(context, "value"));
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Utils.setItemStack(context.getSource(), insert(item, i, value));
+		Feedback result = insert(item, i, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, valueColor, i));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeInsertEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Utils.setItemStack(context.getSource(), insert(item, i, Utils.EMPTY_LINE));
+		Feedback result = insert(item, i, Colored.EMPTY_LINE);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, "", i));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeClear(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), clear(item));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = clear(item);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeClearBefore(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Utils.setItemStack(context.getSource(), clearBefore(item, i));
+		Feedback result = clearBefore(item, i);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeClearAfter(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Utils.setItemStack(context.getSource(), clearAfter(item, i));
+		Feedback result = clearAfter(item, i);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_AFTER, i));
-		return 1;
+		return result.value();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {

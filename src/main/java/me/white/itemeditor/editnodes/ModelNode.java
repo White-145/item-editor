@@ -7,7 +7,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.Utils;
+import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -27,56 +28,63 @@ public class ModelNode {
 		return true;
 	}
 
-	private static ItemStack set(ItemStack item, int value) {
+	private static Feedback set(ItemStack item, int value) {
 		NbtCompound nbt = item.getOrCreateNbt();
+		int result = value;
+		if (nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
+			result = nbt.getInt("CustomModelData");
+		}
 		if (value == 0) {
 			nbt.remove("CustomModelData");
 		} else {
 			nbt.put("CustomModelData", NbtInt.of(value));
 		}
 		item.setNbt(nbt);
-		return item;
+		return new Feedback(item, result);
 	}
 
-	private static ItemStack reset(ItemStack item) throws CommandSyntaxException {
+	private static Feedback reset(ItemStack item) throws CommandSyntaxException {
 		NbtCompound nbt = item.getOrCreateNbt();
 		if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
 			throw NO_MODEL_EXCEPTION;
 		}
+		int result = nbt.getInt("CustomModelData");
 		nbt.remove("CustomModelData");
 		item.setNbt(nbt);
-		return item;
+		return new Feedback(item, result);
 	}
 
 	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource());
+		ItemStack item = EditCommand.getItemStack(context.getSource());
 		NbtCompound nbt = item.getNbt();
 		if (nbt == null || !nbt.contains("CustomModelData")) {
 			throw NO_MODEL_EXCEPTION;
 		}
 		int model = nbt.getInt("CustomModelData");
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, model));
-		return 1;
+		return model;
 	}
 
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int value = IntegerArgumentType.getInteger(context, "value");
-		Utils.setItemStack(context.getSource(), set(item, value));
+		Feedback result = set(item, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		if (value == 0) {
 			context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
 		} else {
 			context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
 		}
-		return 1;
+		return result.value();
 	}
 
 	public static int executeReset(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), reset(item));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = reset(item);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-		return 1;
+		return result.value();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {

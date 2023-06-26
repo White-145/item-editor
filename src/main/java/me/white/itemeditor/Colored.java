@@ -3,19 +3,17 @@ package me.white.itemeditor;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class Utils {
+public class Colored {
 	public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 	public static final NbtString EMPTY_LINE = NbtString.of(Text.Serializer.toJson(Text.empty()));
 
-	public static Style modifyStyleWith(Style style, char ch) {
+	private static Style modifyStyleWith(Style style, char ch) {
 		switch (ch) {
 			case '0':
 				return EMPTY_STYLE.withColor(Formatting.BLACK);
@@ -66,11 +64,15 @@ public class Utils {
 		}
 	}
 
-	public static Text colorize(String str) {
+	// Convert string of color codes into text
+	// "&atext &nunderlined" -> (Text)"<green>text <underlined>underlined</underlined></green>"
+	// hex: "&#FFFFFF"
+	public static Text of(String str) {
 		List<Text> texts = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		StringReader reader = new StringReader(str);
 		Style style = Style.EMPTY;
+
 		readerLoop: while (reader.canRead()) {
 			if (reader.peek() == '\\') {
 				sb.append(reader.readEscaped());
@@ -83,6 +85,7 @@ public class Utils {
 						if (reader.isHex()) {
 							rgb += Math.pow(16, 5 - i) * reader.readHex();
 						} else {
+							// revert
 							sb.append("&#");
 							reader.skip(-i);
 							continue readerLoop;
@@ -99,6 +102,7 @@ public class Utils {
 						sb = new StringBuilder();
 						style = modifyStyleWith(style, ch);
 					} else {
+						// revert
 						sb.append("&");
 					}
 				}
@@ -112,15 +116,5 @@ public class Utils {
 			result.append(part);
 		}
 		return result;
-	}
-
-	public static ItemStack getItemStack(FabricClientCommandSource context) {
-		return context.getPlayer().getInventory().getMainHandStack();
-	}
-
-	public static void setItemStack(FabricClientCommandSource context, ItemStack item) {
-		var inventory = context.getPlayer().getInventory();
-		inventory.setStack(inventory.selectedSlot, item);
-		inventory.updateItems();
 	}
 }

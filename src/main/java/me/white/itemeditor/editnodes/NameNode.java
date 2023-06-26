@@ -7,7 +7,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.Utils;
+import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.EditCommand.Feedback;
+import me.white.itemeditor.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -17,7 +19,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class NameNode {
-	private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.namenoname")).create();
+	private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.noname")).create();
 	private static final String OUTPUT_GET = "commands.edit.name.get";
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
@@ -26,13 +28,13 @@ public class NameNode {
 		return true;
 	}
 
-	private static ItemStack set(ItemStack item, Text name) {
+	private static Feedback set(ItemStack item, Text name) {
 		item.setCustomName(name);
-		return item;
+		return new Feedback(item, 1);
 	}
 
 	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource());
+		ItemStack item = EditCommand.getItemStack(context.getSource());
 		NbtCompound display = item.getSubNbt("display");
 		if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) {
 			throw NO_NAME_EXCEPTION;
@@ -42,24 +44,28 @@ public class NameNode {
 	}
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Text name = Utils.colorize(StringArgumentType.getString(context, "value"));
-		Utils.setItemStack(context.getSource(), set(item, name));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Text name = Colored.of(StringArgumentType.getString(context, "value"));
+		Feedback result = set(item, name);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, name));
-		return 1;
+		return result.value();
 	}
 	
 	public static int executeReset(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), set(item, null));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = set(item, null);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-		return 1;
+		return result.value();
 	}
 	
 	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), set(item, Text.empty()));
-		return 1;
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = set(item, Text.empty());
+		EditCommand.setItemStack(context.getSource(), result.result());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
+		return result.value();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
@@ -83,14 +89,14 @@ public class NameNode {
 			.executes(NameNode::executeSet)
 			.build();
 
-		/// ... get
+		// ... get
 		node.addChild(getNode);
 
-		/// ... set [<value>]
+		// ... set [<value>]
 		node.addChild(setNode);
 		setNode.addChild(setValueNode);
 
-		/// ... reset
+		// ... reset
 		node.addChild(resetNode);
 	}
 }

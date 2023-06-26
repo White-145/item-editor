@@ -7,7 +7,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.Utils;
+import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -22,66 +23,69 @@ public class CountNode {
 		return true;
 	}
 
-	private static ItemStack set(ItemStack item, int count) {
+	private static Feedback set(ItemStack item, int count) {
+		int oldCount = item.getCount();
 		item.setCount(count);
-		return item;
+		return new Feedback(item, oldCount);
 	}
 
-	private static ItemStack add(ItemStack item, int count) throws CommandSyntaxException {
+	private static Feedback add(ItemStack item, int count) throws CommandSyntaxException {
 		if (item.getCount() + count > 127 || item.getCount() + count < 0) {
 			throw OVERFLOW_EXCEPTION;
 		}
 		item.setCount(item.getCount() + count);
-		return item;
+		return new Feedback(item, item.getCount());
 	}
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int value = IntegerArgumentType.getInteger(context, "value");
-		Utils.setItemStack(context.getSource(), set(item, value));
+		Feedback result = set(item, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		Utils.setItemStack(context.getSource(), set(item, 1));
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = set(item, 1);
+		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
-		return 1;
+		return result.value();
 	}
 
 	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int value = IntegerArgumentType.getInteger(context, "value");
-		ItemStack result = add(item, value);
-		Utils.setItemStack(context.getSource(), result);
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.getCount()));
-		return 1;
+		Feedback result = add(item, value);
+		EditCommand.setItemStack(context.getSource(), result.result());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+		return result.value();
 	}
 
 	public static int executeAddEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		ItemStack result = add(item, 1);
-		Utils.setItemStack(context.getSource(), result);
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.getCount()));
-		return 1;
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = add(item, 1);
+		EditCommand.setItemStack(context.getSource(), result.result());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+		return result.value();
 	}
 
 	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int value = IntegerArgumentType.getInteger(context, "value");
-		ItemStack result = add(item, -value);
-		Utils.setItemStack(context.getSource(), result);
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.getCount()));
-		return 1;
+		Feedback result = add(item, -value);
+		EditCommand.setItemStack(context.getSource(), result.result());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+		return result.value();
 	}
 
 	public static int executeRemoveEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = Utils.getItemStack(context.getSource()).copy();
-		ItemStack result = add(item, -1);
-		Utils.setItemStack(context.getSource(), result);
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.getCount()));
-		return 1;
+		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+		Feedback result = add(item, -1);
+		EditCommand.setItemStack(context.getSource(), result.result());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+		return result.value();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
