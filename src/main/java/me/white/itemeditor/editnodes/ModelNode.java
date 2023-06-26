@@ -88,6 +88,11 @@ public class ModelNode {
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
+			.executes(ModelNode::executeGet)
+			.build();
+
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.build();
@@ -101,6 +106,9 @@ public class ModelNode {
 			.literal("reset")
 			.executes(ModelNode::executeReset)
 			.build();
+
+		// ... get
+		node.addChild(getNode);
 
 		// ... set <value>
 		node.addChild(setNode);

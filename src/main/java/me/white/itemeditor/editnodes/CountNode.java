@@ -17,6 +17,7 @@ import net.minecraft.text.Text;
 
 public class CountNode {
 	private static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.count.overflow")).create();;
+	private static final String OUTPUT_GET = "commands.edit.count.get";
 	private static final String OUTPUT_SET = "commands.edit.count.set";
 
     public static boolean requirement(FabricClientCommandSource context) {
@@ -35,6 +36,12 @@ public class CountNode {
 		}
 		item.setCount(item.getCount() + count);
 		return new Feedback(item, item.getCount());
+	}
+
+	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
+		ItemStack item = EditCommand.getItemStack(context.getSource());
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, item.getCount()));
+		return item.getCount();
 	}
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {

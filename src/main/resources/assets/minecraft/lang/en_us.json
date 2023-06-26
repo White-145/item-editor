@@ -25,6 +25,7 @@
 
     "commands.edit.material.set": "Item material was set to %s",
 
+    "commands.edit.count.get": "Item count: %s",
     "commands.edit.count.set": "Item count was set to %s",
 
     "commands.edit.model.get": "Item custom model data: %s",
