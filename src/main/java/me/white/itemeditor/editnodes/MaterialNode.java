@@ -20,6 +20,7 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
 public class MaterialNode {
+	private static final String OUTPUT_GET = "commands.edit.material.get";
 	private static final String OUTPUT_SET = "commands.edit.material.set";
 
     public static boolean requirement(FabricClientCommandSource context) {
@@ -41,22 +42,41 @@ public class MaterialNode {
 		return new Feedback(newItem, 1);
 	}
 
-	public static int execute(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
+	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
+		Item type = EditCommand.getItemStack(context.getSource()).getItem();
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
+		return 1;
+	}
+
+	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Item type = getItemArgument(context, "value");
+		Item type = getItemArgument(context, "material");
 		Feedback result = set(item, type);
 		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, type.toString()));
+		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, type.getName()));
 		return result.value();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
-		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> valueNode = ClientCommandManager
-			.argument("value", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
-			.executes(MaterialNode::execute)
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
+			.executes(MaterialNode::executeGet)
 			.build();
 
-		// ... material <material>
-		node.addChild(valueNode);
+		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
+			.literal("set")
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
+			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
+			.executes(MaterialNode::executeSet)
+			.build();
+
+		// ... material get
+		node.addChild(getNode);
+
+		// ... material set <material>
+		node.addChild(setNode);
+		setNode.addChild(setMaterialNode);
 	}
 }

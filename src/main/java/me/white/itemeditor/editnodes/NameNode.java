@@ -45,7 +45,7 @@ public class NameNode {
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Text name = Colored.of(StringArgumentType.getString(context, "value"));
+		Text name = Colored.of(StringArgumentType.getString(context, "name"));
 		Feedback result = set(item, name);
 		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, name));
@@ -84,17 +84,17 @@ public class NameNode {
 			.executes(NameNode::executeReset)
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, String> setValueNode = ClientCommandManager
-			.argument("value", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
+			.argument("name", StringArgumentType.greedyString())
 			.executes(NameNode::executeSet)
 			.build();
 
 		// ... get
 		node.addChild(getNode);
 
-		// ... set [<value>]
+		// ... set [<name>]
 		node.addChild(setNode);
-		setNode.addChild(setValueNode);
+		setNode.addChild(setNameNode);
 
 		// ... reset
 		node.addChild(resetNode);

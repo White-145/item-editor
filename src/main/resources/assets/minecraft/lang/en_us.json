@@ -23,6 +23,7 @@
     "commands.edit.lore.clearbefore": "Item lore before line %s was cleared",
     "commands.edit.lore.clearafter": "Item lore after line %s was cleared",
 
+    "commands.edit.material.get": "Item material: %s",
     "commands.edit.material.set": "Item material was set to %s",
 
     "commands.edit.count.get": "Item count: %s",

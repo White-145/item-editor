@@ -68,7 +68,7 @@ public class ModelNode {
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "value");
+		int value = IntegerArgumentType.getInteger(context, "model");
 		Feedback result = set(item, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
 		if (value == 0) {
@@ -97,8 +97,8 @@ public class ModelNode {
 			.literal("set")
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setValueNode = ClientCommandManager
-			.argument("value", IntegerArgumentType.integer(0, 65535))
+		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
+			.argument("model", IntegerArgumentType.integer(0, 65535))
 			.executes(ModelNode::executeSet)
 			.build();
 
@@ -110,9 +110,9 @@ public class ModelNode {
 		// ... get
 		node.addChild(getNode);
 
-		// ... set <value>
+		// ... set <model>
 		node.addChild(setNode);
-		setNode.addChild(setValueNode);
+		setNode.addChild(setModelNode);
 
 		// ... reset
 		node.addChild(resetNode);

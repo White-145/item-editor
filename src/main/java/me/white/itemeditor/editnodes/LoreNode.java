@@ -182,7 +182,7 @@ public class LoreNode {
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
 		Feedback result = set(item, i, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
@@ -210,7 +210,7 @@ public class LoreNode {
 
 	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
 		Feedback result = add(item, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
@@ -229,7 +229,7 @@ public class LoreNode {
 	public static int executeInsert(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "value"));
+		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
 		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
 		Feedback result = insert(item, i, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
@@ -292,8 +292,8 @@ public class LoreNode {
 			.executes(LoreNode::executeSetEmpty)
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> setValueNode = ClientCommandManager
-			.argument("value", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, String> setLineNode = ClientCommandManager
+			.argument("line", StringArgumentType.greedyString())
 			.executes(LoreNode::executeSet)
 			.build();
 			
@@ -311,8 +311,8 @@ public class LoreNode {
 			.executes(LoreNode::executeAddEmpty)
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, String> addValueNode = ClientCommandManager
-			.argument("value", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, String> addLineNode = ClientCommandManager
+			.argument("line", StringArgumentType.greedyString())
 			.executes(LoreNode::executeAdd)
 			.build();
 			
@@ -325,8 +325,8 @@ public class LoreNode {
 			.executes(LoreNode::executeInsertEmpty)
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> insertValueNode = ClientCommandManager
-			.argument("value", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, String> insertLineNode = ClientCommandManager
+			.argument("line", StringArgumentType.greedyString())
 			.executes(LoreNode::executeInsert)
 			.build();
 		
@@ -339,7 +339,7 @@ public class LoreNode {
 			.literal("before")
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeValueNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(LoreNode::executeClearBefore)
 			.build();
@@ -348,7 +348,7 @@ public class LoreNode {
 			.literal("after")
 			.build();
 	
-		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterValueNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(LoreNode::executeClearAfter)
 			.build();
@@ -357,31 +357,31 @@ public class LoreNode {
 		node.addChild(getNode);
 		getNode.addChild(getIndexNode);
 
-		// ... set <index> [<value>]
+		// ... set <index> [<line>]
 		node.addChild(setNode);
 		setNode.addChild(setIndexNode);
-		setIndexNode.addChild(setValueNode);
+		setIndexNode.addChild(setLineNode);
 
 		// ... remove <index>
 		node.addChild(removeNode);
 		removeNode.addChild(removeIndexNode);
 
-		// ... add [<value>]
+		// ... add [<line>]
 		node.addChild(addNode);
-		addNode.addChild(addValueNode);
+		addNode.addChild(addLineNode);
 
-		// ... insert <index> [<value>]
+		// ... insert <index> [<line>]
 		node.addChild(insertNode);
 		insertNode.addChild(insertIndexNode);
-		insertIndexNode.addChild(insertValueNode);
+		insertIndexNode.addChild(insertLineNode);
 
 		// ... clear [...]
 		node.addChild(clearNode);
-		// ... before <value>
+		// ... before <index>
 		clearNode.addChild(clearBeforeNode);
-		clearBeforeNode.addChild(clearBeforeValueNode);
-		// ... after <value>
+		clearBeforeNode.addChild(clearBeforeIndexNode);
+		// ... after <index>
 		clearNode.addChild(clearAfterNode);
-		clearAfterNode.addChild(clearAfterValueNode);
+		clearAfterNode.addChild(clearAfterIndexNode);
 	}
 }

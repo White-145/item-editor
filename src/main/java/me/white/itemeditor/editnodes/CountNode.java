@@ -46,7 +46,7 @@ public class CountNode {
 
 	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "value");
+		int value = IntegerArgumentType.getInteger(context, "count");
 		Feedback result = set(item, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
@@ -63,7 +63,7 @@ public class CountNode {
 
 	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "value");
+		int value = IntegerArgumentType.getInteger(context, "count");
 		Feedback result = add(item, value);
 		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
@@ -80,7 +80,7 @@ public class CountNode {
 
 	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "value");
+		int value = IntegerArgumentType.getInteger(context, "count");
 		Feedback result = add(item, -value);
 		EditCommand.setItemStack(context.getSource(), result.result());
 		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
@@ -101,8 +101,8 @@ public class CountNode {
 			.executes(CountNode::executeSetEmpty)
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setValueNode = ClientCommandManager
-			.argument("value", IntegerArgumentType.integer(0, 127))
+		ArgumentCommandNode<FabricClientCommandSource, Integer> setCountNode = ClientCommandManager
+			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(CountNode::executeSet)
 			.build();
 
@@ -111,8 +111,8 @@ public class CountNode {
 			.executes(CountNode::executeAddEmpty)
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> addValueNode = ClientCommandManager
-			.argument("value", IntegerArgumentType.integer(-126, 126))
+		ArgumentCommandNode<FabricClientCommandSource, Integer> addCountNode = ClientCommandManager
+			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(CountNode::executeAdd)
 			.build();
 
@@ -121,21 +121,21 @@ public class CountNode {
 			.executes(CountNode::executeRemoveEmpty)
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> removeValueNode = ClientCommandManager
-			.argument("value", IntegerArgumentType.integer(-126, 126))
+		ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager
+			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(CountNode::executeRemove)
 			.build();
 
-		// ... set [<value>]
+		// ... set [<count>]
 		node.addChild(setNode);
-		setNode.addChild(setValueNode);
+		setNode.addChild(setCountNode);
 
-		// ... add [<value>]
+		// ... add [<count>]
 		node.addChild(addNode);
-		addNode.addChild(addValueNode);
+		addNode.addChild(addCountNode);
 
-		// ... remove [<value>]
+		// ... remove [<count>]
 		node.addChild(removeNode);
-		removeNode.addChild(removeValueNode);
+		removeNode.addChild(removeCountNode);
 	}
 }
