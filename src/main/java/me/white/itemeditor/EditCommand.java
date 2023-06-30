@@ -22,32 +22,30 @@ public class EditCommand {
 
 		LiteralCommandNode<FabricClientCommandSource> materialNode = ClientCommandManager
 			.literal("material")
-			.requires(MaterialNode::requirement)
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> nameNode = ClientCommandManager
 			.literal("name")
-			.requires(NameNode::requirement)
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> loreNode = ClientCommandManager
 			.literal("lore")
-			.requires(LoreNode::requirement)
 			.build();
 	
 		LiteralCommandNode<FabricClientCommandSource> countNode = ClientCommandManager
 			.literal("count")
-			.requires(CountNode::requirement)
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> modelNode = ClientCommandManager
 			.literal("model")
-			.requires(ModelNode::requirement)
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> enchantmentNode = ClientCommandManager
 			.literal("enchantment")
-			.requires(EnchantmentNode::requirement)
+			.build();
+	
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
 			.build();
 
 		MaterialNode.register(materialNode, registryAccess);
@@ -56,6 +54,7 @@ public class EditCommand {
 		CountNode.register(countNode, registryAccess);
 		ModelNode.register(modelNode, registryAccess);
 		EnchantmentNode.register(enchantmentNode, registryAccess);
+		GetNode.register(getNode, registryAccess);
 		
 		dispatcher.getRoot().addChild(editNode);
 		// ... material ...
@@ -70,12 +69,13 @@ public class EditCommand {
 		editNode.addChild(modelNode);
 		// ... enchantment ...
 		editNode.addChild(enchantmentNode);
+		// ... get ...
+		editNode.addChild(getNode);
 		// TODO ... attribute ...
 		// TODO ... book ...
 		// TODO ... color ...
 		// TODO ... durability ...
 		// TODO ... firework ...
-		// TODO ... get ...
 		// TODO ... head ...
 		// TODO ... hideflags ...
 		// TODO ... data ...

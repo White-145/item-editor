@@ -23,10 +23,6 @@ public class MaterialNode {
 	private static final String OUTPUT_GET = "commands.edit.material.get";
 	private static final String OUTPUT_SET = "commands.edit.material.set";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static Item getItemArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
 		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
         RegistryKey<?> registryKey = reference.registryKey();

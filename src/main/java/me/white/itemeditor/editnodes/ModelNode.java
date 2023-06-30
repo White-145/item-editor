@@ -24,10 +24,6 @@ public class ModelNode {
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static Feedback set(ItemStack item, int value) {
 		NbtCompound nbt = item.getOrCreateNbt();
 		int result = value;

@@ -24,10 +24,6 @@ public class NameNode {
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static Feedback set(ItemStack item, Text name) {
 		item.setCustomName(name);
 		return new Feedback(item, 1);

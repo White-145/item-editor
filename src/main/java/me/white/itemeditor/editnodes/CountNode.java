@@ -20,10 +20,6 @@ public class CountNode {
 	private static final String OUTPUT_GET = "commands.edit.count.get";
 	private static final String OUTPUT_SET = "commands.edit.count.set";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static Feedback set(ItemStack item, int count) {
 		int oldCount = item.getCount();
 		item.setCount(count);

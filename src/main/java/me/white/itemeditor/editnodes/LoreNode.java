@@ -38,10 +38,6 @@ public class LoreNode {
 	private static final String OUTPUT_CLEAR_BEFORE = "commands.edit.lore.clearbefore";
 	private static final String OUTPUT_CLEAR_AFTER = "commands.edit.lore.clearafter";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static NbtList getLore(ItemStack item) {
 		NbtCompound display = item.getOrCreateSubNbt("display");
 		NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);

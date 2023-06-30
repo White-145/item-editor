@@ -8,6 +8,7 @@
     "commands.edit.error.enchantment.doesntexist": "Item doesn't have given enchantment",
     "commands.edit.error.enchantment.noenchantments": "Item doesn't have enchantments",
     "commands.edit.error.enchantment.hasglint": "Item already have enchantment glint that cannot be removed",
+    "commands.edit.error.get.handnotempty": "Your hand must be empty to use get",
 
     "commands.edit.name.get": "Item custom name: '%s'",
     "commands.edit.name.set": "Item custom name was set to '%s'",
@@ -38,6 +39,7 @@
     "commands.edit.enchantment.set": "Item enchantment %s level was set to %s",
     "commands.edit.enchantment.remove": "Item enchantment %s was removed",
     "commands.edit.enchantment.clear": "Item enchantments were cleared",
-    "commands.edit.enchantment.glint": "Item enchantment glint was toggled"
+    "commands.edit.enchantment.glint": "Item enchantment glint was toggled",
 
+    "commands.edit.get.get": "Placed %sx %s in your hand"
 }

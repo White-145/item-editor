@@ -45,10 +45,6 @@ public class EnchantmentNode {
 	private static final String ID_KEY = "id";
 	private static final String LVL_KEY = "lvl";
 
-    public static boolean requirement(FabricClientCommandSource context) {
-		return true;
-	}
-
 	private static Enchantment getEnchantmentArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
 		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
         RegistryKey<?> registryKey = reference.registryKey();
