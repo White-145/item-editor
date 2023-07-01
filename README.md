@@ -29,3 +29,9 @@ Features:
 - `... enchantment remove <enchantment>`
 - `... enchantment clear`
 - `... enchantment glint`
+- `... get <item> [<count>]`
+<<<<<<< HEAD
+- `... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
+- `... attribute clear [<attribute>] [<slot>]`
+=======
+>>>>>>> 53d332f3b76dd9e1359fc3f8bd87200139355ca0
