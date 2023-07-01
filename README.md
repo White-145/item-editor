@@ -6,7 +6,7 @@ Features:
 
 `/edit` command:
 - `... name get`
-- `... name set [<new name>]`
+- `... name set [<name>]`
 - `... name reset`
 - `... lore get [<index>]`
 - `... lore add [<line>]`
@@ -29,3 +29,4 @@ Features:
 - `... enchantment remove <enchantment>`
 - `... enchantment clear`
 - `... enchantment glint`
+- `... get <item> [<count>]`
