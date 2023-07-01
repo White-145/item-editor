@@ -50,7 +50,7 @@ public class GetNode {
 			.executes(GetNode::executeCount)
 			.build();
 
-		// ... <item> [<count>]
+		// ... get <item> [<count>]
 		node.addChild(itemNode);
 		itemNode.addChild(itemCountNode);
 	}

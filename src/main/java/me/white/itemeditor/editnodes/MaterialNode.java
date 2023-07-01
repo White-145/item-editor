@@ -67,7 +67,7 @@ public class MaterialNode {
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(MaterialNode::executeSet)
 			.build();
-
+			
 		// ... material get
 		node.addChild(getNode);
 

@@ -47,6 +47,11 @@ public class EditCommand {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.build();
+	
+		LiteralCommandNode<FabricClientCommandSource> attributeNode = ClientCommandManager
+			.literal("attribute")
+			.build();
+			
 
 		MaterialNode.register(materialNode, registryAccess);
 		NameNode.register(nameNode, registryAccess);
@@ -55,6 +60,7 @@ public class EditCommand {
 		ModelNode.register(modelNode, registryAccess);
 		EnchantmentNode.register(enchantmentNode, registryAccess);
 		GetNode.register(getNode, registryAccess);
+		AttributeNode.register(attributeNode, registryAccess);
 		
 		dispatcher.getRoot().addChild(editNode);
 		// ... material ...
@@ -71,7 +77,8 @@ public class EditCommand {
 		editNode.addChild(enchantmentNode);
 		// ... get ...
 		editNode.addChild(getNode);
-		// TODO ... attribute ...
+		// ... attribute ...
+		editNode.addChild(attributeNode);
 		// TODO ... book ...
 		// TODO ... color ...
 		// TODO ... durability ...
@@ -81,6 +88,7 @@ public class EditCommand {
 		// TODO ... data ...
 		// TODO ... unbreakable ...
 		// TODO ... whitelist ...
+		// TODO ... entity ...
 	}
 	
 	public static ItemStack getItemStack(FabricClientCommandSource context) {

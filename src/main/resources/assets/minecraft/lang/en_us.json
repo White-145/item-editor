@@ -9,6 +9,9 @@
     "commands.edit.error.enchantment.noenchantments": "Item doesn't have enchantments",
     "commands.edit.error.enchantment.hasglint": "Item already have enchantment glint that cannot be removed",
     "commands.edit.error.get.handnotempty": "Your hand must be empty to use get",
+    "commdans.edit.error.attribute.alreadyexists": "Item already has attributes",
+    "commdans.edit.error.attribute.noattributes": "Item doesn't have attributes",
+    "commdans.edit.error.attribute.noclearattribute": "Item doesn't have given attribute",
 
     "commands.edit.name.get": "Item custom name: '%s'",
     "commands.edit.name.set": "Item custom name was set to '%s'",
@@ -41,5 +44,11 @@
     "commands.edit.enchantment.clear": "Item enchantments were cleared",
     "commands.edit.enchantment.glint": "Item enchantment glint was toggled",
 
-    "commands.edit.get.get": "Placed %sx %s in your hand"
+    "commands.edit.get.get": "Placed %sx %s in your hand",
+
+    "commands.edit.attribute.reset": "Item attributes were reset",
+    "commands.edit.attribute.set": "Item attribute %s was set to %s",
+    "commands.edit.attribute.setpercent": "Item attribute %s was set to %s%%",
+    "commands.edit.attribute.setslot": "Item attribute %s was set to %s in %s slot",
+    "commands.edit.attribute.setpercentslot": "Item attribute %s was set to %s%% in %s slot"
 }
