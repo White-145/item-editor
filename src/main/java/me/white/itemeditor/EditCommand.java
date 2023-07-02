@@ -9,10 +9,13 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 
 public class EditCommand {
 	public record Feedback(ItemStack result, int value) {};
+
+	private static final String OUTPUT_EQUIP = "commands.edit.equip";
 
 	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> editNode = ClientCommandManager
@@ -62,6 +65,7 @@ public class EditCommand {
 				inventory.setStack(39, item);
 				inventory.updateItems();
 				context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, item));
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_EQUIP));
 				return headItem.isEmpty() ? 0 : 1;
 			})
 			.build();

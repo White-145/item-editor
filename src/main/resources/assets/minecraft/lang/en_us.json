@@ -55,6 +55,8 @@
     "commands.edit.attribute.setslot": "Item attribute %s was set to %s in %s slot",
     "commands.edit.attribute.setpercentslot": "Item attribute %s was set to %s%% in %s slot",
 
+    "commands.edit.equip": "Item equiped",
+
     "commands.edit.color.get": "Item color: #%s",
     "commands.edit.color.set": "Item color was changed to #%s",
     "commands.edit.color.reset": "Item color was reset"
