@@ -33,3 +33,5 @@ Features:
 - `... get <item> [<count>]`
 - `... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
 - `... attribute clear [<slot>]`
+
+(literally only 1 command)
