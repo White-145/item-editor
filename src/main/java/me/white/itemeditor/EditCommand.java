@@ -51,7 +51,20 @@ public class EditCommand {
 		LiteralCommandNode<FabricClientCommandSource> attributeNode = ClientCommandManager
 			.literal("attribute")
 			.build();
-			
+
+		LiteralCommandNode<FabricClientCommandSource> equipNode = ClientCommandManager
+			.literal("equip")
+			.executes(context -> {
+				ItemStack item = getItemStack(context.getSource());
+				var inventory = context.getSource().getPlayer().getInventory();
+				ItemStack headItem = inventory.getArmorStack(3);
+				setItemStack(context.getSource(), headItem);
+				inventory.setStack(39, item);
+				inventory.updateItems();
+				context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, item));
+				return headItem.isEmpty() ? 0 : 1;
+			})
+			.build();
 
 		MaterialNode.register(materialNode, registryAccess);
 		NameNode.register(nameNode, registryAccess);
@@ -79,6 +92,8 @@ public class EditCommand {
 		editNode.addChild(getNode);
 		// ... attribute ...
 		editNode.addChild(attributeNode);
+		// ... equip
+		editNode.addChild(equipNode);
 		// ... book ...
 		// TODO
 		// ... color ...
@@ -98,10 +113,6 @@ public class EditCommand {
 		// ... whitelist ...
 		// TODO
 		// ... entity ...
-		// TODO
-		// ... pass ...
-		// TODO
-		// ... equip ...
 		// TODO
 		// ... script ...
 		// TODO
