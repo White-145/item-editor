@@ -35,16 +35,15 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 public class AttributeNode {
-	public static class SlotArgumentType implements ArgumentType<String> {
+	public static class SlotArgumentType implements ArgumentType<EquipmentSlot> {
 		private static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("commands.edit.error.attribute.invalidslot", arg));
 
 		private static final Collection<String> EXAMPLES = List.of(
-			"mainhand",
 			"any",
-			"chest"
+			"mainhand",
+			"legs"
 		);
 
 		public SlotArgumentType() {}
@@ -54,18 +53,24 @@ public class AttributeNode {
 		}
 
 		@Override
-		public String parse(StringReader reader) throws CommandSyntaxException {
+		public EquipmentSlot parse(StringReader reader) throws CommandSyntaxException {
 			int start = reader.getCursor();
 			String result = reader.readString();
 			switch (result) {
 				case "any":
+					return null;
 				case "mainhand":
+					return EquipmentSlot.MAINHAND;
 				case "offhand":
+					return EquipmentSlot.OFFHAND;
 				case "head":
+					return EquipmentSlot.HEAD;
 				case "chest":
+					return EquipmentSlot.CHEST;
 				case "legs":
+					return EquipmentSlot.LEGS;
 				case "feet":
-					return result;
+					return EquipmentSlot.FEET;
 			}
 			reader.setCursor(start);
 			throw INVALID_SLOT_EXCEPTION.create(result);
@@ -90,21 +95,7 @@ public class AttributeNode {
 		}
 
 		public static EquipmentSlot getSlot(final CommandContext<?> context, final String name) {
-			switch (context.getArgument(name, String.class)) {
-				case "mainhand":
-					return EquipmentSlot.MAINHAND;
-				case "offhand":
-					return EquipmentSlot.OFFHAND;
-				case "head":
-					return EquipmentSlot.HEAD;
-				case "chest":
-					return EquipmentSlot.CHEST;
-				case "legs":
-					return EquipmentSlot.LEGS;
-				case "feet":
-					return EquipmentSlot.FEET;
-			}
-			return null;
+			return context.getArgument(name, EquipmentSlot.class);
 		}
 	}
 
@@ -112,9 +103,9 @@ public class AttributeNode {
 		private static final DynamicCommandExceptionType INVALID_OPERATION_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("commands.edit.error.attribute.invalidslot", arg));
 
 		private static final Collection<String> EXAMPLES = List.of(
-			"add",
+			"base",
 			"multiply",
-			"percent"
+			"total"
 		);
 
 		public OperationArgumentType() {}
@@ -128,9 +119,9 @@ public class AttributeNode {
 			int start = reader.getCursor();
 			String result = reader.readString();
 			switch (result) {
-				case "add":
+				case "base":
 				case "multiply":
-				case "percent":
+				case "total":
 					return result;
 			}
 			reader.setCursor(start);
@@ -145,9 +136,9 @@ public class AttributeNode {
 		@Override
 		public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 			String remaining = builder.getRemainingLowerCase();
-			if ("add".startsWith(remaining)) builder.suggest("add");
+			if ("base".startsWith(remaining)) builder.suggest("base");
 			if ("multiply".startsWith(remaining)) builder.suggest("multiply");
-			if ("percent".startsWith(remaining)) builder.suggest("percent");
+			if ("total".startsWith(remaining)) builder.suggest("total");
 			return builder.buildFuture();
 		}
 
@@ -155,7 +146,7 @@ public class AttributeNode {
 			switch (context.getArgument(name, String.class)) {
 				case "multiply":
 					return EntityAttributeModifier.Operation.MULTIPLY_BASE;
-				case "percent":
+				case "total":
 					return EntityAttributeModifier.Operation.MULTIPLY_TOTAL;
 			}
 			return EntityAttributeModifier.Operation.ADDITION;
@@ -170,13 +161,16 @@ public class AttributeNode {
 	private static final String OUTPUT_SET_SLOT = "commands.edit.attribute.setslot";
 	private static final String OUTPUT_SET_PERCENT_SLOT = "commands.edit.attribute.setpercentslot";
 	private static final String OUTPUT_RESET = "commands.edit.attribute.reset";
+	private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
+	private static final String OUTPUT_CLEAR_SLOT = "commands.edit.attribute.clearslot";
+	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
 
 	private static Feedback set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
 		if (attribute == null) {
-			if (item.getSubNbt("AttributeModifiers") != null) throw ALREADY_HAS_ATTRIBUTES_EXCEPTION;
+			if (item.getSubNbt(ATTRIBUTE_MODIFIERS_KEY) != null) throw ALREADY_HAS_ATTRIBUTES_EXCEPTION;
 			NbtList attributes = new NbtList();
 			attributes.add(new NbtCompound());
-			item.setSubNbt("AttributeModifiers", attributes);
+			item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, attributes);
 			return new Feedback(item, 1);
 		}
 		EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), (double)amount, operation);
@@ -237,7 +231,7 @@ public class AttributeNode {
 			})
 			.build();
 	
-		ArgumentCommandNode<FabricClientCommandSource, String> setAttributeAmountOperationSlotNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeAmountOperationSlotNode = ClientCommandManager
 			.argument("slot", SlotArgumentType.slot())
 			.executes(context -> {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
@@ -282,7 +276,7 @@ public class AttributeNode {
 			})
 			.build();
 	
-		ArgumentCommandNode<FabricClientCommandSource, String> setAttributeInfinityOperationSlotNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeInfinityOperationSlotNode = ClientCommandManager
 			.argument("slot", SlotArgumentType.slot())
 			.executes(context -> {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
@@ -305,32 +299,45 @@ public class AttributeNode {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				if (nbt == null) throw NO_ATTRIBUTES_EXCEPTION;
-				NbtList attributes = nbt.getList("AttributeModifiers", NbtElement.COMPOUND_TYPE);
+				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
 				if (attributes == null) throw NO_ATTRIBUTES_EXCEPTION;
-				item.removeSubNbt("AttributeModifiers");
+				item.removeSubNbt(ATTRIBUTE_MODIFIERS_KEY);
 				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
 				return 1;
 			})
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> clearAttributeNode = ClientCommandManager
-			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> clearSlotNode = ClientCommandManager
+			.argument("slot", SlotArgumentType.slot())
 			.executes(context -> {
-				Identifier attribute = Registries.ATTRIBUTE.getId(getAttributeArgument(context, "attribute"));
+				EquipmentSlot slot = SlotArgumentType.getSlot(context, "slot");
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				if (!item.hasNbt()) throw NO_ATTRIBUTES_EXCEPTION;
 				NbtCompound nbt = item.getNbt();
-				if (nbt == null) throw NO_ATTRIBUTES_EXCEPTION;
-				NbtList attributes = nbt.getList("AttributeModifiers", NbtElement.COMPOUND_TYPE);
+				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
 				if (attributes == null) throw NO_ATTRIBUTES_EXCEPTION;
 				NbtList newAttributes = new NbtList();
-				for (NbtElement attr : attributes) {
-					Identifier name = Identifier.tryParse(((NbtCompound)attr).getString("AttributeName"));
-					if (name != attribute) {
-						newAttributes.add(attr);
+				if (slot != null) {
+					for (NbtElement nbtAttr : attributes) {
+						String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
+						System.out.println(nbtSlot);
+						System.out.println(slot.getName());
+						if (!nbtSlot.equals(slot.getName())) {
+							newAttributes.add(nbtAttr);
+						}
 					}
+					if (newAttributes.equals(attributes)) throw NO_CLEAR_ATTRIBUTE_EXCEPTION;
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				} else {
+					newAttributes.add(new NbtCompound());
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
 				}
-				if (newAttributes.equals(attributes)) throw NO_CLEAR_ATTRIBUTE_EXCEPTION;
-				nbt.put("AttributeModifiers", newAttributes);
+				if (newAttributes.isEmpty()) {
+					nbt.remove(ATTRIBUTE_MODIFIERS_KEY);
+				} else {
+					nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
+				}
 				item.setNbt(nbt);
 				EditCommand.setItemStack(context.getSource(), item);
 				return 1;
@@ -350,8 +357,11 @@ public class AttributeNode {
 		setAttributeInfinityNode.addChild(setAttributeInfinityOperationNode);
 		setAttributeInfinityOperationNode.addChild(setAttributeInfinityOperationSlotNode);
 
-		// ... attribute clear [<attribute>] [<slot>]
+		// ... attribute remove [<attribute>] [<slot>]
+		// TODO
+
+		// ... attribute clear [<slot>]
 		node.addChild(clearNode);
-		clearNode.addChild(clearAttributeNode);
+		clearNode.addChild(clearSlotNode);
 	}
 }

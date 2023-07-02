@@ -1,7 +1,6 @@
 package me.white.itemeditor.editnodes;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
@@ -34,93 +33,98 @@ public class CountNode {
 		return new Feedback(item, item.getCount());
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, item.getCount()));
-		return item.getCount();
-	}
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "count");
-		Feedback result = set(item, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
-		return result.value();
-	}
-
-	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = set(item, 1);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
-		return result.value();
-	}
-
-	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "count");
-		Feedback result = add(item, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-		return result.value();
-	}
-
-	public static int executeAddEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = add(item, 1);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-		return result.value();
-	}
-
-	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "count");
-		Feedback result = add(item, -value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-		return result.value();
-	}
-
-	public static int executeRemoveEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = add(item, -1);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, item.getCount()));
+				return item.getCount();
+			})
+			.build();
+
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
-			.executes(CountNode::executeSetEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = set(item, 1);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 127))
-			.executes(CountNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int value = IntegerArgumentType.getInteger(context, "count");
+				Feedback result = set(item, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
 			.literal("add")
-			.executes(CountNode::executeAddEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = add(item, 1);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> addCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(-126, 126))
-			.executes(CountNode::executeAdd)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int value = IntegerArgumentType.getInteger(context, "count");
+				Feedback result = add(item, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
 			.literal("remove")
-			.executes(CountNode::executeRemoveEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = add(item, -1);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(-126, 126))
-			.executes(CountNode::executeRemove)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int value = IntegerArgumentType.getInteger(context, "count");
+				Feedback result = add(item, -value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
+				return result.value();
+			})
 			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> stackNode = ClientCommandManager
+			.literal("stack")
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = set(item, item.getMaxCount());
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getMaxCount()));
+				return result.value();
+			})
+			.build();
+
+		// ... get
+		node.addChild(getNode);
 
 		// ... set [<count>]
 		node.addChild(setNode);
@@ -133,5 +137,8 @@ public class CountNode {
 		// ... remove [<count>]
 		node.addChild(removeNode);
 		removeNode.addChild(removeCountNode);
+
+		// ... stack
+		node.addChild(stackNode);
 	}
 }

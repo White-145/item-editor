@@ -38,25 +38,14 @@ public class MaterialNode {
 		return new Feedback(newItem, 1);
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		Item type = EditCommand.getItemStack(context.getSource()).getItem();
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
-		return 1;
-	}
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Item type = getItemArgument(context, "material");
-		Feedback result = set(item, type);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, type.getName()));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
-			.executes(MaterialNode::executeGet)
+			.executes(context -> {
+				Item type = EditCommand.getItemStack(context.getSource()).getItem();
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
+				return 1;
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
@@ -65,7 +54,14 @@ public class MaterialNode {
 		
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
-			.executes(MaterialNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Item type = getItemArgument(context, "material");
+				Feedback result = set(item, type);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, type.getName()));
+				return result.value();
+			})
 			.build();
 			
 		// ... material get

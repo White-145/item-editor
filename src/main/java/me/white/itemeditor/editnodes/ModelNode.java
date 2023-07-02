@@ -1,7 +1,6 @@
 package me.white.itemeditor.editnodes;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
@@ -50,43 +49,19 @@ public class ModelNode {
 		return new Feedback(item, result);
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		NbtCompound nbt = item.getNbt();
-		if (nbt == null || !nbt.contains("CustomModelData")) {
-			throw NO_MODEL_EXCEPTION;
-		}
-		int model = nbt.getInt("CustomModelData");
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, model));
-		return model;
-	}
-
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int value = IntegerArgumentType.getInteger(context, "model");
-		Feedback result = set(item, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		if (value == 0) {
-			context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-		} else {
-			context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
-		}
-		return result.value();
-	}
-
-	public static int executeReset(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = reset(item);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
-			.executes(ModelNode::executeGet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				NbtCompound nbt = item.getNbt();
+				if (nbt == null || !nbt.contains("CustomModelData")) {
+					throw NO_MODEL_EXCEPTION;
+				}
+				int model = nbt.getInt("CustomModelData");
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, model));
+				return model;
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
@@ -95,12 +70,29 @@ public class ModelNode {
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
 			.argument("model", IntegerArgumentType.integer(0, 65535))
-			.executes(ModelNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int value = IntegerArgumentType.getInteger(context, "model");
+				Feedback result = set(item, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				if (value == 0) {
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				} else {
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
+				}
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
-			.executes(ModelNode::executeReset)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = reset(item);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				return result.value();
+			})
 			.build();
 
 		// ... get

@@ -2,7 +2,6 @@ package me.white.itemeditor.editnodes;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -131,152 +130,55 @@ public class LoreNode {
 		return new Feedback(item, off);
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		NbtCompound display = item.getSubNbt("display");
-		if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
-			throw NO_LORE_EXCEPTION;
-		}
-		NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
-		if (lore == null) {
-			throw NO_LORE_EXCEPTION;
-		}
-		if (lore.size() == 0) {
-			throw NO_LORE_EXCEPTION;
-		}
-
-		ClientPlayerEntity player = context.getSource().getPlayer();
-		player.sendMessage(Text.translatable(OUTPUT_GET));
-		for (int i = 0; i < lore.size(); ++i) {
-			Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
-			player.sendMessage(Text.empty().append(Text.empty().append(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(textLine));
-		}
-
-		return lore.size();
-	}
-
-	public static int executeGetLine(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		int i = IntegerArgumentType.getInteger(context, "index");
-		NbtCompound display = item.getSubNbt("display");
-		if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
-			throw NO_LORE_EXCEPTION;
-		}
-		NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
-		if (lore == null) {
-			throw NO_LORE_EXCEPTION;
-		}
-		if (lore.size() <= i) {
-			throw OUT_OF_BOUNDS_EXCEPTION.create(i, lore.size());
-		}
-		ClientPlayerEntity player = context.getSource().getPlayer();
-		Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
-		player.sendMessage(Text.translatable(OUTPUT_GET_LINE, i, textLine));
-		return 1;
-	}
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Feedback result = set(item, i, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, valueColor));
-		return result.value();
-	}
-
-	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Feedback result = set(item, i, Colored.EMPTY_LINE);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, ""));
-		return result.value();
-	}
-
-	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Feedback result = remove(item, i);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, i));
-		return result.value();
-	}
-
-	public static int executeAdd(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Feedback result = add(item, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, valueColor));
-		return result.value();
-	}
-
-	public static int executeAddEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = add(item, Colored.EMPTY_LINE);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, ""));
-		return result.value();
-	}
-
-	public static int executeInsert(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-		NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-		Feedback result = insert(item, i, value);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, valueColor, i));
-		return result.value();
-	}
-
-	public static int executeInsertEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Feedback result = insert(item, i, Colored.EMPTY_LINE);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, "", i));
-		return result.value();
-	}
-
-	public static int executeClear(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = clear(item);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
-		return result.value();
-	}
-
-	public static int executeClearBefore(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Feedback result = clearBefore(item, i);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
-		return result.value();
-	}
-
-	public static int executeClearAfter(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		int i = IntegerArgumentType.getInteger(context, "index");
-		Feedback result = clearAfter(item, i);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_AFTER, i));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
-			.executes(LoreNode::executeGet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				NbtCompound display = item.getSubNbt("display");
+				if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
+					throw NO_LORE_EXCEPTION;
+				}
+				NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
+				if (lore == null) {
+					throw NO_LORE_EXCEPTION;
+				}
+				if (lore.size() == 0) {
+					throw NO_LORE_EXCEPTION;
+				}
+		
+				ClientPlayerEntity player = context.getSource().getPlayer();
+				player.sendMessage(Text.translatable(OUTPUT_GET));
+				for (int i = 0; i < lore.size(); ++i) {
+					Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
+					player.sendMessage(Text.empty().append(Text.empty().append(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(textLine));
+				}
+		
+				return lore.size();
+			})
 			.build();
 	
 		ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
-			.executes(LoreNode::executeGetLine)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				int i = IntegerArgumentType.getInteger(context, "index");
+				NbtCompound display = item.getSubNbt("display");
+				if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
+					throw NO_LORE_EXCEPTION;
+				}
+				NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
+				if (lore == null) {
+					throw NO_LORE_EXCEPTION;
+				}
+				if (lore.size() <= i) {
+					throw OUT_OF_BOUNDS_EXCEPTION.create(i, lore.size());
+				}
+				ClientPlayerEntity player = context.getSource().getPlayer();
+				Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
+				player.sendMessage(Text.translatable(OUTPUT_GET_LINE, i, textLine));
+				return 1;
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
@@ -285,12 +187,28 @@ public class LoreNode {
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 63))
-			.executes(LoreNode::executeSetEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Feedback result = set(item, i, Colored.EMPTY_LINE);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, ""));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, String> setLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
-			.executes(LoreNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
+				Feedback result = set(item, i, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, valueColor));
+				return result.value();
+			})
 			.build();
 			
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
@@ -299,17 +217,38 @@ public class LoreNode {
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
-			.executes(LoreNode::executeRemove)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Feedback result = remove(item, i);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, i));
+				return result.value();
+			})
 			.build();
 			
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
 			.literal("add")
-			.executes(LoreNode::executeAddEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = add(item, Colored.EMPTY_LINE);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, ""));
+				return result.value();
+			})
 			.build();
 		
 		ArgumentCommandNode<FabricClientCommandSource, String> addLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
-			.executes(LoreNode::executeAdd)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
+				Feedback result = add(item, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, valueColor));
+				return result.value();
+			})
 			.build();
 			
 		LiteralCommandNode<FabricClientCommandSource> insertNode = ClientCommandManager
@@ -318,17 +257,39 @@ public class LoreNode {
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 63))
-			.executes(LoreNode::executeInsertEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Feedback result = insert(item, i, Colored.EMPTY_LINE);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, "", i));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, String> insertLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
-			.executes(LoreNode::executeInsert)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
+				Feedback result = insert(item, i, value);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, valueColor, i));
+				return result.value();
+			})
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
-			.executes(LoreNode::executeClear)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = clear(item);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
+				return result.value();
+			})
 			.build();
 	
 		LiteralCommandNode<FabricClientCommandSource> clearBeforeNode = ClientCommandManager
@@ -337,7 +298,14 @@ public class LoreNode {
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
-			.executes(LoreNode::executeClearBefore)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Feedback result = clearBefore(item, i);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> clearAfterNode = ClientCommandManager
@@ -346,7 +314,14 @@ public class LoreNode {
 	
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
-			.executes(LoreNode::executeClearAfter)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				int i = IntegerArgumentType.getInteger(context, "index");
+				Feedback result = clearAfter(item, i);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_AFTER, i));
+				return result.value();
+			})
 			.build();
 		
 		// ... get [<index>]
@@ -371,12 +346,10 @@ public class LoreNode {
 		insertNode.addChild(insertIndexNode);
 		insertIndexNode.addChild(insertLineNode);
 
-		// ... clear [...]
+		// ... clear [before|after] <index>
 		node.addChild(clearNode);
-		// ... before <index>
 		clearNode.addChild(clearBeforeNode);
 		clearBeforeNode.addChild(clearBeforeIndexNode);
-		// ... after <index>
 		clearNode.addChild(clearAfterNode);
 		clearAfterNode.addChild(clearAfterIndexNode);
 	}

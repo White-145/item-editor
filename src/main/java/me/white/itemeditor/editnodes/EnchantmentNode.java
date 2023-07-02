@@ -115,94 +115,46 @@ public class EnchantmentNode {
 		return new Feedback(item, 0);
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		if (!item.hasEnchantments()) {
-			throw NO_ENCHANTMENTS_EXCEPTION;
-		}
-		if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
-			throw NO_ENCHANTMENTS_EXCEPTION;
-		}
-		ClientPlayerEntity player = context.getSource().getPlayer();
-		player.sendMessage(Text.translatable(OUTPUT_GET));
-		Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
-		for (Enchantment enchantment : enchantments.keySet()) {
-			int lvl = enchantments.get(enchantment);
-			player.sendMessage(Text.empty().append("- ").append(enchantment.getName(lvl)));
-		}
-		return 1;
-	}
-
-	public static int executeGetEnchantment(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		if (!item.hasEnchantments()) {
-			throw NO_ENCHANTMENTS_EXCEPTION;
-		}
-		if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
-			throw NO_ENCHANTMENTS_EXCEPTION;
-		}
-		Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-		Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
-		if (!enchantments.containsKey(enchantment)) {
-			throw DOESNT_EXIST_EXCEPTION;
-		}
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET_ENCHANTMENT, Text.translatable(enchantment.getTranslationKey()), enchantments.get(enchantment)));
-		return 1;
-	}
-
-	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-		Feedback result = set(item, enchantment, 1);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, enchantment.getTranslationKey(), 1));
-		return result.value();
-	}
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-		int level = IntegerArgumentType.getInteger(context, "level");
-		Feedback result = set(item, enchantment, level);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(enchantment.getTranslationKey()), level));
-		return result.value();
-	}
-
-	public static int executeRemove(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-		Feedback result = remove(item, enchantment);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
-		return result.value();
-	}
-
-	public static int executeClear(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = clear(item);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
-		return result.value();
-	}
-
-	public static int executeGlint(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = glint(item);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
-			.executes(EnchantmentNode::executeGet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				if (!item.hasEnchantments()) {
+					throw NO_ENCHANTMENTS_EXCEPTION;
+				}
+				if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
+					throw NO_ENCHANTMENTS_EXCEPTION;
+				}
+				ClientPlayerEntity player = context.getSource().getPlayer();
+				player.sendMessage(Text.translatable(OUTPUT_GET));
+				Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
+				for (Enchantment enchantment : enchantments.keySet()) {
+					int lvl = enchantments.get(enchantment);
+					player.sendMessage(Text.empty().append("- ").append(enchantment.getName(lvl)));
+				}
+				return 1;
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> getEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
-			.executes(EnchantmentNode::executeGetEnchantment)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				if (!item.hasEnchantments()) {
+					throw NO_ENCHANTMENTS_EXCEPTION;
+				}
+				if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
+					throw NO_ENCHANTMENTS_EXCEPTION;
+				}
+				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
+				Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
+				if (!enchantments.containsKey(enchantment)) {
+					throw DOESNT_EXIST_EXCEPTION;
+				}
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET_ENCHANTMENT, Text.translatable(enchantment.getTranslationKey()), enchantments.get(enchantment)));
+				return 1;
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
@@ -211,12 +163,27 @@ public class EnchantmentNode {
 
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> setEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
-			.executes(EnchantmentNode::executeSetEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
+				Feedback result = set(item, enchantment, 1);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, enchantment.getTranslationKey(), 1));
+				return result.value();
+			})
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setEnchantmentLevelNode = ClientCommandManager
 			.argument("level", IntegerArgumentType.integer(0, 255))
-			.executes(EnchantmentNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
+				int level = IntegerArgumentType.getInteger(context, "level");
+				Feedback result = set(item, enchantment, level);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(enchantment.getTranslationKey()), level));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
@@ -225,17 +192,36 @@ public class EnchantmentNode {
 
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> removeEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
-			.executes(EnchantmentNode::executeRemove)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
+				Feedback result = remove(item, enchantment);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
-			.executes(EnchantmentNode::executeClear)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = clear(item);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> glintNode = ClientCommandManager
 			.literal("glint")
-			.executes(EnchantmentNode::executeGlint)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = glint(item);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT));
+				return result.value();
+			})
 			.build();
 
 		// ... get [<enchantment>]

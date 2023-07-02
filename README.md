@@ -31,4 +31,4 @@ Features:
 - `... enchantment glint`
 - `... get <item> [<count>]`
 - `... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
-- `... attribute clear [<attribute>] [<slot>]`
+- `... attribute clear [<slot>]`

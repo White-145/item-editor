@@ -1,7 +1,6 @@
 package me.white.itemeditor.editnodes;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
@@ -29,60 +28,52 @@ public class NameNode {
 		return new Feedback(item, 1);
 	}
 
-	public static int executeGet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource());
-		NbtCompound display = item.getSubNbt("display");
-		if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) {
-			throw NO_NAME_EXCEPTION;
-		}
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
-		return 1;
-	}
-
-	public static int executeSet(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Text name = Colored.of(StringArgumentType.getString(context, "name"));
-		Feedback result = set(item, name);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, name));
-		return result.value();
-	}
-	
-	public static int executeReset(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = set(item, null);
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-		return result.value();
-	}
-	
-	public static int executeSetEmpty(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-		Feedback result = set(item, Text.empty());
-		EditCommand.setItemStack(context.getSource(), result.result());
-		context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
-		return result.value();
-	}
-
 	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
-			.executes(NameNode::executeSetEmpty)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = set(item, Text.empty());
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
+				return result.value();
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
-			.executes(NameNode::executeGet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				NbtCompound display = item.getSubNbt("display");
+				if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) {
+					throw NO_NAME_EXCEPTION;
+				}
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
+				return 1;
+			})
 			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
-			.executes(NameNode::executeReset)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Feedback result = set(item, null);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				return result.value();
+			})
 			.build();
 		
 		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
 			.argument("name", StringArgumentType.greedyString())
-			.executes(NameNode::executeSet)
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Text name = Colored.of(StringArgumentType.getString(context, "name"));
+				Feedback result = set(item, name);
+				EditCommand.setItemStack(context.getSource(), result.result());
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, name));
+				return result.value();
+			})
 			.build();
 
 		// ... get
