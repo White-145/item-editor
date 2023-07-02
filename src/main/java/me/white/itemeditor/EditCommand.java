@@ -65,6 +65,10 @@ public class EditCommand {
 				return headItem.isEmpty() ? 0 : 1;
 			})
 			.build();
+	
+		LiteralCommandNode<FabricClientCommandSource> colorNode = ClientCommandManager
+			.literal("color")
+			.build();
 
 		MaterialNode.register(materialNode, registryAccess);
 		NameNode.register(nameNode, registryAccess);
@@ -74,6 +78,7 @@ public class EditCommand {
 		EnchantmentNode.register(enchantmentNode, registryAccess);
 		GetNode.register(getNode, registryAccess);
 		AttributeNode.register(attributeNode, registryAccess);
+		ColorNode.register(colorNode, registryAccess);
 		
 		dispatcher.getRoot().addChild(editNode);
 		// ... material ...
@@ -94,23 +99,23 @@ public class EditCommand {
 		editNode.addChild(attributeNode);
 		// ... equip
 		editNode.addChild(equipNode);
-		// ... book ...
-		// TODO
 		// ... color ...
-		// TODO
-		// ... durability ...
-		// TODO
-		// ... firework ...
-		// TODO
-		// ... head ...
-		// TODO
+		editNode.addChild(colorNode);
 		// ... hideflags ...
-		// TODO
-		// ... data ...
 		// TODO
 		// ... unbreakable ...
 		// TODO
 		// ... whitelist ...
+		// TODO
+		// ... durability ...
+		// TODO
+		// ... data ...
+		// TODO
+		// ... book ...
+		// TODO
+		// ... firework ...
+		// TODO
+		// ... head ...
 		// TODO
 		// ... entity ...
 		// TODO

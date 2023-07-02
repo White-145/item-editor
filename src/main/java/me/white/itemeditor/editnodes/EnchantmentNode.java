@@ -39,7 +39,8 @@ public class EnchantmentNode {
 	private static final String OUTPUT_SET = "commands.edit.enchantment.set";
 	private static final String OUTPUT_REMOVE = "commands.edit.enchantment.remove";
 	private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
-	private static final String OUTPUT_GLINT = "commands.edit.enchantment.glint";
+	private static final String OUTPUT_GLINT_ENABLE = "commands.edit.enchantment.glintenable";
+	private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
 
 	private static final String ENCHANTMENTS_KEY = "Enchantments";
 	private static final String ID_KEY = "id";
@@ -219,7 +220,11 @@ public class EnchantmentNode {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Feedback result = glint(item);
 				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT));
+				if (result.result().hasEnchantments()) {
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT_ENABLE));
+				} else {
+					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT_DISABLE));
+				}
 				return result.value();
 			})
 			.build();

@@ -9,9 +9,11 @@
     "commands.edit.error.enchantment.noenchantments": "Item doesn't have enchantments",
     "commands.edit.error.enchantment.hasglint": "Item already have enchantment glint that cannot be removed",
     "commands.edit.error.get.handnotempty": "Your hand must be empty to use get",
-    "commdans.edit.error.attribute.alreadyexists": "Item already has attributes",
-    "commdans.edit.error.attribute.noattributes": "Item doesn't have attributes",
-    "commdans.edit.error.attribute.noclearattribute": "Item doesn't have given attribute",
+    "commands.edit.error.attribute.alreadyexists": "Item already has attributes",
+    "commands.edit.error.attribute.noattributes": "Item doesn't have attributes",
+    "commands.edit.error.attribute.noclearattribute": "Item doesn't have given attribute",
+    "commands.edit.error.color.nocolor": "Item doesn't have color",
+    "commands.edit.error.color.invalidhexcolor": "Invalid HEX color (should be \"#XXXXXX\")",
 
     "commands.edit.name.get": "Item custom name: '%s'",
     "commands.edit.name.set": "Item custom name was set to '%s'",
@@ -42,7 +44,8 @@
     "commands.edit.enchantment.set": "Item enchantment %s level was set to %s",
     "commands.edit.enchantment.remove": "Item enchantment %s was removed",
     "commands.edit.enchantment.clear": "Item enchantments were cleared",
-    "commands.edit.enchantment.glint": "Item enchantment glint was toggled",
+    "commands.edit.enchantment.glintenable": "Item enchantment glint was enabled",
+    "commands.edit.enchantment.glintdisable": "Item enchantment glint was disabled",
 
     "commands.edit.get.get": "Placed %sx %s in your hand",
 
@@ -50,5 +53,9 @@
     "commands.edit.attribute.set": "Item attribute %s was set to %s",
     "commands.edit.attribute.setpercent": "Item attribute %s was set to %s%%",
     "commands.edit.attribute.setslot": "Item attribute %s was set to %s in %s slot",
-    "commands.edit.attribute.setpercentslot": "Item attribute %s was set to %s%% in %s slot"
+    "commands.edit.attribute.setpercentslot": "Item attribute %s was set to %s%% in %s slot",
+
+    "commands.edit.color.get": "Item color: #%s",
+    "commands.edit.color.set": "Item color was changed to #%s",
+    "commands.edit.color.reset": "Item color was reset"
 }

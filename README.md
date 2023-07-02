@@ -33,5 +33,8 @@ Features:
 - `... get <item> [<count>]`
 - `... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
 - `... attribute clear [<slot>]`
+- `... color get`
+- `... color set <color>`
+- `... color reset`
 
 (literally only 1 command)
