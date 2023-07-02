@@ -29,7 +29,7 @@ Features:
 - - `... stack`
 - `... model ...`
 - - `... get`
-- - `... set <custom model data>`
+- - `... set <model>`
 - - `... reset`
 - `... enchantment ...`
 - - `... get <enchantment>`
