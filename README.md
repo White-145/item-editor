@@ -21,6 +21,7 @@ Features:
 - `... count set [<count>]`
 - `... count add [<count>]`
 - `... count remove [<count>]`
+- `... count stack`
 - `... model get`
 - `... model set <custom model data>`
 - `... model reset`
