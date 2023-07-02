@@ -9,33 +9,44 @@ Features:
 - - `... get`
 - - `... set [<name>]`
 - - `... reset`
-- `... lore get [<index>]`
-- `... lore add [<line>]`
-- `... lore set <index> [<line>]`
-- `... lore insert <index> [<line>]`
-- `... lore remove <index>`
-- `... lore clear`
-- `... lore clear before <index>`
-- `... lore clear after <index>`
-- `... material set <material>`
-- `... count get`
-- `... count set [<count>]`
-- `... count add [<count>]`
-- `... count remove [<count>]`
-- `... count stack`
-- `... model get`
-- `... model set <custom model data>`
-- `... model reset`
-- `... enchantment get <enchantment>`
-- `... enchantment set <enchantment> [<level>]`
-- `... enchantment remove <enchantment>`
-- `... enchantment clear`
-- `... enchantment glint`
+- `... lore ...`
+- - `... get [<index>]`
+- - `... add [<line>]`
+- - `... set <index> [<line>]`
+- - `... insert <index> [<line>]`
+- - `... remove <index>`
+- - `... clear`
+- - `... clear before <index>`
+- - `... clear after <index>`
+- `... material ...`
+- - `... get`
+- - `... set <material>`
+- `... count ...`
+- - `... get`
+- - `... set [<count>]`
+- - `... add [<count>]`
+- - `... remove [<count>]`
+- - `... stack`
+- `... model ...`
+- - `... get`
+- - `... set <custom model data>`
+- - `... reset`
+- `... enchantment ...`
+- - `... get <enchantment>`
+- - `... set <enchantment> [<level>]`
+- - `... remove <enchantment>`
+- - `... clear`
+- - `... glint`
 - `... get <item> [<count>]`
-- `... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
-- `... attribute clear [<slot>]`
-- `... color get`
-- `... color set <color>`
-- `... color reset`
+- `... attribute ...`
+- - `... set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
+- - `... clear [<slot>]`
+- - `... get [<attribute>] [<slot>]` TODO
+- - `... remove [<attribute>] [<slot>]` TODO
+- `... equip`
+- `... color ...`
+- - `... get`
+- - `... set <color>`
+- - `... reset`
 
 (literally only 1 command)
