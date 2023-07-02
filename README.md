@@ -5,9 +5,10 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 Features:
 
 `/edit` command:
-- `... name get`
-- `... name set [<name>]`
-- `... name reset`
+- `... name ...`
+- - `... get`
+- - `... set [<name>]`
+- - `... reset`
 - `... lore get [<index>]`
 - `... lore add [<line>]`
 - `... lore set <index> [<line>]`
