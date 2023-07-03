@@ -48,5 +48,9 @@ Features:
 - - `... get`
 - - `... set <color>`
 - - `... reset`
+- `... unbreakable`
+- `... flags ...`
+- - `... get [enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim]`
+- - `... set enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim`
 
 (literally only 1 command)

@@ -44,7 +44,7 @@ public class EditCommand {
 		// ... color ...
 		ColorNode.register(editNode, registryAccess);
 		// ... hideflags ...
-		HideFlagsNode.register(editNode, registryAccess);
+		FlagsNode.register(editNode, registryAccess);
 		// ... equip
 		EquipNode.register(editNode, registryAccess);
 		// ... unbreakable

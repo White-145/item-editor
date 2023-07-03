@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 
-public class HideFlagsNode {
+public class FlagsNode {
     private static final String OUTPUT_GET = "commands.edit.flags.get";
     private static final String OUTPUT_ENCHANTMENTS_GET = "commands.edit.flags.enchantmentsget";
     private static final String OUTPUT_ATTRIBUTES_GET = "commands.edit.flags.attributesget";
