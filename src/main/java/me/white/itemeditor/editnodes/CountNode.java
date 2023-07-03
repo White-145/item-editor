@@ -7,7 +7,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -18,20 +17,6 @@ public class CountNode {
 	private static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.count.overflow")).create();;
 	private static final String OUTPUT_GET = "commands.edit.count.get";
 	private static final String OUTPUT_SET = "commands.edit.count.set";
-
-	private static Feedback set(ItemStack item, int count) {
-		int oldCount = item.getCount();
-		item.setCount(count);
-		return new Feedback(item, oldCount);
-	}
-
-	private static Feedback add(ItemStack item, int count) throws CommandSyntaxException {
-		if (item.getCount() + count > 127 || item.getCount() + count < 0) {
-			throw OVERFLOW_EXCEPTION;
-		}
-		item.setCount(item.getCount() + count);
-		return new Feedback(item, item.getCount());
-	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -51,10 +36,11 @@ public class CountNode {
 			.literal("set")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = set(item, 1);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				int oldCount = item.getCount();
+				item.setCount(1);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
-				return result.value();
+				return oldCount;
 			})
 			.build();
 
@@ -62,11 +48,12 @@ public class CountNode {
 			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				int value = IntegerArgumentType.getInteger(context, "count");
-				Feedback result = set(item, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
-				return result.value();
+				int count = IntegerArgumentType.getInteger(context, "count");
+				int oldCount = item.getCount();
+				item.setCount(count);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, count));
+				return oldCount;
 			})
 			.build();
 
@@ -74,10 +61,11 @@ public class CountNode {
 			.literal("add")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = add(item, 1);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-				return result.value();
+				if (item.getCount() + 1 > 127 || item.getCount() + 1 < 0) throw OVERFLOW_EXCEPTION;
+				item.setCount(item.getCount() + 1);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				return item.getCount();
 			})
 			.build();
 
@@ -85,11 +73,12 @@ public class CountNode {
 			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				int value = IntegerArgumentType.getInteger(context, "count");
-				Feedback result = add(item, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-				return result.value();
+				int count = IntegerArgumentType.getInteger(context, "count");
+				if (item.getCount() + count > 127 || item.getCount() + count < 0) throw OVERFLOW_EXCEPTION;
+				item.setCount(item.getCount() + count);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				return item.getCount();
 			})
 			.build();
 
@@ -97,10 +86,11 @@ public class CountNode {
 			.literal("remove")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = add(item, -1);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-				return result.value();
+				if (item.getCount() - 1 > 127 || item.getCount() - 1 < 0) throw OVERFLOW_EXCEPTION;
+				item.setCount(item.getCount() - 1);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				return item.getCount();
 			})
 			.build();
 
@@ -108,11 +98,12 @@ public class CountNode {
 			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				int value = IntegerArgumentType.getInteger(context, "count");
-				Feedback result = add(item, -value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, result.result().getCount()));
-				return result.value();
+				int count = IntegerArgumentType.getInteger(context, "count");
+				if (item.getCount() - count > 127 || item.getCount() - count < 0) throw OVERFLOW_EXCEPTION;
+				item.setCount(item.getCount() - count);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				return item.getCount();
 			})
 			.build();
 		
@@ -120,10 +111,10 @@ public class CountNode {
 			.literal("stack")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = set(item, item.getMaxCount());
-				EditCommand.setItemStack(context.getSource(), result.result());
+				item.setCount(item.getMaxCount());
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getMaxCount()));
-				return result.value();
+				return item.getMaxCount();
 			})
 			.build();
 

@@ -10,7 +10,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -53,67 +52,6 @@ public class EnchantmentNode {
             throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), RegistryKeys.ENCHANTMENT.getValue());
         }
 		return (Enchantment)reference.value();
-	}
-
-	public static Feedback set(ItemStack item, Enchantment enchantment, int level) throws CommandSyntaxException {
-		NbtList enchantments = item.getEnchantments();
-		Identifier id = Registries.ENCHANTMENT.getKey(enchantment).get().getValue();
-		for (NbtElement oldEnchantment : enchantments) {
-			String oldId = ((NbtCompound)oldEnchantment).getString(ID_KEY);
-			if (oldId.equals(String.valueOf(id))) {
-				int oldLvl = ((NbtCompound)oldEnchantment).getShort(LVL_KEY);
-				if (oldLvl == level) {
-					throw EXISTS_EXCEPTION;
-				}
-				enchantments.remove(oldEnchantment);
-			}
-		}
-		if (!(enchantments.size() == 1 && ((NbtCompound)enchantments.get(0)).isEmpty())) {
-			enchantments.clear();
-		}
-		enchantments.add(EnchantmentHelper.createNbt(id, level));
-		item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
-		return new Feedback(item, 1);
-	}
-
-	public static Feedback remove(ItemStack item, Enchantment enchantment) throws CommandSyntaxException {
-		NbtList enchantments = item.getEnchantments();
-		Identifier id = Registries.ENCHANTMENT.getKey(enchantment).get().getValue();
-		for (NbtElement oldEnchantment : enchantments) {
-			if (((NbtCompound)oldEnchantment).isEmpty()) continue;
-			String oldId = ((NbtCompound)oldEnchantment).getString(ID_KEY);
-			if (oldId.equals(String.valueOf(id))) {
-				int lvl = ((NbtCompound)oldEnchantment).getInt(LVL_KEY);
-				enchantments.remove(oldEnchantment);
-				item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
-				return new Feedback(item, lvl);
-			}
-		}
-
-		throw DOESNT_EXIST_EXCEPTION;
-	}
-
-	public static Feedback clear(ItemStack item) throws CommandSyntaxException {
-		if (!item.hasEnchantments()) {
-			throw NO_ENCHANTMENTS_EXCEPTION;
-		}
-		item.removeSubNbt(ENCHANTMENTS_KEY);
-		return new Feedback(item, 1);
-	}
-
-	public static Feedback glint(ItemStack item) throws CommandSyntaxException {
-		if (item.hasEnchantments()) {
-			NbtList enchantments = item.getEnchantments();
-			if (!(enchantments.size() == 1 && ((NbtCompound)enchantments.get(0)).isEmpty())) {
-				throw HAS_GLINT_EXCEPTION;
-			}
-			item.removeSubNbt(ENCHANTMENTS_KEY);
-			return new Feedback(item, 1);
-		}
-		NbtList enchantments = new NbtList();
-		enchantments.add(new NbtCompound());
-		item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
-		return new Feedback(item, 0);
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -171,10 +109,23 @@ public class EnchantmentNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-				Feedback result = set(item, enchantment, 1);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtList enchantments = item.getEnchantments();
+				Identifier id = Registries.ENCHANTMENT.getKey(enchantment).get().getValue();
+				int oldLvl = 0;
+				for (NbtElement oldEnchantment : enchantments) {
+					String oldId = ((NbtCompound)oldEnchantment).getString(ID_KEY);
+					if (oldId.equals(String.valueOf(id))) {
+						oldLvl = ((NbtCompound)oldEnchantment).getShort(LVL_KEY);
+						if (oldLvl == 1) throw EXISTS_EXCEPTION;
+						enchantments.remove(oldEnchantment);
+					}
+				}
+				if (!(enchantments.size() == 1 && ((NbtCompound)enchantments.get(0)).isEmpty())) enchantments.clear();
+				enchantments.add(EnchantmentHelper.createNbt(id, 1));
+				item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, enchantment.getTranslationKey(), 1));
-				return result.value();
+				return oldLvl;
 			})
 			.build();
 
@@ -184,10 +135,23 @@ public class EnchantmentNode {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				int level = IntegerArgumentType.getInteger(context, "level");
-				Feedback result = set(item, enchantment, level);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtList enchantments = item.getEnchantments();
+				Identifier id = Registries.ENCHANTMENT.getKey(enchantment).get().getValue();
+				int oldLvl = 0;
+				for (NbtElement oldEnchantment : enchantments) {
+					String oldId = ((NbtCompound)oldEnchantment).getString(ID_KEY);
+					if (oldId.equals(String.valueOf(id))) {
+						oldLvl = ((NbtCompound)oldEnchantment).getShort(LVL_KEY);
+						if (oldLvl == level) throw EXISTS_EXCEPTION;
+						enchantments.remove(oldEnchantment);
+					}
+				}
+				if (!(enchantments.size() == 1 && ((NbtCompound)enchantments.get(0)).isEmpty())) enchantments.clear();
+				enchantments.add(EnchantmentHelper.createNbt(id, level));
+				item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(enchantment.getTranslationKey()), level));
-				return result.value();
+				return oldLvl;
 			})
 			.build();
 
@@ -200,10 +164,27 @@ public class EnchantmentNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
-				Feedback result = remove(item, enchantment);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				
+				NbtList enchantments = item.getEnchantments();
+				Identifier id = Registries.ENCHANTMENT.getKey(enchantment).get().getValue();
+				int lvl;
+				removeEnchantment: {
+					for (NbtElement oldEnchantment : enchantments) {
+						if (((NbtCompound)oldEnchantment).isEmpty()) continue;
+						String oldId = ((NbtCompound)oldEnchantment).getString(ID_KEY);
+						if (oldId.equals(String.valueOf(id))) {
+							lvl = ((NbtCompound)oldEnchantment).getInt(LVL_KEY);
+							enchantments.remove(oldEnchantment);
+							item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
+							break removeEnchantment;
+						}
+					}
+
+					throw DOESNT_EXIST_EXCEPTION;
+				}
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
-				return result.value();
+				return lvl;
 			})
 			.build();
 
@@ -211,10 +192,11 @@ public class EnchantmentNode {
 			.literal("clear")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = clear(item);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				if (!item.hasEnchantments()) throw NO_ENCHANTMENTS_EXCEPTION;
+				item.removeSubNbt(ENCHANTMENTS_KEY);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
-				return result.value();
+				return 1;
 			})
 			.build();
 
@@ -222,14 +204,18 @@ public class EnchantmentNode {
 			.literal("glint")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = glint(item);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				if (result.result().hasEnchantments()) {
-					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT_ENABLE));
+				if (item.hasEnchantments()) {
+					NbtList enchantments = item.getEnchantments();
+					if (!(enchantments.size() == 1 && ((NbtCompound)enchantments.get(0)).isEmpty())) throw HAS_GLINT_EXCEPTION;
+					item.removeSubNbt(ENCHANTMENTS_KEY);
 				} else {
-					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GLINT_DISABLE));
+					NbtList enchantments = new NbtList();
+					enchantments.add(new NbtCompound());
+					item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
 				}
-				return result.value();
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(item.hasEnchantments() ? OUTPUT_GLINT_ENABLE : OUTPUT_GLINT_DISABLE));
+				return item.hasEnchantments() ? 1 : 0;
 			})
 			.build();
 

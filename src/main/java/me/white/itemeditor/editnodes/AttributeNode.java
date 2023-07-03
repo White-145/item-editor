@@ -17,7 +17,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -165,17 +164,17 @@ public class AttributeNode {
 	private static final String OUTPUT_CLEAR_SLOT = "commands.edit.attribute.clearslot";
 	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
 
-	private static Feedback set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
+	private static ItemStack set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
 		if (attribute == null) {
 			if (item.getSubNbt(ATTRIBUTE_MODIFIERS_KEY) != null) throw ALREADY_HAS_ATTRIBUTES_EXCEPTION;
 			NbtList attributes = new NbtList();
 			attributes.add(new NbtCompound());
 			item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, attributes);
-			return new Feedback(item, 1);
+			return item;
 		}
 		EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), (double)amount, operation);
 		item.addAttributeModifier(attribute, modifier, slot);
-		return new Feedback(item, 1);
+		return item;
 	}
 
 	private static EntityAttribute getAttributeArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
@@ -195,10 +194,10 @@ public class AttributeNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), null, 0, null, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), null, 0, null, null);
+				EditCommand.setItemStack(context.getSource(), result);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-				return result.value();
+				return 1;
 			})
 			.build();
 		
@@ -211,10 +210,10 @@ public class AttributeNode {
 			.executes(context -> {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
+				EditCommand.setItemStack(context.getSource(), result);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), amount));
-				return result.value();
+				return 1;
 			})
 			.build();
 		
@@ -224,14 +223,14 @@ public class AttributeNode {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
 				EntityAttributeModifier.Operation operation = OperationArgumentType.getOperation(context, "operation");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, operation, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, operation, null);
+				EditCommand.setItemStack(context.getSource(), result);
 				if (operation == EntityAttributeModifier.Operation.ADDITION) {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), amount));
 				} else {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Registries.ATTRIBUTE.getId(attribute), amount * 100));
 				}
-				return result.value();
+				return 1;
 			})
 			.build();
 	
@@ -242,14 +241,14 @@ public class AttributeNode {
 				float amount = FloatArgumentType.getFloat(context, "amount");
 				EntityAttributeModifier.Operation operation = OperationArgumentType.getOperation(context, "operation");
 				EquipmentSlot slot = SlotArgumentType.getSlot(context, "slot");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, operation, slot);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, amount, operation, slot);
+				EditCommand.setItemStack(context.getSource(), result);
 				if (operation == EntityAttributeModifier.Operation.ADDITION) {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Registries.ATTRIBUTE.getId(attribute), amount, slot == null ? "Any" : slot.getName()));
 				} else {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Registries.ATTRIBUTE.getId(attribute), amount, slot == null ? "Any" : slot.getName()));
 				}
-				return result.value();
+				return 1;
 			})
 			.build();
 		
@@ -257,10 +256,10 @@ public class AttributeNode {
 			.literal("infinity")
 			.executes(context -> {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
+				EditCommand.setItemStack(context.getSource(), result);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
-				return result.value();
+				return 1;
 			})
 			.build();
 		
@@ -269,14 +268,14 @@ public class AttributeNode {
 			.executes(context -> {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				EntityAttributeModifier.Operation operation = OperationArgumentType.getOperation(context, "operation");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, operation, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, operation, null);
+				EditCommand.setItemStack(context.getSource(), result);
 				if (operation == EntityAttributeModifier.Operation.ADDITION) {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
 				} else {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
 				}
-				return result.value();
+				return 1;
 			})
 			.build();
 	
@@ -286,14 +285,14 @@ public class AttributeNode {
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				EntityAttributeModifier.Operation operation = OperationArgumentType.getOperation(context, "operation");
 				EquipmentSlot slot = SlotArgumentType.getSlot(context, "slot");
-				Feedback result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, operation, slot);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				ItemStack result = set(EditCommand.getItemStack(context.getSource()).copy(), attribute, Float.POSITIVE_INFINITY, operation, slot);
+				EditCommand.setItemStack(context.getSource(), result);
 				if (operation == EntityAttributeModifier.Operation.ADDITION) {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Registries.ATTRIBUTE.getId(attribute), "Infinity", slot == null ? "Any" : slot.getName()));
 				} else {
 					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Registries.ATTRIBUTE.getId(attribute), "Infinity", slot == null ? "Any" : slot.getName()));
 				}
-				return result.value();
+				return 1;
 			})
 			.build();
 		
