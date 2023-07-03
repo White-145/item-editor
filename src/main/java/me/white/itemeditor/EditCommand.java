@@ -7,7 +7,9 @@ import me.white.itemeditor.editnodes.*;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
@@ -16,6 +18,9 @@ public class EditCommand {
 	public record Feedback(ItemStack result, int value) {};
 
 	private static final String OUTPUT_EQUIP = "commands.edit.equip";
+	private static final String OUTPUT_UNBREABKABLE_ENABLE = "commands.edit.unbreakableenable";
+	private static final String OUTPUT_UNBREABKABLE_DISABLE = "commands.edit.unbreakabledisable";
+	private static final String UNBREAKABLE_KEY = "Unbreakable";
 
 	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> editNode = ClientCommandManager
@@ -23,43 +28,11 @@ public class EditCommand {
 			.requires(context -> context.getClient().interactionManager.getCurrentGameMode().equals(GameMode.CREATIVE))
 			.build();
 
-		LiteralCommandNode<FabricClientCommandSource> materialNode = ClientCommandManager
-			.literal("material")
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> nameNode = ClientCommandManager
-			.literal("name")
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> loreNode = ClientCommandManager
-			.literal("lore")
-			.build();
-	
-		LiteralCommandNode<FabricClientCommandSource> countNode = ClientCommandManager
-			.literal("count")
-			.build();
-
-		LiteralCommandNode<FabricClientCommandSource> modelNode = ClientCommandManager
-			.literal("model")
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> enchantmentNode = ClientCommandManager
-			.literal("enchantment")
-			.build();
-	
-		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-			.literal("get")
-			.build();
-	
-		LiteralCommandNode<FabricClientCommandSource> attributeNode = ClientCommandManager
-			.literal("attribute")
-			.build();
-
 		LiteralCommandNode<FabricClientCommandSource> equipNode = ClientCommandManager
 			.literal("equip")
 			.executes(context -> {
 				ItemStack item = getItemStack(context.getSource());
-				var inventory = context.getSource().getPlayer().getInventory();
+				PlayerInventory inventory = context.getSource().getPlayer().getInventory();
 				ItemStack headItem = inventory.getArmorStack(3);
 				setItemStack(context.getSource(), headItem);
 				inventory.setStack(39, item);
@@ -69,46 +42,45 @@ public class EditCommand {
 				return headItem.isEmpty() ? 0 : 1;
 			})
 			.build();
-	
-		LiteralCommandNode<FabricClientCommandSource> colorNode = ClientCommandManager
-			.literal("color")
+		
+		LiteralCommandNode<FabricClientCommandSource> unbreakableNode = ClientCommandManager
+			.literal("unbreakable")
+			.executes(context -> {
+				ItemStack item = getItemStack(context.getSource()).copy();
+				NbtCompound nbt = item.getOrCreateNbt();
+				boolean unbreakable = nbt.getBoolean(UNBREAKABLE_KEY);
+				nbt.putBoolean(UNBREAKABLE_KEY, !unbreakable);
+				item.setNbt(nbt);
+				setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(unbreakable ? OUTPUT_UNBREABKABLE_DISABLE : OUTPUT_UNBREABKABLE_ENABLE));
+				return 1;
+			})
 			.build();
 
-		MaterialNode.register(materialNode, registryAccess);
-		NameNode.register(nameNode, registryAccess);
-		LoreNode.register(loreNode, registryAccess);
-		CountNode.register(countNode, registryAccess);
-		ModelNode.register(modelNode, registryAccess);
-		EnchantmentNode.register(enchantmentNode, registryAccess);
-		GetNode.register(getNode, registryAccess);
-		AttributeNode.register(attributeNode, registryAccess);
-		ColorNode.register(colorNode, registryAccess);
+		// material
+		MaterialNode.register(editNode, registryAccess);
+		// name
+		NameNode.register(editNode, registryAccess);
+		// lore
+		LoreNode.register(editNode, registryAccess);
+		// count
+		CountNode.register(editNode, registryAccess);
+		// model
+		ModelNode.register(editNode, registryAccess);
+		// enchantment
+		EnchantmentNode.register(editNode, registryAccess);
+		// get
+		GetNode.register(editNode, registryAccess);
+		// attribute
+		AttributeNode.register(editNode, registryAccess);
+		// color
+		ColorNode.register(editNode, registryAccess);
+		// hideflags
+		HideFlagsNode.register(editNode, registryAccess);
+		// equip
+		// unbreakable
 		
 		dispatcher.getRoot().addChild(editNode);
-		// ... material ...
-		editNode.addChild(materialNode);
-		// ... name ...
-		editNode.addChild(nameNode);
-		// ... lore ...
-		editNode.addChild(loreNode);
-		// ... count ...
-		editNode.addChild(countNode);
-		// ... model ...
-		editNode.addChild(modelNode);
-		// ... enchantment ...
-		editNode.addChild(enchantmentNode);
-		// ... get ...
-		editNode.addChild(getNode);
-		// ... attribute ...
-		editNode.addChild(attributeNode);
-		// ... equip
-		editNode.addChild(equipNode);
-		// ... color ...
-		editNode.addChild(colorNode);
-		// ... hideflags ...
-		// TODO
-		// ... unbreakable ...
-		// TODO
 		// ... whitelist ...
 		// TODO
 		// ... durability ...
@@ -123,6 +95,8 @@ public class EditCommand {
 		// TODO
 		// ... entity ...
 		// TODO
+		// ... trim ...
+		// TODO
 		// ... script ...
 		// TODO
 	}
@@ -132,7 +106,7 @@ public class EditCommand {
 	}
 
 	public static void setItemStack(FabricClientCommandSource context, ItemStack item) {
-		var inventory = context.getPlayer().getInventory();
+		PlayerInventory inventory = context.getPlayer().getInventory();
 		int slot = inventory.selectedSlot;
 		inventory.setStack(slot, item);
 		inventory.updateItems();

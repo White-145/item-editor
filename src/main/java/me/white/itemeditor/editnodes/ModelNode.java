@@ -7,7 +7,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -23,43 +22,19 @@ public class ModelNode {
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
 
-	private static Feedback set(ItemStack item, int value) {
-		NbtCompound nbt = item.getOrCreateNbt();
-		int result = value;
-		if (nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
-			result = nbt.getInt("CustomModelData");
-		}
-		if (value == 0) {
-			nbt.remove("CustomModelData");
-		} else {
-			nbt.put("CustomModelData", NbtInt.of(value));
-		}
-		item.setNbt(nbt);
-		return new Feedback(item, result);
-	}
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("model")
+			.build();
 
-	private static Feedback reset(ItemStack item) throws CommandSyntaxException {
-		NbtCompound nbt = item.getOrCreateNbt();
-		if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
-			throw NO_MODEL_EXCEPTION;
-		}
-		int result = nbt.getInt("CustomModelData");
-		nbt.remove("CustomModelData");
-		item.setNbt(nbt);
-		return new Feedback(item, result);
-	}
-
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource());
 				NbtCompound nbt = item.getNbt();
-				if (nbt == null || !nbt.contains("CustomModelData")) {
-					throw NO_MODEL_EXCEPTION;
-				}
+				if (nbt == null || !nbt.contains("CustomModelData")) throw NO_MODEL_EXCEPTION;
 				int model = nbt.getInt("CustomModelData");
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, model));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
 				return model;
 			})
 			.build();
@@ -73,14 +48,18 @@ public class ModelNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int value = IntegerArgumentType.getInteger(context, "model");
-				Feedback result = set(item, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound nbt = item.getOrCreateNbt();
+				int result = value;
+				if (nbt.contains("CustomModelData", NbtElement.INT_TYPE)) result = nbt.getInt("CustomModelData");
 				if (value == 0) {
-					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+					nbt.remove("CustomModelData");
 				} else {
-					context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, value));
+					nbt.put("CustomModelData", NbtInt.of(value));
 				}
-				return result.value();
+				item.setNbt(nbt);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(value == 0 ? Text.translatable(OUTPUT_RESET) : Text.translatable(OUTPUT_SET, value));
+				return result;
 			})
 			.build();
 
@@ -88,12 +67,20 @@ public class ModelNode {
 			.literal("reset")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = reset(item);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound nbt = item.getOrCreateNbt();
+				if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
+					throw NO_MODEL_EXCEPTION;
+				}
+				int result = nbt.getInt("CustomModelData");
+				nbt.remove("CustomModelData");
+				item.setNbt(nbt);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-				return result.value();
+				return result;
 			})
 			.build();
+		
+		rootNode.addChild(node);
 
 		// ... get
 		node.addChild(getNode);

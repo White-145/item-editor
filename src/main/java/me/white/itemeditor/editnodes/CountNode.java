@@ -33,7 +33,11 @@ public class CountNode {
 		return new Feedback(item, item.getCount());
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("count")
+			.build();
+
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
@@ -122,6 +126,8 @@ public class CountNode {
 				return result.value();
 			})
 			.build();
+
+		rootNode.addChild(node);
 
 		// ... get
 		node.addChild(getNode);

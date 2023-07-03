@@ -59,5 +59,14 @@
 
     "commands.edit.color.get": "Item color: #%s",
     "commands.edit.color.set": "Item color was changed to #%s",
-    "commands.edit.color.reset": "Item color was reset"
+    "commands.edit.color.reset": "Item color was reset",
+
+    "commands.edit.hideflags.enchantmentsget": "Enchantments flag: %s",
+    "commands.edit.hideflags.attributesget": "Attributes flag: %s",
+    "commands.edit.hideflags.unbreakableget": "Unbreakable flag: %s",
+    "commands.edit.hideflags.candestroyget": "Can destroy flag: %s",
+    "commands.edit.hideflags.canplaceonget": "Can place on flag: %s",
+    "commands.edit.hideflags.othersget": "Others flag: %s",
+    "commands.edit.hideflags.dyedget": "Dyed flag: %s",
+    "commands.edit.hideflags.trimget": "Trim flag: %s"
 }

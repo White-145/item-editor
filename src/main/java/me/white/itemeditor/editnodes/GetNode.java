@@ -19,7 +19,11 @@ public class GetNode {
 	private static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.get.handnotempty")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("get")
+			.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
 			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
 			.executes(context -> {
@@ -44,6 +48,8 @@ public class GetNode {
 				return 1;
 			})
 			.build();
+
+		rootNode.addChild(node);
 
 		// ... get <item> [<count>]
 		node.addChild(itemNode);

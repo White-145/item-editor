@@ -9,11 +9,9 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import me.white.itemeditor.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -36,124 +34,28 @@ public class LoreNode {
 	private static final String OUTPUT_CLEAR = "commands.edit.lore.clear";
 	private static final String OUTPUT_CLEAR_BEFORE = "commands.edit.lore.clearbefore";
 	private static final String OUTPUT_CLEAR_AFTER = "commands.edit.lore.clearafter";
+	private static final String DISPLAY_KEY = "display";
+	private static final String LORE_KEY = "Lore";
 
-	private static NbtList getLore(ItemStack item) {
-		NbtCompound display = item.getOrCreateSubNbt("display");
-		NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
-		if (lore == null) {
-			lore = new NbtList();
-			display.put("Lore", lore);
-		}
-		return lore;
-	}
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("lore")
+			.build();
 
-	private static void setLore(ItemStack item, NbtList lore) {
-		NbtCompound display = item.getOrCreateSubNbt("display");
-		display.put("Lore", lore);
-	}
-
-	private static Feedback set(ItemStack item, int index, NbtString line) {
-		NbtList lore = getLore(item);
-		if (index < lore.size()) {
-			lore.set(index, line);
-		} else {
-			int off = index - lore.size();
-			for (int i = 0; i < off; ++i) {
-				lore.add(Colored.EMPTY_LINE);
-			}
-			lore.add(line);
-		}
-		setLore(item, lore);
-		return new Feedback(item, 1);
-	}
-
-	private static Feedback add(ItemStack item, NbtString line) {
-		NbtList lore = getLore(item);
-		lore.add(line);
-		setLore(item, lore);
-		return new Feedback(item, lore.size());
-	}
-
-	private static Feedback insert(ItemStack item, int index, NbtString line) {
-		NbtList lore = getLore(item);
-		if (index < lore.size()) {
-			lore.add(index, line);
-		} else {
-			int off = index - lore.size() - 1;
-			for (int i = 0; i < off; ++i) {
-				lore.add(Colored.EMPTY_LINE);
-			}
-			lore.add(line);
-		}
-		setLore(item, lore);
-		return new Feedback(item, 1);
-	}
-
-	private static Feedback remove(ItemStack item, int index) throws CommandSyntaxException {
-		NbtList lore = getLore(item);
-		if (index < lore.size()) {
-			lore.remove(index);
-		} else {
-			throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
-		}
-		setLore(item, lore);
-		return new Feedback(item, 1);
-	}
-
-	private static Feedback clear(ItemStack item) {
-		NbtList lore = getLore(item);
-		int prevSize = lore.size();
-		lore.clear();
-		setLore(item, lore);
-		return new Feedback(item, prevSize);
-	}
-
-	private static Feedback clearBefore(ItemStack item, int value) throws CommandSyntaxException {
-		NbtList lore = getLore(item);
-		for (int i = 0; i < value; ++i) {
-			lore.remove(0);
-		}
-		setLore(item, lore);
-		return new Feedback(item, 1);
-	}
-
-	private static Feedback clearAfter(ItemStack item, int value) throws CommandSyntaxException {
-		NbtList lore = getLore(item);
-		if (value >= lore.size()) {
-			throw OUT_OF_BOUNDS_EXCEPTION.create(value, lore.size());
-		}
-		int off = lore.size() - value - 1;
-		for (int i = 0; i < off; ++i) {
-			lore.remove(lore.size() - 1);
-		}
-		setLore(item, lore);
-		return new Feedback(item, off);
-	}
-
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource());
-				NbtCompound display = item.getSubNbt("display");
-				if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
-					throw NO_LORE_EXCEPTION;
-				}
-				NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
-				if (lore == null) {
-					throw NO_LORE_EXCEPTION;
-				}
-				if (lore.size() == 0) {
-					throw NO_LORE_EXCEPTION;
-				}
-		
-				ClientPlayerEntity player = context.getSource().getPlayer();
-				player.sendMessage(Text.translatable(OUTPUT_GET));
+				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
+				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null || lore.size() == 0) throw NO_LORE_EXCEPTION;
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
 				for (int i = 0; i < lore.size(); ++i) {
 					Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
-					player.sendMessage(Text.empty().append(Text.empty().append(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(textLine));
+					Text feedback = Text.empty().append(Text.empty().append(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(textLine);
+					context.getSource().sendFeedback(feedback);
 				}
-		
 				return lore.size();
 			})
 			.build();
@@ -163,20 +65,12 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource());
 				int i = IntegerArgumentType.getInteger(context, "index");
-				NbtCompound display = item.getSubNbt("display");
-				if (display == null || !display.contains("Lore", NbtElement.LIST_TYPE)) {
-					throw NO_LORE_EXCEPTION;
-				}
-				NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
-				if (lore == null) {
-					throw NO_LORE_EXCEPTION;
-				}
-				if (lore.size() <= i) {
-					throw OUT_OF_BOUNDS_EXCEPTION.create(i, lore.size());
-				}
-				ClientPlayerEntity player = context.getSource().getPlayer();
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				if (lore.size() <= i) throw OUT_OF_BOUNDS_EXCEPTION.create(i, lore.size());
 				Text textLine = Text.Serializer.fromJson(((NbtString)lore.get(i)).asString());
-				player.sendMessage(Text.translatable(OUTPUT_GET_LINE, i, textLine));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, i, textLine));
 				return 1;
 			})
 			.build();
@@ -190,10 +84,20 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Feedback result = set(item, i, Colored.EMPTY_LINE);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				if (i < lore.size()) {
+					lore.set(i, Colored.EMPTY_LINE);
+				} else {
+					int off = i - lore.size() + 1;
+					for (int j = 0; j < off; ++j) lore.add(Colored.EMPTY_LINE);
+				}
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, ""));
-				return result.value();
+				return 1;
 			})
 			.build();
 
@@ -202,12 +106,22 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-				Feedback result = set(item, i, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, valueColor));
-				return result.value();
+				Text line = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				if (i < lore.size()) {
+					lore.set(i, Colored.EMPTY_LINE);
+				} else {
+					int off = i - lore.size();
+					for (int j = 0; j < off; ++j) lore.add(Colored.EMPTY_LINE);
+					lore.add(NbtString.of(Text.Serializer.toJson(line)));
+				}
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, line));
+				return 1;
 			})
 			.build();
 			
@@ -220,10 +134,17 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Feedback result = remove(item, i);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
+				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null || lore.size() == 0) throw NO_LORE_EXCEPTION;
+				if (lore.size() < i) throw OUT_OF_BOUNDS_EXCEPTION.create(lore.size(), i);
+				lore.remove(i);
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, i));
-				return result.value();
+				return 1;
 			})
 			.build();
 			
@@ -231,10 +152,15 @@ public class LoreNode {
 			.literal("add")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = add(item, Colored.EMPTY_LINE);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				lore.add(Colored.EMPTY_LINE);
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, ""));
-				return result.value();
+				return lore.size();
 			})
 			.build();
 		
@@ -242,12 +168,17 @@ public class LoreNode {
 			.argument("line", StringArgumentType.greedyString())
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-				Feedback result = add(item, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, valueColor));
-				return result.value();
+				Text textLine = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtString line = NbtString.of(Text.Serializer.toJson(textLine));
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				lore.add(line);
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, textLine));
+				return lore.size();
 			})
 			.build();
 			
@@ -260,10 +191,20 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Feedback result = insert(item, i, Colored.EMPTY_LINE);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				if (i < lore.size()) {
+					lore.add(i, Colored.EMPTY_LINE);
+				} else {
+					int off = i - lore.size();
+					for (int j = 0; j < off; ++j) lore.add(Colored.EMPTY_LINE);
+				}
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, "", i));
-				return result.value();
+				return 1;
 			})
 			.build();
 
@@ -272,12 +213,23 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Text valueColor = Colored.of(StringArgumentType.getString(context, "line"));
-				NbtString value = NbtString.of(Text.Serializer.toJson(valueColor));
-				Feedback result = insert(item, i, value);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, valueColor, i));
-				return result.value();
+				Text textLine = Colored.of(StringArgumentType.getString(context, "line"));
+				NbtString line = NbtString.of(Text.Serializer.toJson(textLine));
+				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null) lore = new NbtList();
+				if (i < lore.size()) {
+					lore.add(i, line);
+				} else {
+					int off = i - lore.size() - 1;
+					for (int j = 0; j < off; ++j) lore.add(Colored.EMPTY_LINE);
+					lore.add(line);
+				}
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, textLine, i));
+				return 1;
 			})
 			.build();
 		
@@ -285,10 +237,16 @@ public class LoreNode {
 			.literal("clear")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = clear(item);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
+				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null || lore.size() == 0) throw NO_LORE_EXCEPTION;
+				lore.clear();
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
-				return result.value();
+				return 1;
 			})
 			.build();
 	
@@ -301,10 +259,16 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Feedback result = clearBefore(item, i);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
-				return result.value();
+				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
+				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null || lore.size() == 0) throw NO_LORE_EXCEPTION;
+				for (int j = 0; j < i; ++j) lore.remove(0);
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
+				return 1;
 			})
 			.build();
 
@@ -317,12 +281,22 @@ public class LoreNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
-				Feedback result = clearAfter(item, i);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_AFTER, i));
-				return result.value();
+				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
+				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
+				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
+				if (lore == null || lore.size() == 0) throw NO_LORE_EXCEPTION;
+				if (i >= lore.size()) throw OUT_OF_BOUNDS_EXCEPTION.create(i, lore.size());
+				int off = lore.size() - i - 1;
+				for (int j = 0; j < off; ++j) lore.remove(lore.size() - 1);
+				display.put(LORE_KEY, lore);
+				item.setSubNbt(DISPLAY_KEY, display);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, i));
+				return 1;
 			})
 			.build();
+		
+		rootNode.addChild(node);
 		
 		// ... get [<index>]
 		node.addChild(getNode);
@@ -346,7 +320,7 @@ public class LoreNode {
 		insertNode.addChild(insertIndexNode);
 		insertIndexNode.addChild(insertLineNode);
 
-		// ... clear [before|after] <index>
+		// ... clear [before|after <index>]
 		node.addChild(clearNode);
 		clearNode.addChild(clearBeforeNode);
 		clearBeforeNode.addChild(clearBeforeIndexNode);

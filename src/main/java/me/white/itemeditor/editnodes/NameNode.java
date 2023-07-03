@@ -7,7 +7,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import me.white.itemeditor.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -23,20 +22,31 @@ public class NameNode {
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
 
-	private static Feedback set(ItemStack item, Text name) {
-		item.setCustomName(name);
-		return new Feedback(item, 1);
-	}
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("name")
+			.build();
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = set(item, Text.empty());
-				EditCommand.setItemStack(context.getSource(), result.result());
+				item.setCustomName(Text.empty());
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
-				return result.value();
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
+			.argument("name", StringArgumentType.greedyString())
+			.executes(context -> {
+				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				Text name = Colored.of(StringArgumentType.getString(context, "name"));
+				item.setCustomName(name);
+				EditCommand.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, name));
+				return 1;
 			})
 			.build();
 
@@ -48,7 +58,7 @@ public class NameNode {
 				if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) {
 					throw NO_NAME_EXCEPTION;
 				}
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
 				return 1;
 			})
 			.build();
@@ -57,24 +67,14 @@ public class NameNode {
 			.literal("reset")
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Feedback result = set(item, null);
-				EditCommand.setItemStack(context.getSource(), result.result());
+				item.setCustomName(null);
+				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
-				return result.value();
+				return 1;
 			})
 			.build();
-		
-		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
-			.argument("name", StringArgumentType.greedyString())
-			.executes(context -> {
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				Text name = Colored.of(StringArgumentType.getString(context, "name"));
-				Feedback result = set(item, name);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, name));
-				return result.value();
-			})
-			.build();
+
+		rootNode.addChild(node);
 
 		// ... get
 		node.addChild(getNode);

@@ -187,7 +187,11 @@ public class AttributeNode {
 		return (EntityAttribute)reference.value();
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("attribute")
+			.build();
+
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
@@ -343,6 +347,8 @@ public class AttributeNode {
 				return 1;
 			})
 			.build();
+		
+		rootNode.addChild(node);
 
 		// ... attribute get [<attribute>] [<slot>]
 		// TODO

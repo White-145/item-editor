@@ -74,7 +74,11 @@ public class ColorNode {
     private static final String MAP_COLOR_KEY = "MapColor";
     private static final String COLOR_KEY = "color";
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+            .literal("color")
+            .build();
+            
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
@@ -130,7 +134,12 @@ public class ColorNode {
             })
             .build();
 
+        rootNode.addChild(node);
+
+        // ... color get
         node.addChild(getNode);
+
+        // ... color set <color>
         node.addChild(setNode);
         setNode.addChild(setHexColorNode);
         node.addChild(resetNode);

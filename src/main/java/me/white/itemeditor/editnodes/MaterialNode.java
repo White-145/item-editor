@@ -2,11 +2,11 @@ package me.white.itemeditor.editnodes;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.EditCommand.Feedback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -20,6 +20,7 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
 public class MaterialNode {
+	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.material.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.material.get";
 	private static final String OUTPUT_SET = "commands.edit.material.set";
 
@@ -32,13 +33,11 @@ public class MaterialNode {
 		return (Item)reference.value();
 	}
 
-	public static Feedback set(ItemStack item, Item type) {
-		ItemStack newItem = new ItemStack(type, item.getCount());
-		newItem.setNbt(item.getNbt());
-		return new Feedback(newItem, 1);
-	}
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("material")
+			.build();
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
@@ -57,13 +56,17 @@ public class MaterialNode {
 			.executes(context -> {
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Item type = getItemArgument(context, "material");
-				Feedback result = set(item, type);
-				EditCommand.setItemStack(context.getSource(), result.result());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, type.getName()));
-				return result.value();
+				if (item.getItem() == type) throw ALREADY_IS_EXCEPTION;
+				ItemStack newItem = new ItemStack(type, item.getCount());
+				newItem.setNbt(item.getNbt());
+				EditCommand.setItemStack(context.getSource(), newItem);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, type.getName()));
+				return 1;
 			})
 			.build();
 			
+		rootNode.addChild(node);
+
 		// ... material get
 		node.addChild(getNode);
 

@@ -116,7 +116,11 @@ public class EnchantmentNode {
 		return new Feedback(item, 0);
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess) {
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+			.literal("enchantment")
+			.build();
+
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
@@ -228,6 +232,8 @@ public class EnchantmentNode {
 				return result.value();
 			})
 			.build();
+
+		rootNode.addChild(node);
 
 		// ... get [<enchantment>]
 		node.addChild(getNode);
