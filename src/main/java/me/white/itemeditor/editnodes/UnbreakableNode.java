@@ -11,8 +11,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 
 public class UnbreakableNode {
-	private static final String OUTPUT_UNBREABKABLE_ENABLE = "commands.edit.unbreakableenable";
-	private static final String OUTPUT_UNBREABKABLE_DISABLE = "commands.edit.unbreakabledisable";
+	private static final String OUTPUT_UNBREABKABLE_ENABLE = "commands.edit.unbreakable.enable";
+	private static final String OUTPUT_UNBREABKABLE_DISABLE = "commands.edit.unbreakable.disable";
 	private static final String UNBREAKABLE_KEY = "Unbreakable";
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {

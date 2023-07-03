@@ -1,7 +1,10 @@
 {
+    "commands.edit.error.notcreative": "Cannot edit item not in creative game mode",
+    "commands.edit.error.noitem": "No item to edit",
     "commands.edit.error.name.noname": "Item doesn't have a custom name",
     "commands.edit.error.lore.nolore": "Item doesn't have a lore",
     "commands.edit.error.lore.outofbounds": "Index %s out of bounds for lore length %s",
+    "commands.edit.error.material.alreadyis": "Item materials is already it",
     "commands.edit.error.count.overflow": "Unable add to the stack",
     "commands.edit.error.model.nomodel": "Item doesn't have a custom model data",
     "commands.edit.error.enchantment.alreadyexists": "Item already have given enchantment",
@@ -61,12 +64,24 @@
     "commands.edit.color.set": "Item color was changed to #%s",
     "commands.edit.color.reset": "Item color was reset",
 
-    "commands.edit.hideflags.enchantmentsget": "Enchantments flag: %s",
-    "commands.edit.hideflags.attributesget": "Attributes flag: %s",
-    "commands.edit.hideflags.unbreakableget": "Unbreakable flag: %s",
-    "commands.edit.hideflags.candestroyget": "Can destroy flag: %s",
-    "commands.edit.hideflags.canplaceonget": "Can place on flag: %s",
-    "commands.edit.hideflags.othersget": "Others flag: %s",
-    "commands.edit.hideflags.dyedget": "Dyed flag: %s",
-    "commands.edit.hideflags.trimget": "Trim flag: %s"
+    "commands.edit.unbreakable.disable": "Item unbreakable was disabled",
+    "commands.edit.unbreakable.enable": "Item unbreakable was enabled",
+
+    "commands.edit.flags.get": "Item flags:",
+    "commands.edit.flags.enchantmentsget": "Enchantments flag: %s",
+    "commands.edit.flags.attributesget": "Attributes flag: %s",
+    "commands.edit.flags.unbreakableget": "Unbreakable flag: %s",
+    "commands.edit.flags.candestroyget": "Can destroy flag: %s",
+    "commands.edit.flags.canplaceonget": "Can place on flag: %s",
+    "commands.edit.flags.othersget": "Others flag: %s",
+    "commands.edit.flags.dyedget": "Dyed flag: %s",
+    "commands.edit.flags.trimget": "Trim flag: %s",
+    "commands.edit.flags.enchantmentsset": "Enchantments flag was set to %s",
+    "commands.edit.flags.attributesset": "Attributes flag was set to %s",
+    "commands.edit.flags.unbreakableset": "Unbreakable flag was set to %s",
+    "commands.edit.flags.candestroyset": "Can destroy flag was set to %s",
+    "commands.edit.flags.canplaceonset": "Can place on flag was set to %s",
+    "commands.edit.flags.othersset": "Others flag was set to %s",
+    "commands.edit.flags.dyedset": "Dyed flag was set to %s",
+    "commands.edit.flags.trimset": "Trim flag was set to %s"
 }
