@@ -52,5 +52,13 @@ Features:
 - `... flags ...`
 - - `... get [enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim]`
 - - `... set enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim`
+- `... whitelist ...`
+- - `... get [place|destroy]`
+- - `... add <block>`
+- - `... add place|destroy <block>`
+- - `... remove <block>`
+- - `... remove place|destroy <block>`
+- - `... clear [place|destroy]`
+
 
 (literally only 1 command)

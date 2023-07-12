@@ -50,7 +50,7 @@ public class EditCommand {
 		// ... unbreakable
 		UnbreakableNode.register(editNode, registryAccess);
 		// ... whitelist ...
-		// TODO
+		WhitelistNode.register(editNode, registryAccess);
 		// ... durability ...
 		// TODO
 		// ... data ...
@@ -65,15 +65,19 @@ public class EditCommand {
 		// TODO
 		// ... entity ...
 		// TODO
+		// ... sound ...
+		// TODO
+		// ... banner ...
+		// TODO
+		// ... items ...
+		// TODO
+		// ... display ...
 		
 		dispatcher.getRoot().addChild(editNode);
 	}
 	
 	public static ItemStack getItemStack(FabricClientCommandSource context) throws CommandSyntaxException {
-		MinecraftClient client = context.getClient();
-		if (client.interactionManager.getCurrentGameMode() != GameMode.CREATIVE) throw NOT_CREATIVE_EXCEPTION;
 		ItemStack item = context.getPlayer().getInventory().getMainHandStack();
-		if (item.isEmpty()) throw NO_ITEM_EXCEPTION;
 		return item;
 	}
 
