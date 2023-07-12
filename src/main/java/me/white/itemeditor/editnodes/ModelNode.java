@@ -18,7 +18,7 @@ import net.minecraft.text.Text;
 
 public class ModelNode {
 	private static final CommandSyntaxException NO_MODEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.model.nomodel")).create();
-	private static final String OUTPUT_GET = "commands.edit.name.get";
+	private static final String OUTPUT_GET = "commands.edit.model.get";
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
 

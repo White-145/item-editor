@@ -111,7 +111,7 @@ public class LoreNode {
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
 				if (lore == null) lore = new NbtList();
 				if (i < lore.size()) {
-					lore.set(i, Colored.EMPTY_LINE);
+					lore.set(i, NbtString.of(Text.Serializer.toJson(line)));
 				} else {
 					int off = i - lore.size();
 					for (int j = 0; j < off; ++j) lore.add(Colored.EMPTY_LINE);

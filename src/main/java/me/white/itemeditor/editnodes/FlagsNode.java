@@ -200,7 +200,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setEnchantmentsNode = ClientCommandManager
             .literal("enchantments")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy().copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -217,7 +217,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setAttributesNode = ClientCommandManager
             .literal("attributes")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -234,7 +234,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setUnbreakableNode = ClientCommandManager
             .literal("unbreakable")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -251,7 +251,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setCandestroyNode = ClientCommandManager
             .literal("candestroy")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -268,7 +268,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setCanplaceonNode = ClientCommandManager
             .literal("canplaceon")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -285,7 +285,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setOthersNode = ClientCommandManager
             .literal("others")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -302,7 +302,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setDyedNode = ClientCommandManager
             .literal("dyed")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {
@@ -319,7 +319,7 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> setTrimNode = ClientCommandManager
             .literal("trim")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) {

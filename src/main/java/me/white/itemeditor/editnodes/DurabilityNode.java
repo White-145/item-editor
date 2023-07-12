@@ -29,7 +29,7 @@ public class DurabilityNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 int old = item.getDamage();
                 item.setDamage(0);
                 EditCommand.setItemStack(context.getSource(), item);
@@ -40,7 +40,7 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager
             .argument("durability", IntegerArgumentType.integer())
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 int damage = IntegerArgumentType.getInteger(context, "durability");
                 if (damage > item.getMaxDamage()) throw TOO_MUCH;
                 if (damage < -item.getMaxDamage()) throw TOO_MUCH;
@@ -62,7 +62,7 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
             .argument("durability", DoubleArgumentType.doubleArg(0, 100))
             .executes(context -> {
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 double damage = DoubleArgumentType.getDouble(context, "durability");
                 int old = (int)((double)item.getDamage() / item.getMaxDamage() * 100);
                 item.setDamage((int)(item.getMaxDamage() * (1 - damage / 100)));

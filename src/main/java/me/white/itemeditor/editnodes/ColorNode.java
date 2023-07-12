@@ -66,7 +66,7 @@ public class ColorNode {
         }
     }
 
-    public static final CommandSyntaxException NO_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.color.nocolor")).create();
+    public static final CommandSyntaxException NO_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.nocolor")).create();
     private static final String OUTPUT_GET = "commands.edit.color.get";
     private static final String OUTPUT_SET = "commands.edit.color.set";
     private static final String OUTPUT_RESET = "commands.edit.color.reset";
