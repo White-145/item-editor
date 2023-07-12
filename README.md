@@ -59,6 +59,10 @@ Features:
 - - `... remove <block>`
 - - `... remove place|destroy <block>`
 - - `... clear [place|destroy]`
+- `... durability ...`
+- - `... get`
+- - `... set [<durability>]`
+- - `... percent <durability>`
 
 
 (literally only 1 command)
