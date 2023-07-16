@@ -60,6 +60,7 @@ public class BookNode {
     }
 
     private static void checkHasPages(FabricClientCommandSource context) throws CommandSyntaxException {
+		checkCanEdit(context);
 		ItemStack item = ItemManager.getItemStack(context);
         if (!item.hasNbt()) throw NO_PAGES_EXCEPTION;
         if (!item.getNbt().contains(PAGES_KEY, NbtElement.LIST_TYPE));
@@ -517,7 +518,7 @@ public class BookNode {
 			.build();
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearBeforeIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
+			.argument("index", IntegerArgumentType.integer(0, 99))
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
@@ -540,7 +541,7 @@ public class BookNode {
 			.build();
 	
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearAfterIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
+			.argument("index", IntegerArgumentType.integer(0, 99))
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
@@ -601,6 +602,6 @@ public class BookNode {
 		pageClearNode.addChild(pageClearBeforeNode);
 		pageClearBeforeNode.addChild(pageClearBeforeIndexNode);
 		pageClearNode.addChild(pageClearAfterNode);
-		pageClearBeforeNode.addChild(pageClearAfterIndexNode);
+		pageClearAfterNode.addChild(pageClearAfterIndexNode);
 	}
 }

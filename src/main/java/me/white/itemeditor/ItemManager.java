@@ -30,7 +30,7 @@ public class ItemManager {
 		if (mainhand == null || mainhand.isEmpty()) throw NO_ITEM_EXCEPTION;
 	}
 	
-	public static ItemStack getItemStack(FabricClientCommandSource context) throws CommandSyntaxException {
+	public static ItemStack getItemStack(FabricClientCommandSource context) {
 		ItemStack item = context.getPlayer().getInventory().getMainHandStack();
 		return item;
 	}

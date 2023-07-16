@@ -1,5 +1,9 @@
 package me.white.itemeditor.node;
 
+import java.util.Optional;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -24,12 +28,17 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
 public class AttributeNode {
 	public static final CommandSyntaxException ALREADY_HAS_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.alreadyexists")).create();
 	public static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
 	public static final CommandSyntaxException NO_SUCH_ATTRIBUTE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattribute")).create();
+	public static final CommandSyntaxException NO_SUCH_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattributes")).create();
+	private static final String OUTPUT_GET = "commands.edit.attribute.get";
 	private static final String OUTPUT_SET = "commands.edit.attribute.set";
 	private static final String OUTPUT_SET_PERCENT = "commands.edit.attribute.setpercent";
 	private static final String OUTPUT_SET_SLOT = "commands.edit.attribute.setslot";
@@ -37,7 +46,68 @@ public class AttributeNode {
 	private static final String OUTPUT_RESET = "commands.edit.attribute.reset";
 	private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
 	private static final String OUTPUT_CLEAR_SLOT = "commands.edit.attribute.clearslot";
+	private static final String OPERATION_BASE = "commands.edit.attribute.operationbase";
+	private static final String OPERATION_MULTIPLY = "commands.edit.attribute.operationmultiply";
+	private static final String OPERATION_TOTAL = "commands.edit.attribute.operationtotal";
 	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
+
+	private static void get(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
+		ItemStack item = ItemManager.getItemStack(context);
+		Multimap<EntityAttribute, EntityAttributeModifier> attributes;
+		if (slot != null) {
+			Multimap<EntityAttribute, EntityAttributeModifier> dirtyAttributes = item.getAttributeModifiers(slot);
+			if (attribute != null) {
+				String id = Registries.ATTRIBUTE.getId(attribute).toString();
+				attributes = HashMultimap.create();
+				dirtyAttributes.forEach((attr, mod) -> {
+					if (mod.getName().equals(id)) attributes.put(attr, mod);
+				});
+			} else {
+				attributes = dirtyAttributes;
+			}
+		} else {
+			String id = "";
+			if (attribute != null) id = Registries.ATTRIBUTE.getId(attribute).toString();
+			attributes = HashMultimap.create();
+            NbtList nbtList = item.getNbt().getList("AttributeModifiers", NbtElement.COMPOUND_TYPE);
+            for (int i = 0; i < nbtList.size(); ++i) {
+                NbtCompound nbtCompound = nbtList.getCompound(i);
+                EntityAttributeModifier entityAttributeModifier = EntityAttributeModifier.fromNbt(nbtCompound);
+                Optional<EntityAttribute> optional = Registries.ATTRIBUTE.getOrEmpty(Identifier.tryParse(nbtCompound.getString("AttributeName")));
+                if (
+					!optional.isPresent() ||
+					entityAttributeModifier == null ||
+					(attribute != null && !entityAttributeModifier.getName().equals(id)) ||
+					entityAttributeModifier.getId().getLeastSignificantBits() == 0L ||
+					entityAttributeModifier.getId().getMostSignificantBits() == 0L
+				) continue;
+                attributes.put(optional.get(), entityAttributeModifier);
+            }
+		}
+		if (attributes.isEmpty()) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
+		context.sendFeedback(Text.translatable(OUTPUT_GET));
+		attributes.forEach((attr, mod) -> {
+			context.sendFeedback(Text.empty()
+				.append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+				.append(switch (mod.getOperation()) {
+					case MULTIPLY_BASE -> OPERATION_MULTIPLY;
+					case MULTIPLY_TOTAL -> OPERATION_TOTAL;
+					default -> OPERATION_BASE;
+				})
+				.append(" ")
+				.append(Text.translatable(attr.getTranslationKey()))
+				.append(" ")
+				.append(mod.getValue() > 0 ? "+" : "")
+				.append(mod.getOperation() == EntityAttributeModifier.Operation.ADDITION
+					? Text.empty()
+						.append(String.valueOf(mod.getValue()))
+					: Text.empty()
+						.append(String.valueOf(mod.getValue() * 100))
+						.append("%")
+				)
+			);
+		});
+	}
 
 	private static ItemStack set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
 		if (attribute == null) {
@@ -74,6 +144,168 @@ public class AttributeNode {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 			.literal("attribute")
 			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, null);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getMainhandNode = ClientCommandManager
+			.literal("mainhand")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.MAINHAND);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getOffhandNode = ClientCommandManager
+			.literal("offhand")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.OFFHAND);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getHeadNode = ClientCommandManager
+			.literal("head")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.HEAD);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getChestNode = ClientCommandManager
+			.literal("chest")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.CHEST);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getLegsNode = ClientCommandManager
+			.literal("legs")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.LEGS);
+
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getFeetNode = ClientCommandManager
+			.literal("feet")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				get(context.getSource(), null, EquipmentSlot.FEET);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getMainhandAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.MAINHAND);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getOffhandAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.OFFHAND);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getHeadAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.HEAD);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getChestAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.CHEST);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getLegsAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.LEGS);
+
+				return 1;
+			})
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getFeetAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				get(context.getSource(), attribute, EquipmentSlot.FEET);
+
+				return 1;
+			})
+			.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
@@ -96,13 +328,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
 				return 1;
@@ -114,13 +345,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
 				return 1;
@@ -132,13 +362,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.MAINHAND.getName()));
 				return 1;
@@ -150,13 +379,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.OFFHAND.getName()));
 				return 1;
@@ -168,13 +396,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.HEAD.getName()));
 				return 1;
@@ -186,13 +413,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.CHEST.getName()));
 				return 1;
@@ -204,13 +430,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.LEGS.getName()));
 				return 1;
@@ -222,13 +447,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.FEET.getName()));
 				return 1;
@@ -240,13 +464,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
 				return 1;
@@ -258,13 +481,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
 				return 1;
@@ -276,13 +498,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
 				return 1;
@@ -294,13 +515,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
 				return 1;
@@ -312,13 +532,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
 				return 1;
@@ -330,13 +549,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
 				return 1;
@@ -348,13 +566,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
 				return 1;
@@ -366,13 +583,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
 				return 1;
@@ -384,13 +600,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
 				return 1;
@@ -402,13 +617,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
 				return 1;
@@ -420,13 +634,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
 				return 1;
@@ -438,13 +651,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
 				return 1;
@@ -456,13 +668,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
 				return 1;
@@ -474,13 +685,12 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				// execute
+
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
 				return 1;
@@ -492,12 +702,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
 				return 1;
@@ -509,12 +718,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
@@ -526,14 +734,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -543,14 +750,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -560,14 +766,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -577,14 +782,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -594,14 +798,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -611,14 +814,13 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -628,12 +830,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
@@ -645,12 +846,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
@@ -662,12 +862,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
@@ -679,12 +878,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
@@ -696,12 +894,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
@@ -713,12 +910,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
@@ -730,12 +926,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
@@ -747,12 +942,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, null);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
@@ -764,12 +958,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.MAINHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
@@ -781,12 +974,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.OFFHAND);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
@@ -798,12 +990,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.HEAD);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
@@ -815,12 +1006,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.CHEST);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
@@ -832,12 +1022,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.LEGS);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
@@ -849,12 +1038,11 @@ public class AttributeNode {
 			.executes(context -> {
 				ItemManager.checkCanEdit(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				// execute
+
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.FEET);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), result);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
@@ -867,13 +1055,12 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-				// execute
+
 				NbtCompound nbt = item.getNbt();
 				nbt.remove(ATTRIBUTE_MODIFIERS_KEY);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return 1;
@@ -886,11 +1073,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -899,7 +1085,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -912,11 +1098,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -925,7 +1110,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -938,11 +1123,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -951,7 +1135,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -964,11 +1148,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -977,7 +1160,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -990,11 +1173,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -1003,7 +1185,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -1016,11 +1198,10 @@ public class AttributeNode {
 				ItemManager.checkCanEdit(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				// arguments
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getNbt();
 				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-				// execute
+
 				NbtList newAttributes = new NbtList();
 				for (NbtElement nbtAttr : attributes) {
 					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
@@ -1029,7 +1210,7 @@ public class AttributeNode {
 				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
 				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
 				item.setNbt(nbt);
-				// end
+
 				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
@@ -1038,12 +1219,22 @@ public class AttributeNode {
 		
 		rootNode.addChild(node);
 
-		// ... attribute get [<attribute>] [<slot>]
-		// TODO
+		// ... attribute get [<slot>] [<attribute>]
+		node.addChild(getNode);
+		getNode.addChild(getMainhandNode);
+		getMainhandNode.addChild(getMainhandAttributeNode);
+		getNode.addChild(getOffhandNode);
+		getOffhandNode.addChild(getOffhandAttributeNode);
+		getNode.addChild(getHeadNode);
+		getHeadNode.addChild(getHeadAttributeNode);
+		getNode.addChild(getChestNode);
+		getChestNode.addChild(getChestAttributeNode);
+		getNode.addChild(getLegsNode);
+		getLegsNode.addChild(getLegsAttributeNode);
+		getNode.addChild(getFeetNode);
+		getFeetNode.addChild(getFeetAttributeNode);
 
-		// ... attribute set [<attribute> <amount>|infinity] [base|multiply|total] [mainhand|offhand|head|chest|legs|feet]
-		// ~~TO.DO~~: delete this hell and redo in a better way
-		// SEEMS LIKE THERES NO BETTER WAY :((((
+		// ... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]
 		node.addChild(setNode);
 		setNode.addChild(setAttributeNode);
 		setAttributeNode.addChild(setAttributeAmountNode);
