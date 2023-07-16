@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -19,7 +19,7 @@ public class DurabilityNode {
 	public static final CommandSyntaxException TOO_MUCH = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.toomuch")).create();
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        if (!EditCommand.getItemStack(context).isDamageable()) throw CANNOT_EDIT_EXCEPTION;
+        if (!ItemManager.getItemStack(context).isDamageable()) throw CANNOT_EDIT_EXCEPTION;
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -35,13 +35,13 @@ public class DurabilityNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 int old = item.getDamage();
                 item.setDamage(0);
-                EditCommand.setItemStack(context.getSource(), item);
+                ItemManager.setItemStack(context.getSource(), item);
                 return old;
             })
             .build();
@@ -49,10 +49,10 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager
             .argument("durability", IntegerArgumentType.integer())
             .executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 int damage = IntegerArgumentType.getInteger(context, "durability");
                 if (damage > item.getMaxDamage()) throw TOO_MUCH;
                 if (damage < -item.getMaxDamage()) throw TOO_MUCH;
@@ -62,7 +62,7 @@ public class DurabilityNode {
                 } else {
                     item.setDamage(item.getMaxDamage() - damage);
                 }
-                EditCommand.setItemStack(context.getSource(), item);
+                ItemManager.setItemStack(context.getSource(), item);
                 return old;
             })
             .build();
@@ -74,14 +74,14 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
             .argument("durability", DoubleArgumentType.doubleArg(0, 100))
             .executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 double damage = DoubleArgumentType.getDouble(context, "durability");
                 int old = (int)((double)item.getDamage() / item.getMaxDamage() * 100);
                 item.setDamage((int)(item.getMaxDamage() * (1 - damage / 100)));
-                EditCommand.setItemStack(context.getSource(), item);
+                ItemManager.setItemStack(context.getSource(), item);
                 return old;
             })
             .build();

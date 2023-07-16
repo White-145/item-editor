@@ -1,10 +1,10 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -20,7 +20,7 @@ public class UnbreakableNode {
 	private static final String UNBREAKABLE_KEY = "Unbreakable";
 
 	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context);
+		ItemStack item = ItemManager.getItemStack(context);
 		if (item.getMaxDamage() == 0) throw CANNOT_EDIT_EXCEPTION;
 	}
 
@@ -32,9 +32,9 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				boolean isUnbreakable = false;
 				if (item.hasNbt()) isUnbreakable = item.getNbt().getBoolean(UNBREAKABLE_KEY);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, isUnbreakable));
@@ -45,15 +45,15 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
 			.literal("toggle")
 			.executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
 				checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getOrCreateNbt();
 				boolean unbreakable = nbt.getBoolean(UNBREAKABLE_KEY);
 				nbt.putBoolean(UNBREAKABLE_KEY, !unbreakable);
 				item.setNbt(nbt);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
 				return 1;
 			})

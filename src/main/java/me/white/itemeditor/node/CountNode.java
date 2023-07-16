@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -26,9 +26,9 @@ public class CountNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, item.getCount()));
 				return item.getCount();
 			})
@@ -37,12 +37,12 @@ public class CountNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int oldCount = item.getCount();
 				item.setCount(1);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
 				return oldCount;
 			})
@@ -51,13 +51,13 @@ public class CountNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int count = IntegerArgumentType.getInteger(context, "count");
 				int oldCount = item.getCount();
 				item.setCount(count);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, count));
 				return oldCount;
 			})
@@ -66,12 +66,12 @@ public class CountNode {
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
 			.literal("add")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				if (item.getCount() + 1 > 127 || item.getCount() + 1 < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() + 1);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
@@ -80,13 +80,13 @@ public class CountNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> addCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int count = IntegerArgumentType.getInteger(context, "count");
 				if (item.getCount() + count > 127 || item.getCount() + count < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() + count);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
@@ -95,12 +95,12 @@ public class CountNode {
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
 			.literal("remove")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				if (item.getCount() - 1 > 127 || item.getCount() - 1 < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() - 1);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
@@ -109,13 +109,13 @@ public class CountNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(-126, 126))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int count = IntegerArgumentType.getInteger(context, "count");
 				if (item.getCount() - count > 127 || item.getCount() - count < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() - count);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
@@ -124,11 +124,11 @@ public class CountNode {
 		LiteralCommandNode<FabricClientCommandSource> stackNode = ClientCommandManager
 			.literal("stack")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCount(item.getMaxCount());
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getMaxCount()));
 				return item.getMaxCount();
 			})

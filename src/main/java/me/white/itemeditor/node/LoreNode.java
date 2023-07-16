@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -8,8 +8,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.Colored;
+import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -45,9 +45,9 @@ public class LoreNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
 				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
@@ -65,9 +65,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
@@ -86,9 +86,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 63))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
@@ -101,7 +101,7 @@ public class LoreNode {
 				}
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, ""));
 				return 1;
 			})
@@ -110,9 +110,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> setLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				Text line = Colored.of(StringArgumentType.getString(context, "line"));
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
@@ -127,7 +127,7 @@ public class LoreNode {
 				}
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, i, line));
 				return 1;
 			})
@@ -140,9 +140,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
 				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
@@ -152,7 +152,7 @@ public class LoreNode {
 				lore.remove(i);
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, i));
 				return 1;
 			})
@@ -161,16 +161,16 @@ public class LoreNode {
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
 			.literal("add")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
 				if (lore == null) lore = new NbtList();
 				lore.add(Colored.EMPTY_LINE);
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, ""));
 				return lore.size();
 			})
@@ -179,9 +179,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> addLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				Text textLine = Colored.of(StringArgumentType.getString(context, "line"));
 				NbtString line = NbtString.of(Text.Serializer.toJson(textLine));
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
@@ -190,7 +190,7 @@ public class LoreNode {
 				lore.add(line);
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_ADD, textLine));
 				return lore.size();
 			})
@@ -203,9 +203,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 63))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
@@ -218,7 +218,7 @@ public class LoreNode {
 				}
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, "", i));
 				return 1;
 			})
@@ -227,9 +227,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> insertLineNode = ClientCommandManager
 			.argument("line", StringArgumentType.greedyString())
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				Text textLine = Colored.of(StringArgumentType.getString(context, "line"));
 				NbtString line = NbtString.of(Text.Serializer.toJson(textLine));
@@ -245,7 +245,7 @@ public class LoreNode {
 				}
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_INSERT, textLine, i));
 				return 1;
 			})
@@ -254,9 +254,9 @@ public class LoreNode {
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
 				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
 				NbtList lore = display.getList(LORE_KEY, NbtElement.STRING_TYPE);
@@ -264,7 +264,7 @@ public class LoreNode {
 				lore.clear();
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
 				return 1;
 			})
@@ -277,9 +277,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
 				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
@@ -288,7 +288,7 @@ public class LoreNode {
 				for (int j = 0; j < i; ++j) lore.remove(0);
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, i));
 				return 1;
 			})
@@ -301,9 +301,9 @@ public class LoreNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				NbtCompound display = item.getSubNbt(DISPLAY_KEY);
 				if (display == null || !display.contains(LORE_KEY, NbtElement.LIST_TYPE)) throw NO_LORE_EXCEPTION;
@@ -314,7 +314,7 @@ public class LoreNode {
 				for (int j = 0; j < off; ++j) lore.remove(lore.size() - 1);
 				display.put(LORE_KEY, lore);
 				item.setSubNbt(DISPLAY_KEY, display);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, i));
 				return 1;
 			})

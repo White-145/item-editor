@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +12,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -86,10 +86,10 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                EditCommand.checkHasItem(context.getSource());
+                ItemManager.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource());
+                ItemStack item = ItemManager.getItemStack(context.getSource());
                 String colorKey = COLOR_KEY;
                 if (item.getItem() == Items.FILLED_MAP) {
                     colorKey = MAP_COLOR_KEY;
@@ -110,10 +110,10 @@ public class ColorNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
             .argument(COLOR_KEY, HexColorArgumentType.hexColor())
             .executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 String colorKey = COLOR_KEY;
                 if (item.getItem() == Items.FILLED_MAP) {
                     colorKey = MAP_COLOR_KEY;
@@ -121,7 +121,7 @@ public class ColorNode {
                 int color = HexColorArgumentType.getHexColor(context, "color");
                 NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                 display.putInt(colorKey, color);
-                EditCommand.setItemStack(context.getSource(), item);
+                ItemManager.setItemStack(context.getSource(), item);
                 context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Integer.toHexString(color)));
                 return 1;
             })
@@ -131,17 +131,17 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
             .literal("reset")
             .executes(context -> {
-                EditCommand.checkCanEdit(context.getSource());
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 NbtCompound display = item.getSubNbt(DISPLAY_KEY);
                 if (display == null) throw NO_COLOR_EXCEPTION;
                 if (!display.contains(COLOR_KEY) || !display.contains(MAP_COLOR_KEY)) throw NO_COLOR_EXCEPTION;
                 display.remove(COLOR_KEY);
                 display.remove(MAP_COLOR_KEY);
                 item.setSubNbt(DISPLAY_KEY, display);
-                EditCommand.setItemStack(context.getSource(), item);
+                ItemManager.setItemStack(context.getSource(), item);
                 context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
                 return 1;
             })

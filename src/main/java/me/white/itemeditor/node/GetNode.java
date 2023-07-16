@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -20,7 +20,7 @@ public class GetNode {
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
 	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = EditCommand.getItemStack(context);
+		ItemStack item = ItemManager.getItemStack(context);
 		if (!(item == null || item.isEmpty())) throw HAND_NOT_EMPTY_EXCEPTION;
 	}
 
@@ -36,7 +36,7 @@ public class GetNode {
 
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				ItemStack item = itemArgument.createStack(1, false);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, 1, item.getName()));
 				return 1;
 			})
@@ -47,11 +47,11 @@ public class GetNode {
 			.executes(context -> {
 				checkCanEdit(context.getSource());
 				
-				if (!EditCommand.getItemStack(context.getSource()).isEmpty()) throw HAND_NOT_EMPTY_EXCEPTION;
+				if (!ItemManager.getItemStack(context.getSource()).isEmpty()) throw HAND_NOT_EMPTY_EXCEPTION;
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				int count = IntegerArgumentType.getInteger(context, "count");
 				ItemStack item = itemArgument.createStack(count, false);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, count, item.getName()));
 				return 1;
 			})

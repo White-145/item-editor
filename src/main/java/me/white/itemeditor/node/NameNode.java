@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -6,8 +6,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
-import me.white.itemeditor.Colored;
+import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.Colored;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -30,11 +30,11 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCustomName(Text.empty());
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
 				return 1;
 			})
@@ -43,12 +43,12 @@ public class NameNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
 			.argument("name", StringArgumentType.greedyString())
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				Text name = Colored.of(StringArgumentType.getString(context, "name"));
 				item.setCustomName(name);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, name));
 				return 1;
 			})
@@ -57,9 +57,9 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				NbtCompound display = item.getSubNbt("display");
 				if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) throw NO_NAME_EXCEPTION;
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
@@ -70,11 +70,11 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 				
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCustomName(null);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
 				return 1;
 			})

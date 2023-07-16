@@ -1,4 +1,4 @@
-package me.white.itemeditor;
+package me.white.itemeditor.util;
 
 public class StringReader {
     final private String STR;

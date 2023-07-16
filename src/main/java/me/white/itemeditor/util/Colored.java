@@ -1,4 +1,4 @@
-package me.white.itemeditor;
+package me.white.itemeditor.util;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -41,9 +41,9 @@ public class MaterialNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 
-				Item type = EditCommand.getItemStack(context.getSource()).getItem();
+				Item type = ItemManager.getItemStack(context.getSource()).getItem();
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
 				return 1;
 			})
@@ -56,14 +56,14 @@ public class MaterialNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				Item type = getItemArgument(context, "material");
 				if (item.getItem() == type) throw ALREADY_IS_EXCEPTION;
 				ItemStack newItem = new ItemStack(type, item.getCount());
 				newItem.setNbt(item.getNbt());
-				EditCommand.setItemStack(context.getSource(), newItem);
+				ItemManager.setItemStack(context.getSource(), newItem);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, type.getName()));
 				return 1;
 			})

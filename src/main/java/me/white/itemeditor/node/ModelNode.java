@@ -1,4 +1,4 @@
-package me.white.itemeditor.editnodes;
+package me.white.itemeditor.node;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.EditCommand;
+import me.white.itemeditor.ItemManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -30,9 +30,9 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				EditCommand.checkHasItem(context.getSource());
+				ItemManager.checkHasItem(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource());
+				ItemStack item = ItemManager.getItemStack(context.getSource());
 				NbtCompound nbt = item.getNbt();
 				if (nbt == null || !nbt.contains("CustomModelData")) throw NO_MODEL_EXCEPTION;
 				int model = nbt.getInt("CustomModelData");
@@ -48,9 +48,9 @@ public class ModelNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
 			.argument("model", IntegerArgumentType.integer(0, 65535))
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				int value = IntegerArgumentType.getInteger(context, "model");
 				NbtCompound nbt = item.getOrCreateNbt();
 				int result = value;
@@ -61,7 +61,7 @@ public class ModelNode {
 					nbt.put("CustomModelData", NbtInt.of(value));
 				}
 				item.setNbt(nbt);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(value == 0 ? Text.translatable(OUTPUT_RESET) : Text.translatable(OUTPUT_SET, value));
 				return result;
 			})
@@ -70,15 +70,15 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
-				EditCommand.checkCanEdit(context.getSource());
+				ItemManager.checkCanEdit(context.getSource());
 
-				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getOrCreateNbt();
 				if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;
 				int result = nbt.getInt("CustomModelData");
 				nbt.remove("CustomModelData");
 				item.setNbt(nbt);
-				EditCommand.setItemStack(context.getSource(), item);
+				ItemManager.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
 				return result;
 			})
