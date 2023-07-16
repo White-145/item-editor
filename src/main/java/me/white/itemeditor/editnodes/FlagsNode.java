@@ -194,7 +194,7 @@ public class FlagsNode {
             .build();
 
         LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
-            .literal("tpggle")
+            .literal("toggle")
             .build();
         
         LiteralCommandNode<FabricClientCommandSource> toggleEnchantmentsNode = ClientCommandManager

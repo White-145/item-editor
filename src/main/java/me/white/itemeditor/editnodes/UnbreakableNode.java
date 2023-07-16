@@ -21,7 +21,7 @@ public class UnbreakableNode {
 
 	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
 		ItemStack item = EditCommand.getItemStack(context);
-		if (!item.isDamageable()) throw CANNOT_EDIT_EXCEPTION;
+		if (item.getMaxDamage() == 0) throw CANNOT_EDIT_EXCEPTION;
 	}
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
