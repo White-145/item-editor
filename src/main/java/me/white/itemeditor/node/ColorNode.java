@@ -98,7 +98,7 @@ public class ColorNode {
                 if (display == null) throw NO_COLOR_EXCEPTION;
                 if (!display.contains(colorKey)) throw NO_COLOR_EXCEPTION;
                 int color = display.getInt(colorKey);
-                context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, Integer.toHexString(color)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Integer.toHexString(color)));
                 return color;
             })
             .build();
@@ -122,7 +122,7 @@ public class ColorNode {
                 NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                 display.putInt(colorKey, color);
                 ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Integer.toHexString(color)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Integer.toHexString(color)));
                 return 1;
             })
             .build();
@@ -142,7 +142,7 @@ public class ColorNode {
                 display.remove(MAP_COLOR_KEY);
                 item.setSubNbt(DISPLAY_KEY, display);
                 ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 return 1;
             })
             .build();

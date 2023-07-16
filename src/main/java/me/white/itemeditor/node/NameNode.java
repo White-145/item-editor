@@ -35,7 +35,7 @@ public class NameNode {
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCustomName(Text.empty());
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, ""));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, ""));
 				return 1;
 			})
 			.build();
@@ -75,7 +75,7 @@ public class NameNode {
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCustomName(null);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
 				return 1;
 			})
 			.build();

@@ -63,6 +63,11 @@ Features:
 - - `... get`
 - - `... set [<durability>]`
 - - `... percent <durability>`
+- `... data ...`
+- - `... get <path>`
+- - `... set <path> <value>`
+- - `... merge <path> <value>`
 
+Also available as `/itemeditor:edit`
 
 (literally only 1 command)

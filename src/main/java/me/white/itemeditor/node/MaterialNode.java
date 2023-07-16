@@ -44,7 +44,7 @@ public class MaterialNode {
 				ItemManager.checkHasItem(context.getSource());
 
 				Item type = ItemManager.getItemStack(context.getSource()).getItem();
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, type.getName()));
 				return 1;
 			})
 			.build();

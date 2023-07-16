@@ -79,7 +79,7 @@ public class ModelNode {
 				nbt.remove("CustomModelData");
 				item.setNbt(nbt);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
 				return result;
 			})
 			.build();

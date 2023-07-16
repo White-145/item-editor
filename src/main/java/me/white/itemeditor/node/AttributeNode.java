@@ -82,7 +82,7 @@ public class AttributeNode {
 
 				ItemStack result = set(ItemManager.getItemStack(context.getSource()).copy(), null, 0, null, null);
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_RESET));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
 				return 1;
 			})
 			.build();
@@ -104,7 +104,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
 				return 1;
 			})
 			.build();
@@ -122,7 +122,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
 				return 1;
 			})
 			.build();
@@ -140,7 +140,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -158,7 +158,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -176,7 +176,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -194,7 +194,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -212,7 +212,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -230,7 +230,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_SLOT, Text.translatable(attribute.getTranslationKey()), amount, EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -248,7 +248,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
 				return 1;
 			})
 			.build();
@@ -266,7 +266,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -284,7 +284,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -302,7 +302,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -320,7 +320,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -338,7 +338,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -356,7 +356,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -374,7 +374,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), amount * 100));
 				return 1;
 			})
 			.build();
@@ -392,7 +392,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -410,7 +410,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -428,7 +428,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -446,7 +446,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -464,7 +464,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -482,7 +482,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), amount * 100, EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -499,7 +499,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
 				return 1;
 			})
 			.build();
@@ -516,7 +516,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity"));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
 			})
 			.build();
@@ -533,7 +533,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -550,7 +550,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -567,7 +567,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -584,7 +584,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -601,7 +601,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -618,7 +618,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -635,7 +635,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
 			})
 			.build();
@@ -652,7 +652,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -669,7 +669,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -686,7 +686,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -703,7 +703,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -720,7 +720,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -737,7 +737,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_BASE, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -754,7 +754,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, null);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT, Text.translatable(attribute.getTranslationKey()), "Infinity"));
 				return 1;
 			})
 			.build();
@@ -771,7 +771,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.MAINHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.MAINHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -788,7 +788,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.OFFHAND);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.OFFHAND.getName()));
 				return 1;
 			})
 			.build();
@@ -805,7 +805,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.HEAD);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.HEAD.getName()));
 				return 1;
 			})
 			.build();
@@ -822,7 +822,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.CHEST);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.CHEST.getName()));
 				return 1;
 			})
 			.build();
@@ -839,7 +839,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.LEGS);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.LEGS.getName()));
 				return 1;
 			})
 			.build();
@@ -856,7 +856,7 @@ public class AttributeNode {
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.MULTIPLY_TOTAL, EquipmentSlot.FEET);
 				// end
 				ItemManager.setItemStack(context.getSource(), result);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET_PERCENT_SLOT, Text.translatable(attribute.getTranslationKey()), "Infinity", EquipmentSlot.FEET.getName()));
 				return 1;
 			})
 			.build();
@@ -875,7 +875,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return 1;
 			})
 			.build();
@@ -901,7 +901,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();
@@ -927,7 +927,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();
@@ -953,7 +953,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();
@@ -979,7 +979,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();
@@ -1005,7 +1005,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();
@@ -1031,7 +1031,7 @@ public class AttributeNode {
 				item.setNbt(nbt);
 				// end
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR_SLOT));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
 				return 1;
 			})
 			.build();

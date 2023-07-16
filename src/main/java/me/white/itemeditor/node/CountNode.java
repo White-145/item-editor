@@ -29,7 +29,7 @@ public class CountNode {
 				ItemManager.checkHasItem(context.getSource());
 
 				ItemStack item = ItemManager.getItemStack(context.getSource());
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, item.getCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, item.getCount()));
 				return item.getCount();
 			})
 			.build();
@@ -43,7 +43,7 @@ public class CountNode {
 				int oldCount = item.getCount();
 				item.setCount(1);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, 1));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, 1));
 				return oldCount;
 			})
 			.build();
@@ -58,7 +58,7 @@ public class CountNode {
 				int oldCount = item.getCount();
 				item.setCount(count);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, count));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
 				return oldCount;
 			})
 			.build();
@@ -72,7 +72,7 @@ public class CountNode {
 				if (item.getCount() + 1 > 127 || item.getCount() + 1 < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() + 1);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
 			.build();
@@ -87,7 +87,7 @@ public class CountNode {
 				if (item.getCount() + count > 127 || item.getCount() + count < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() + count);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
 			.build();
@@ -101,7 +101,7 @@ public class CountNode {
 				if (item.getCount() - 1 > 127 || item.getCount() - 1 < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() - 1);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
 			.build();
@@ -116,7 +116,7 @@ public class CountNode {
 				if (item.getCount() - count > 127 || item.getCount() - count < 0) throw OVERFLOW_EXCEPTION;
 				item.setCount(item.getCount() - count);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getCount()));
 				return item.getCount();
 			})
 			.build();
@@ -129,7 +129,7 @@ public class CountNode {
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.setCount(item.getMaxCount());
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, item.getMaxCount()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getMaxCount()));
 				return item.getMaxCount();
 			})
 			.build();

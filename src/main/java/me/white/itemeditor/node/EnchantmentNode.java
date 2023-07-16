@@ -92,7 +92,7 @@ public class EnchantmentNode {
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
 				if (!enchantments.containsKey(enchantment)) throw DOESNT_EXIST_EXCEPTION;
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET_ENCHANTMENT, Text.translatable(enchantment.getTranslationKey()), enchantments.get(enchantment)));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, Text.translatable(enchantment.getTranslationKey()), enchantments.get(enchantment)));
 				return 1;
 			})
 			.build();
@@ -123,7 +123,7 @@ public class EnchantmentNode {
 				enchantments.add(EnchantmentHelper.createNbt(id, 1));
 				item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, enchantment.getTranslationKey(), 1));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getTranslationKey(), 1));
 				return oldLvl;
 			})
 			.build();
@@ -151,7 +151,7 @@ public class EnchantmentNode {
 				enchantments.add(EnchantmentHelper.createNbt(id, level));
 				item.setSubNbt(ENCHANTMENTS_KEY, enchantments);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_SET, Text.translatable(enchantment.getTranslationKey()), level));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(enchantment.getTranslationKey()), level));
 				return oldLvl;
 			})
 			.build();
@@ -187,7 +187,7 @@ public class EnchantmentNode {
 					throw DOESNT_EXIST_EXCEPTION;
 				}
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
 				return lvl;
 			})
 			.build();
@@ -201,7 +201,7 @@ public class EnchantmentNode {
 				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
 				item.removeSubNbt(ENCHANTMENTS_KEY);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return 1;
 			})
 			.build();

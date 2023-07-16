@@ -37,7 +37,7 @@ public class GetNode {
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				ItemStack item = itemArgument.createStack(1, false);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, 1, item.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, item.getName()));
 				return 1;
 			})
 			.build();
@@ -52,7 +52,7 @@ public class GetNode {
 				int count = IntegerArgumentType.getInteger(context, "count");
 				ItemStack item = itemArgument.createStack(count, false);
 				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, count, item.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, item.getName()));
 				return 1;
 			})
 			.build();
