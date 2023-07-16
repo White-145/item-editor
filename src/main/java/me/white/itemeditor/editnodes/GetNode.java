@@ -16,8 +16,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class GetNode {
-	private static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.get.handnotempty")).create();
+	private static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.handnotempty")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
+
+	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack item = EditCommand.getItemStack(context);
+		if (!(item == null || item.isEmpty())) throw HAND_NOT_EMPTY_EXCEPTION;
+	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -27,7 +32,8 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
 			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
 			.executes(context -> {
-				if (!EditCommand.getItemStack(context.getSource()).isEmpty()) throw HAND_NOT_EMPTY_EXCEPTION;
+				checkCanEdit(context.getSource());
+
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				ItemStack item = itemArgument.createStack(1, false);
 				EditCommand.setItemStack(context.getSource(), item);
@@ -39,6 +45,8 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 64))
 			.executes(context -> {
+				checkCanEdit(context.getSource());
+				
 				if (!EditCommand.getItemStack(context.getSource()).isEmpty()) throw HAND_NOT_EMPTY_EXCEPTION;
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				int count = IntegerArgumentType.getInteger(context, "count");

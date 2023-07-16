@@ -29,10 +29,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class EnchantmentNode {
-	private static final CommandSyntaxException EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.enchantment.alreadyexists")).create();
-	private static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.enchantment.doesntexist")).create();
-	private static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.enchantment.noenchantments")).create();
-	private static final CommandSyntaxException HAS_GLINT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.enchantment.hasglint")).create();
+	private static final CommandSyntaxException EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
+	private static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
+	private static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
+	private static final CommandSyntaxException HAS_GLINT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.hasglint")).create();
 	private static final String OUTPUT_GET = "commands.edit.enchantment.get";
 	private static final String OUTPUT_GET_ENCHANTMENT = "commands.edit.enchantment.getenchantment";
 	private static final String OUTPUT_SET = "commands.edit.enchantment.set";
@@ -40,7 +40,6 @@ public class EnchantmentNode {
 	private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
 	private static final String OUTPUT_GLINT_ENABLE = "commands.edit.enchantment.glintenable";
 	private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
-
 	private static final String ENCHANTMENTS_KEY = "Enchantments";
 	private static final String ID_KEY = "id";
 	private static final String LVL_KEY = "lvl";
@@ -54,6 +53,12 @@ public class EnchantmentNode {
 		return (Enchantment)reference.value();
 	}
 
+	private static void checkHasEnchantments(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack item = EditCommand.getItemStack(context);
+		if (!item.hasEnchantments()) throw NO_ENCHANTMENTS_EXCEPTION;
+		if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) throw NO_ENCHANTMENTS_EXCEPTION;
+	}
+
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 			.literal("enchantment")
@@ -62,13 +67,10 @@ public class EnchantmentNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
+                EditCommand.checkHasItem(context.getSource());
+				checkHasEnchantments(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource());
-				if (!item.hasEnchantments()) {
-					throw NO_ENCHANTMENTS_EXCEPTION;
-				}
-				if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
-					throw NO_ENCHANTMENTS_EXCEPTION;
-				}
 				ClientPlayerEntity player = context.getSource().getPlayer();
 				player.sendMessage(Text.translatable(OUTPUT_GET));
 				Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
@@ -83,18 +85,13 @@ public class EnchantmentNode {
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> getEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
 			.executes(context -> {
+                EditCommand.checkHasItem(context.getSource());
+				checkHasEnchantments(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource());
-				if (!item.hasEnchantments()) {
-					throw NO_ENCHANTMENTS_EXCEPTION;
-				}
-				if (item.getEnchantments().size() == 1 && ((NbtCompound)item.getEnchantments().get(0)).isEmpty()) {
-					throw NO_ENCHANTMENTS_EXCEPTION;
-				}
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				Map<Enchantment, Integer> enchantments = EnchantmentHelper.fromNbt(item.getEnchantments());
-				if (!enchantments.containsKey(enchantment)) {
-					throw DOESNT_EXIST_EXCEPTION;
-				}
+				if (!enchantments.containsKey(enchantment)) throw DOESNT_EXIST_EXCEPTION;
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET_ENCHANTMENT, Text.translatable(enchantment.getTranslationKey()), enchantments.get(enchantment)));
 				return 1;
 			})
@@ -107,6 +104,8 @@ public class EnchantmentNode {
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> setEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				NbtList enchantments = item.getEnchantments();
@@ -132,6 +131,8 @@ public class EnchantmentNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setEnchantmentLevelNode = ClientCommandManager
 			.argument("level", IntegerArgumentType.integer(0, 255))
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				int level = IntegerArgumentType.getInteger(context, "level");
@@ -162,6 +163,9 @@ public class EnchantmentNode {
 		ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Enchantment>> removeEnchantmentNode = ClientCommandManager
 			.argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+				checkHasEnchantments(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Enchantment enchantment = getEnchantmentArgument(context, "enchantment");
 				
@@ -191,8 +195,10 @@ public class EnchantmentNode {
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+				checkHasEnchantments(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
-				if (!item.hasEnchantments()) throw NO_ENCHANTMENTS_EXCEPTION;
 				item.removeSubNbt(ENCHANTMENTS_KEY);
 				EditCommand.setItemStack(context.getSource(), item);
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_CLEAR));
@@ -203,6 +209,8 @@ public class EnchantmentNode {
 		LiteralCommandNode<FabricClientCommandSource> glintNode = ClientCommandManager
 			.literal("glint")
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				if (item.hasEnchantments()) {
 					NbtList enchantments = item.getEnchantments();

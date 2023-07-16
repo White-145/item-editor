@@ -25,10 +25,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class WhitelistNode {
-	public static final CommandSyntaxException NO_WHITELIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.whitelist.nowhitelist")).create();
-	public static final CommandSyntaxException ENTRY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.whitelist.entryexists")).create();
-	public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.whitelist.doesntexist")).create();
-	public static final CommandSyntaxException NO_SUCH_WHITELIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.whitelist.nosuchwhitelist")).create();
+	public static final CommandSyntaxException NO_WHITELIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.nowhitelist")).create();
+	public static final CommandSyntaxException ENTRY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.entryexists")).create();
+	public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.doesntexist")).create();
+	public static final CommandSyntaxException NO_SUCH_WHITELIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.nosuchwhitelist")).create();
     private static final String OUTPUT_GET_PLACE = "commands.edit.whitelist.getplace";
     private static final String OUTPUT_GET_DESTROY = "commands.edit.whitelist.getdestroy";
     private static final String OUTPUT_CLEAR = "commands.edit.whitelist.clear";
@@ -137,6 +137,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -165,6 +167,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addPlaceBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -189,6 +193,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addDestroyBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -213,6 +219,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removeBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -244,6 +252,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removePlaceBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -268,6 +278,8 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removeDestroyBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 Block block = getBlockArgument(context, "block");
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
@@ -288,6 +300,8 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
@@ -306,6 +320,8 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearPlaceNode = ClientCommandManager
             .literal("place")
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
@@ -322,6 +338,8 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearDestroyNode = ClientCommandManager
             .literal("destroy")
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
                 NbtCompound nbt = item.getNbt();

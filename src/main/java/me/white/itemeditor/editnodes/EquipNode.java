@@ -18,6 +18,8 @@ public class EquipNode {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("equip")
 			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource());
 				PlayerInventory inventory = context.getSource().getPlayer().getInventory();
 				ItemStack headItem = inventory.getArmorStack(3);

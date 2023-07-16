@@ -17,7 +17,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class NameNode {
-	private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.noname")).create();
+	private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
 	private static final String OUTPUT_GET = "commands.edit.name.get";
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
@@ -30,6 +30,8 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				item.setCustomName(Text.empty());
 				EditCommand.setItemStack(context.getSource(), item);
@@ -41,6 +43,8 @@ public class NameNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
 			.argument("name", StringArgumentType.greedyString())
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+				
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Text name = Colored.of(StringArgumentType.getString(context, "name"));
 				item.setCustomName(name);
@@ -53,11 +57,11 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
+				EditCommand.checkHasItem(context.getSource());
+				
 				ItemStack item = EditCommand.getItemStack(context.getSource());
 				NbtCompound display = item.getSubNbt("display");
-				if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) {
-					throw NO_NAME_EXCEPTION;
-				}
+				if (display == null || !display.contains("Name", NbtElement.STRING_TYPE)) throw NO_NAME_EXCEPTION;
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Text.Serializer.fromJson(display.getString("Name").toString())));
 				return 1;
 			})
@@ -66,6 +70,8 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+				
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				item.setCustomName(null);
 				EditCommand.setItemStack(context.getSource(), item);

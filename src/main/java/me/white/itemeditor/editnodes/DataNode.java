@@ -20,10 +20,10 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
 
 public class DataNode {
-	public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.data.nonbt")).create();
-	public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.data.nosuchnbt")).create();
-	public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.data.setalreadyhas")).create();
-	public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.data.mergealreadyhas")).create();
+	public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
+	public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
+	public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
+	public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
     private static final String OUTPUT_GET_PATH = "commands.edit.data.getpath";
     
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -34,6 +34,8 @@ public class DataNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
+                EditCommand.checkHasItem(context.getSource());
+                
                 ItemStack item = EditCommand.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
                 context.getSource().sendFeedback(Text.empty().append(Text.translatable(OUTPUT_GET_PATH)).append(NbtHelper.toPrettyPrintedText(item.getNbt())));
@@ -44,6 +46,8 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> getPathNode = ClientCommandManager
             .argument("path", NbtPathArgumentType.nbtPath())
             .executes(context -> {
+                EditCommand.checkHasItem(context.getSource());
+                
                 ItemStack item = EditCommand.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
                 NbtPath path = context.getArgument("path", NbtPath.class);
@@ -64,6 +68,8 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> setPathValueNode = ClientCommandManager
             .argument("value", NbtElementArgumentType.nbtElement())
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+                
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -88,6 +94,8 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtCompound> mergeValueNode = ClientCommandManager
             .argument("value", NbtCompoundArgumentType.nbtCompound())
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+                
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtCompound compound = NbtCompoundArgumentType.getNbtCompound(context, "value");
                 NbtCompound nbt = item.getNbt();
@@ -107,6 +115,8 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> removePathNode = ClientCommandManager
             .argument("path", NbtPathArgumentType.nbtPath())
             .executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+                
                 ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtCompound nbt = item.getNbt();

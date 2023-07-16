@@ -20,7 +20,7 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
 public class MaterialNode {
-	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.material.alreadyis")).create();
+	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.material.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.material.get";
 	private static final String OUTPUT_SET = "commands.edit.material.set";
 
@@ -41,6 +41,8 @@ public class MaterialNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
+				EditCommand.checkHasItem(context.getSource());
+
 				Item type = EditCommand.getItemStack(context.getSource()).getItem();
 				context.getSource().getPlayer().sendMessage(Text.translatable(OUTPUT_GET, type.getName()));
 				return 1;
@@ -54,6 +56,8 @@ public class MaterialNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				Item type = getItemArgument(context, "material");
 				if (item.getItem() == type) throw ALREADY_IS_EXCEPTION;

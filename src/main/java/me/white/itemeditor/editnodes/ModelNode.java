@@ -17,7 +17,7 @@ import net.minecraft.nbt.NbtInt;
 import net.minecraft.text.Text;
 
 public class ModelNode {
-	private static final CommandSyntaxException NO_MODEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.model.nomodel")).create();
+	private static final CommandSyntaxException NO_MODEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.model.error.nomodel")).create();
 	private static final String OUTPUT_GET = "commands.edit.model.get";
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
@@ -30,6 +30,8 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
+				EditCommand.checkHasItem(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource());
 				NbtCompound nbt = item.getNbt();
 				if (nbt == null || !nbt.contains("CustomModelData")) throw NO_MODEL_EXCEPTION;
@@ -46,6 +48,8 @@ public class ModelNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
 			.argument("model", IntegerArgumentType.integer(0, 65535))
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				int value = IntegerArgumentType.getInteger(context, "model");
 				NbtCompound nbt = item.getOrCreateNbt();
@@ -66,11 +70,11 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
+				EditCommand.checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getOrCreateNbt();
-				if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) {
-					throw NO_MODEL_EXCEPTION;
-				}
+				if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;
 				int result = nbt.getInt("CustomModelData");
 				nbt.remove("CustomModelData");
 				item.setNbt(nbt);

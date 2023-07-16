@@ -71,6 +71,21 @@ public class EditCommand {
 		
 		dispatcher.getRoot().addChild(editNode);
 	}
+
+	public static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
+		checkHasCreative(context);
+		checkHasItem(context);
+	}
+
+	public static void checkHasCreative(FabricClientCommandSource context) throws CommandSyntaxException {
+		MinecraftClient client = context.getClient();
+		if (!client.interactionManager.getCurrentGameMode().isCreative()) throw NOT_CREATIVE_EXCEPTION;
+	}
+
+	public static void checkHasItem(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack mainhand = getItemStack(context);
+		if (mainhand == null || mainhand.isEmpty()) throw NO_ITEM_EXCEPTION;
+	}
 	
 	public static ItemStack getItemStack(FabricClientCommandSource context) throws CommandSyntaxException {
 		ItemStack item = context.getPlayer().getInventory().getMainHandStack();

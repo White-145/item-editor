@@ -1,5 +1,7 @@
 package me.white.itemeditor.editnodes;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.EditCommand;
@@ -11,25 +13,56 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 
 public class UnbreakableNode {
-	private static final String OUTPUT_UNBREABKABLE_ENABLE = "commands.edit.unbreakable.enable";
-	private static final String OUTPUT_UNBREABKABLE_DISABLE = "commands.edit.unbreakable.disable";
+	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.cannotedit")).create();
+	private static final String OUTPUT_GET = "commands.edit.unbreakable.get";
+	private static final String OUTPUT_ENABLE = "commands.edit.unbreakable.enable";
+	private static final String OUTPUT_DISABLE = "commands.edit.unbreakable.disable";
 	private static final String UNBREAKABLE_KEY = "Unbreakable";
+
+	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack item = EditCommand.getItemStack(context);
+		if (!item.isDamageable()) throw CANNOT_EDIT_EXCEPTION;
+	}
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("unbreakable")
+            .build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
+			.literal("get")
 			.executes(context -> {
+				EditCommand.checkHasItem(context.getSource());
+
+				ItemStack item = EditCommand.getItemStack(context.getSource());
+				boolean isUnbreakable = false;
+				if (item.hasNbt()) isUnbreakable = item.getNbt().getBoolean(UNBREAKABLE_KEY);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, isUnbreakable));
+				return 1;
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
+			.literal("toggle")
+			.executes(context -> {
+                EditCommand.checkCanEdit(context.getSource());
+				checkCanEdit(context.getSource());
+
 				ItemStack item = EditCommand.getItemStack(context.getSource()).copy();
 				NbtCompound nbt = item.getOrCreateNbt();
 				boolean unbreakable = nbt.getBoolean(UNBREAKABLE_KEY);
 				nbt.putBoolean(UNBREAKABLE_KEY, !unbreakable);
 				item.setNbt(nbt);
 				EditCommand.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_UNBREABKABLE_DISABLE : OUTPUT_UNBREABKABLE_ENABLE));
+				context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
 				return 1;
 			})
-            .build();
+			.build();
         
         rootNode.addChild(node);
+
+		// ... unbreakable get|toggle
+		node.addChild(getNode);
+		node.addChild(toggleNode);
     }
 }
