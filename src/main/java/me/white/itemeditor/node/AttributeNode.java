@@ -43,6 +43,7 @@ public class AttributeNode {
 	private static final String OUTPUT_SET_PERCENT = "commands.edit.attribute.setpercent";
 	private static final String OUTPUT_SET_SLOT = "commands.edit.attribute.setslot";
 	private static final String OUTPUT_SET_PERCENT_SLOT = "commands.edit.attribute.setpercentslot";
+	private static final String OUTPUT_REMOVE = "commands.edit.attribute.remove";
 	private static final String OUTPUT_RESET = "commands.edit.attribute.reset";
 	private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
 	private static final String OUTPUT_CLEAR_SLOT = "commands.edit.attribute.clearslot";
@@ -51,7 +52,7 @@ public class AttributeNode {
 	private static final String OPERATION_TOTAL = "commands.edit.attribute.operationtotal";
 	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
 
-	private static void get(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
+	private static int get(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
 		ItemStack item = ItemManager.getItemStack(context);
 		Multimap<EntityAttribute, EntityAttributeModifier> attributes;
 		if (slot != null) {
@@ -107,6 +108,27 @@ public class AttributeNode {
 				)
 			);
 		});
+		return attributes.size();
+	}
+
+	private static int remove(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
+		ItemStack item = ItemManager.getItemStack(context).copy();
+		String id = Registries.ATTRIBUTE.getId(attribute).toString();
+
+		NbtList attributes = item.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
+		NbtList newAttributes = new NbtList();
+		for (NbtElement nbtAttr : attributes) {
+			String nbtId = ((NbtCompound)nbtAttr).getString("Name");
+			String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
+			if (nbtId.equals(id) && (slot == null || nbtSlot.isEmpty() || slot.getName().equals(nbtSlot))) continue;
+			newAttributes.add(nbtAttr);
+		}
+		if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
+		item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
+		ItemManager.setItemStack(context, item);
+		int dif = attributes.size() - newAttributes.size();
+		context.sendFeedback(Text.translatable(OUTPUT_REMOVE, dif));
+		return dif;
 	}
 
 	private static ItemStack set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
@@ -151,9 +173,7 @@ public class AttributeNode {
 				ItemManager.checkHasItem(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				get(context.getSource(), null, null);
-
-				return 1;
+				return get(context.getSource(), null, null);
 			})
 			.build();
 		
@@ -163,69 +183,7 @@ public class AttributeNode {
 				ItemManager.checkHasItem(context.getSource());
 				checkHasAttributes(context.getSource());
 
-				get(context.getSource(), null, EquipmentSlot.MAINHAND);
-
-				return 1;
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> getOffhandNode = ClientCommandManager
-			.literal("offhand")
-			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				get(context.getSource(), null, EquipmentSlot.OFFHAND);
-
-				return 1;
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> getHeadNode = ClientCommandManager
-			.literal("head")
-			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				get(context.getSource(), null, EquipmentSlot.HEAD);
-
-				return 1;
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> getChestNode = ClientCommandManager
-			.literal("chest")
-			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				get(context.getSource(), null, EquipmentSlot.CHEST);
-
-				return 1;
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> getLegsNode = ClientCommandManager
-			.literal("legs")
-			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				get(context.getSource(), null, EquipmentSlot.LEGS);
-
-				return 1;
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> getFeetNode = ClientCommandManager
-			.literal("feet")
-			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				get(context.getSource(), null, EquipmentSlot.FEET);
-
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.MAINHAND);
 			})
 			.build();
 		
@@ -236,9 +194,17 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.MAINHAND);
+				return get(context.getSource(), attribute, EquipmentSlot.MAINHAND);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getOffhandNode = ClientCommandManager
+			.literal("offhand")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.OFFHAND);
 			})
 			.build();
 		
@@ -249,9 +215,17 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.OFFHAND);
+				return get(context.getSource(), attribute, EquipmentSlot.OFFHAND);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getHeadNode = ClientCommandManager
+			.literal("head")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.HEAD);
 			})
 			.build();
 		
@@ -262,9 +236,17 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.HEAD);
+				return get(context.getSource(), attribute, EquipmentSlot.HEAD);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getChestNode = ClientCommandManager
+			.literal("chest")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.CHEST);
 			})
 			.build();
 		
@@ -275,9 +257,17 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.CHEST);
+				return get(context.getSource(), attribute, EquipmentSlot.CHEST);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getLegsNode = ClientCommandManager
+			.literal("legs")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.LEGS);
 			})
 			.build();
 		
@@ -288,9 +278,17 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.LEGS);
+				return get(context.getSource(), attribute, EquipmentSlot.LEGS);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> getFeetNode = ClientCommandManager
+			.literal("feet")
+			.executes(context -> {
+				ItemManager.checkHasItem(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				return get(context.getSource(), null, EquipmentSlot.FEET);
 			})
 			.build();
 		
@@ -301,9 +299,88 @@ public class AttributeNode {
 				checkHasAttributes(context.getSource());
 
 				EntityAttribute attribute = getAttributeArgument(context, "attribute");
-				get(context.getSource(), attribute, EquipmentSlot.FEET);
+				return get(context.getSource(), attribute, EquipmentSlot.FEET);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
+			.literal("remove")
+			.build();
+		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> removeAttributeNode = ClientCommandManager
+			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
 
-				return 1;
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, null);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeMainhandNode = ClientCommandManager
+			.literal("mainhand")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.MAINHAND);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeOffhandNode = ClientCommandManager
+			.literal("offhand")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.OFFHAND);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeHeadNode = ClientCommandManager
+			.literal("head")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.HEAD);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeChestNode = ClientCommandManager
+			.literal("chest")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.CHEST);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeLegsNode = ClientCommandManager
+			.literal("legs")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.LEGS);
+			})
+			.build();
+		
+		LiteralCommandNode<FabricClientCommandSource> removeAttributeFeetNode = ClientCommandManager
+			.literal("feet")
+			.executes(context -> {
+				ItemManager.checkCanEdit(context.getSource());
+				checkHasAttributes(context.getSource());
+
+				EntityAttribute attribute = getAttributeArgument(context, "attribute");
+				return remove(context.getSource(), attribute, EquipmentSlot.FEET);
 			})
 			.build();
 
@@ -1282,8 +1359,15 @@ public class AttributeNode {
 		setAttributeInfinityTotalNode.addChild(setAttributeInfinityTotalLegsNode);
 		setAttributeInfinityTotalNode.addChild(setAttributeInfinityTotalFeetNode);
 
-		// ... attribute remove [<attribute>] [<slot>]
-		// TODO
+		// ... attribute remove <attribute> [<slot>]
+		node.addChild(removeNode);
+		removeNode.addChild(removeAttributeNode);
+		removeAttributeNode.addChild(removeAttributeMainhandNode);
+		removeAttributeNode.addChild(removeAttributeOffhandNode);
+		removeAttributeNode.addChild(removeAttributeHeadNode);
+		removeAttributeNode.addChild(removeAttributeChestNode);
+		removeAttributeNode.addChild(removeAttributeLegsNode);
+		removeAttributeNode.addChild(removeAttributeFeetNode);
 
 		// ... attribute clear [<slot>]
 		node.addChild(clearNode);

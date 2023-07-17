@@ -11,9 +11,9 @@ Features:
 - - `... reset`
 - `... lore ...`
 - - `... get [<index>]`
-- - `... add [<line>]`
 - - `... set <index> [<line>]`
 - - `... insert <index> [<line>]`
+- - `... add [<line>]`
 - - `... remove <index>`
 - - `... clear`
 - - `... clear before <index>`
@@ -39,24 +39,24 @@ Features:
 - - `... glint`
 - `... get <item> [<count>]`
 - `... attribute ...`
+- - `... get [<slot>] [<attribute>]`
 - - `... set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
+- - `... remove <attribute> [<slot>]`
 - - `... clear [<slot>]`
-- - `... get [<attribute>] [<slot>]` TODO
-- - `... remove [<attribute>] [<slot>]` TODO
 - `... equip`
 - `... color ...`
 - - `... get`
 - - `... set <color>`
 - - `... reset`
 - `... unbreakable`
+- - `... get`
+- - `... toggle`
 - `... flags ...`
 - - `... get [enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim]`
-- - `... set enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim`
+- - `... toggle enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim`
 - `... whitelist ...`
 - - `... get [place|destroy]`
-- - `... add <block>`
 - - `... add place|destroy <block>`
-- - `... remove <block>`
 - - `... remove place|destroy <block>`
 - - `... clear [place|destroy]`
 - `... durability ...`
@@ -67,6 +67,25 @@ Features:
 - - `... get <path>`
 - - `... set <path> <value>`
 - - `... merge <path> <value>`
+- `... book ...`
+- - `... author ...`
+- - - `... get`
+- - - `... set <author>`
+- - `... title ...`
+- - - `... get`
+- - - `... set <title>`
+- - `... generation ...`
+- - - `... get`
+- - - `... set original|copy|copy_of_copy|tattered`
+- - `... page ...`
+- - - `... get [<index>]`
+- - - `... set <index> [<page>]`
+- - - `... insert <index> [<page>]`
+- - - `... add [<page>]`
+- - - `... remove <index>`
+- - - `... clear`
+- - - `... clear before <index>`
+- - - `... clear after <index>`
 
 Also available as `/itemeditor:edit`
 
