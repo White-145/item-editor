@@ -17,6 +17,10 @@ import net.minecraft.text.Text;
 public class DurabilityNode {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.cannotedit")).create();
 	public static final CommandSyntaxException TOO_MUCH = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.toomuch")).create();
+    private static final String OUTPUT_GET = "commands.edit.durability.get";
+    private static final String OUTPUT_SET = "commands.edit.durability.set";
+    private static final String OUTPUT_RESET = "commands.edit.durability.reset";
+    private static final String OUTPUT_PERCENT = "commands.edit.durability.percent";
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
         if (!ItemManager.getItemStack(context).isDamageable()) throw CANNOT_EDIT_EXCEPTION;
@@ -29,7 +33,16 @@ public class DurabilityNode {
         
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
-            // TODO
+            .executes(context -> {
+                ItemManager.checkHasItem(context.getSource());
+                checkCanEdit(context.getSource());
+
+                ItemStack item = ItemManager.getItemStack(context.getSource());
+                int damage = item.getDamage();
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, damage, item.getMaxDamage(), (double)damage / item.getMaxDamage()));
+                return damage;
+            })
             .build();
         
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
@@ -39,10 +52,11 @@ public class DurabilityNode {
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                int old = item.getDamage();
                 item.setDamage(0);
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 ItemManager.setItemStack(context.getSource(), item);
-                return old;
+                return item.getMaxDamage();
             })
             .build();
         
@@ -54,14 +68,13 @@ public class DurabilityNode {
 
                 ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 int damage = IntegerArgumentType.getInteger(context, "durability");
-                if (damage > item.getMaxDamage()) throw TOO_MUCH;
-                if (damage < -item.getMaxDamage()) throw TOO_MUCH;
+
+                int fixed = damage < 0 ? -damage : item.getMaxDamage() - damage;
+                if (fixed > item.getMaxDamage() || fixed < 0) throw TOO_MUCH;
                 int old = item.getDamage();
-                if (damage < 0) {
-                    item.setDamage(-damage);
-                } else {
-                    item.setDamage(item.getMaxDamage() - damage);
-                }
+                item.setDamage(fixed);
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, fixed));
                 ItemManager.setItemStack(context.getSource(), item);
                 return old;
             })
@@ -72,15 +85,18 @@ public class DurabilityNode {
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
-            .argument("durability", DoubleArgumentType.doubleArg(0, 100))
+            .argument("percentage", DoubleArgumentType.doubleArg(0, 100))
             .executes(context -> {
                 ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                double damage = DoubleArgumentType.getDouble(context, "durability");
+                double percentage = DoubleArgumentType.getDouble(context, "percentage");
+
                 int old = (int)((double)item.getDamage() / item.getMaxDamage() * 100);
-                item.setDamage((int)(item.getMaxDamage() * (1 - damage / 100)));
+                item.setDamage((int)(item.getMaxDamage() * (1 - percentage / 100)));
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
                 ItemManager.setItemStack(context.getSource(), item);
                 return old;
             })
