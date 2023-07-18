@@ -7,12 +7,12 @@ import java.util.UUID;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.ItemManager;
-import me.white.itemeditor.argument.UrlArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -34,6 +34,7 @@ public class HeadNode {
 	public static final CommandSyntaxException NO_OWNER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.noowner")).create();
 	public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
 	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.alreadyis")).create();
+    private static final DynamicCommandExceptionType INVALID_URL_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("commands.edit.head.error.invalidtexture", arg));
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
@@ -46,6 +47,7 @@ public class HeadNode {
     private static final String SKULL_OWNER_PROPERTIES_TEXTURES_KEY = "textures";
     private static final String SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY = "Value";
     private static final String TEXTURE_REGEX = "\\{textures:\\{SKIN:\\{url:\"http(?:s)?:\\/\\/textures\\.minecraft\\.net\\/texture\\/[0-9a-f]+\"\\}\\}\\}";
+    private static final String TEXTURE_URL_REGEX = "http(?:s)?:\\/\\/textures\\.minecraft\\.\\/texture\\/[0-9a-f]+";
     private static final String TEXTURE_FORMAT = "{textures:{SKIN:{url:\"%s\"}}}";
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
@@ -93,27 +95,47 @@ public class HeadNode {
             .literal("head")
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> ownerNode = ClientCommandManager
-            .literal("owner")
-            .build();
-        
-        LiteralCommandNode<FabricClientCommandSource> ownerGetNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
+                ItemManager.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
-                checkHasName(context.getSource());
+                try {
+                    checkHasTexture(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
-                String owner = item.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
+                    ItemStack item = ItemManager.getItemStack(context.getSource());
+                    String textureObject = new String(Base64.getDecoder().decode(
+                        ((NbtCompound)item
+                            .getSubNbt(SKULL_OWNER_KEY)
+                            .getCompound(SKULL_OWNER_PROPERTIES_KEY)
+                            .getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE)
+                            .get(0)
+                        ).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY)
+                    ));
+                    String texture = textureObject.substring(22, textureObject.length() - 4);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
+                    try {
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, stylizeUrl(new URL(texture))));
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    return 1;
+                } catch (CommandSyntaxException e) {
+                    checkHasName(context.getSource());
+
+                    ItemStack item = ItemManager.getItemStack(context.getSource());
+                    String owner = item.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
+    
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
+                }
                 return 1;
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> ownerSetNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
@@ -126,9 +148,14 @@ public class HeadNode {
             })
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, String> ownerSetOwnerNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> setOwnerNode = ClientCommandManager
+            .literal("owner")
+            .build();
+        
+        ArgumentCommandNode<FabricClientCommandSource, String> setOwnerOwnerNode = ClientCommandManager
             .argument("owner", StringArgumentType.word())
             .executes(context -> {
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
@@ -142,62 +169,28 @@ public class HeadNode {
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> textureNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> setTextureNode = ClientCommandManager
             .literal("texture")
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> textureGetNode = ClientCommandManager
-            .literal("get")
+        ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager
+            .argument("texture", StringArgumentType.string())
             .executes(context -> {
+                ItemManager.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
-                checkHasTexture(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
-                String textureObject = new String(Base64.getDecoder().decode(
-                    ((NbtString)item
-                        .getSubNbt(SKULL_OWNER_KEY)
-                        .getCompound(SKULL_OWNER_PROPERTIES_KEY)
-                        .getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.STRING_TYPE)
-                        .get(0)
-                    ).asString()
-                ));
-                String texture = textureObject.substring(22, textureObject.length() - 4);
+                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                String texture = StringArgumentType.getString(context, "texture");
 
+                URL textureUrl;
                 try {
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, stylizeUrl(new URL(texture))));
-                    context.getSource().sendFeedback(stylizeUrl(new URL(texture)));
+                    textureUrl = new URL(texture);
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
+                    throw INVALID_URL_EXCEPTION.create(texture);
                 }
-                return 1;
-            })
-            .build();
-        
-        LiteralCommandNode<FabricClientCommandSource> textureSetNode = ClientCommandManager
-            .literal("set")
-            .executes(context -> {
-                checkCanEdit(context.getSource());
-
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                if (!item.hasNbt() || !item.getNbt().contains(SKULL_OWNER_KEY)) throw NO_TEXTURE_EXCEPTION;
-                item.removeSubNbt(SKULL_OWNER_KEY);
-
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
-                return 1;
-            })
-            .build();
-        
-        ArgumentCommandNode<FabricClientCommandSource, URL> textureSetTextureNode = ClientCommandManager
-            .argument("texture", UrlArgumentType.url())
-            .executes(context -> {
-                checkCanEdit(context.getSource());
-
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                URL texture = UrlArgumentType.getUrl(context, "texture");
-
+                if (!textureUrl.toString().matches(TEXTURE_URL_REGEX)) throw INVALID_URL_EXCEPTION.create(texture);
                 NbtCompound encoded = new NbtCompound();
-                encoded.put(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtString.of(new String(Base64.getEncoder().encode(String.format(TEXTURE_FORMAT, texture.toString()).getBytes()))));
+                encoded.put(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtString.of(new String(Base64.getEncoder().encode(String.format(TEXTURE_FORMAT, textureUrl).getBytes()))));
                 NbtCompound owner = item.getOrCreateSubNbt(SKULL_OWNER_KEY);
                 NbtCompound properties = owner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
                 NbtList textures = properties.getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtList.COMPOUND_TYPE);
@@ -211,7 +204,7 @@ public class HeadNode {
                 item.setSubNbt(SKULL_OWNER_KEY, owner);
 
                 ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, texture.toString()));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, textureUrl.toString()));
                 return 1;
             })
             .build();
@@ -219,24 +212,15 @@ public class HeadNode {
         rootNode.addChild(node);
 
         // ... get
+        node.addChild(getNode);
+
         // ... set ...
+        node.addChild(setNode);
         // ... owner <owner>
+        setNode.addChild(setOwnerNode);
+        setOwnerNode.addChild(setOwnerOwnerNode);
         // ... texture <texture>
-
-        // ... owner ...
-        node.addChild(ownerNode);
-        // ... get
-        ownerNode.addChild(ownerGetNode);
-        // ... set <owner>
-        ownerNode.addChild(ownerSetNode);
-        ownerSetNode.addChild(ownerSetOwnerNode);
-
-        // ... texture ...
-        node.addChild(textureNode);
-        // ... get
-        textureNode.addChild(textureGetNode);
-        // ... set <texture>
-        textureNode.addChild(textureSetNode);
-        textureSetNode.addChild(textureSetTextureNode);
+        setNode.addChild(setTextureNode);
+        setTextureNode.addChild(setTextureTextureNode);
     }
 }

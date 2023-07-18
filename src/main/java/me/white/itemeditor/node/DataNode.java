@@ -38,7 +38,7 @@ public class DataNode {
                 
                 ItemStack item = ItemManager.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
-                context.getSource().sendFeedback(Text.empty().append(Text.translatable(OUTPUT_GET_PATH)).append(NbtHelper.toPrettyPrintedText(item.getNbt())));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PATH, NbtHelper.toPrettyPrintedText(item.getNbt())));
                 return 1;
             })
             .build();
