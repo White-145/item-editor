@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class GetNode {
-	private static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.handnotempty")).create();
+	public static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.handnotempty")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
 	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {

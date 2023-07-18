@@ -52,7 +52,7 @@ public class DataNode {
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtElement element = path.get(item.getNbt()).get(0);
-                context.getSource().sendFeedback(Text.empty().append(Text.translatable(OUTPUT_GET_PATH)).append(NbtHelper.toPrettyPrintedText(element)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PATH, NbtHelper.toPrettyPrintedText(element)));
                 return 1;
             })
             .build();

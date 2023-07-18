@@ -17,7 +17,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class NameNode {
-	private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
+	public static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
 	private static final String OUTPUT_GET = "commands.edit.name.get";
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";

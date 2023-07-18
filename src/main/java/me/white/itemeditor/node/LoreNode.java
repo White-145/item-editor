@@ -23,8 +23,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class LoreNode {
-	private static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.nolore")).create();
-	private static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.lore.error.outofbounds", index, size));
+	public static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.nolore")).create();
+	public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.lore.error.outofbounds", index, size));
 	private static final String OUTPUT_GET = "commands.edit.lore.get";
 	private static final String OUTPUT_GET_LINE = "commands.edit.lore.getline";
 	private static final String OUTPUT_SET = "commands.edit.lore.set";

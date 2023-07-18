@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class CountNode {
-	private static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.overflow")).create();;
+	public static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.overflow")).create();;
 	private static final String OUTPUT_GET = "commands.edit.count.get";
 	private static final String OUTPUT_SET = "commands.edit.count.set";
 
