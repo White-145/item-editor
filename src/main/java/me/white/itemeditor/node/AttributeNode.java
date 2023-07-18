@@ -52,6 +52,24 @@ public class AttributeNode {
 	private static final String OPERATION_TOTAL = "commands.edit.attribute.operationtotal";
 	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
 
+	private static void checkHasAttributes(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack item = ItemManager.getItemStack(context);
+		if (!item.hasNbt()) throw NO_ATTRIBUTES_EXCEPTION;
+		NbtCompound nbt = item.getNbt();
+		if (!nbt.contains(ATTRIBUTE_MODIFIERS_KEY)) throw NO_ATTRIBUTES_EXCEPTION;
+		NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
+		if (attributes.isEmpty()) throw NO_ATTRIBUTES_EXCEPTION;
+	}
+
+	private static EntityAttribute getAttributeArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
+		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
+        RegistryKey<?> registryKey = reference.registryKey();
+        if (!registryKey.isOf(RegistryKeys.ATTRIBUTE)) {
+            throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), RegistryKeys.ATTRIBUTE.getValue());
+        }
+		return (EntityAttribute)reference.value();
+	}
+
 	private static int get(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
 		ItemStack item = ItemManager.getItemStack(context);
 		Multimap<EntityAttribute, EntityAttributeModifier> attributes;
@@ -142,24 +160,6 @@ public class AttributeNode {
 		EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), (double)amount, operation);
 		item.addAttributeModifier(attribute, modifier, slot);
 		return item;
-	}
-
-	private static EntityAttribute getAttributeArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
-		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
-        RegistryKey<?> registryKey = reference.registryKey();
-        if (!registryKey.isOf(RegistryKeys.ATTRIBUTE)) {
-            throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), RegistryKeys.ATTRIBUTE.getValue());
-        }
-		return (EntityAttribute)reference.value();
-	}
-
-	private static void checkHasAttributes(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemManager.getItemStack(context);
-		if (!item.hasNbt()) throw NO_ATTRIBUTES_EXCEPTION;
-		NbtCompound nbt = item.getNbt();
-		if (!nbt.contains(ATTRIBUTE_MODIFIERS_KEY)) throw NO_ATTRIBUTES_EXCEPTION;
-		NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-		if (attributes.isEmpty()) throw NO_ATTRIBUTES_EXCEPTION;
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {

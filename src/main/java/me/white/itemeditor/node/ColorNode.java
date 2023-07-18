@@ -14,6 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class ColorNode {
@@ -47,7 +48,7 @@ public class ColorNode {
         NbtCompound nbt = item.getNbt();
         if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
         if (nbt == null) throw NO_COLOR_EXCEPTION;
-        if (!nbt.contains(getColorKey(item))) throw NO_COLOR_EXCEPTION;
+        if (!nbt.contains(getColorKey(item), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
     }
 
     private static String getColorKey(ItemStack item) throws CommandSyntaxException {
@@ -88,7 +89,7 @@ public class ColorNode {
                 NbtCompound nbt = item.getNbt();
                 if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
                 if (nbt == null) throw NO_COLOR_EXCEPTION;
-                if (!nbt.contains(colorKey)) throw NO_COLOR_EXCEPTION;
+                if (!nbt.contains(colorKey, NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
                 int color = nbt.getInt(colorKey);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Integer.toHexString(color)));
                 return color;
@@ -148,10 +149,10 @@ public class ColorNode {
 
         rootNode.addChild(node);
 
-        // ... color get
+        // ... get
         node.addChild(getNode);
 
-        // ... color set [<color>]
+        // ... set [<color>]
         node.addChild(setNode);
         setNode.addChild(setHexColorNode);
     }
