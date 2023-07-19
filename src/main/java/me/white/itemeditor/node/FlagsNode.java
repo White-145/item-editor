@@ -2,7 +2,7 @@ package me.white.itemeditor.node;
 
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -12,22 +12,38 @@ import net.minecraft.text.Text;
 
 public class FlagsNode {
     private static final String OUTPUT_GET = "commands.edit.flags.get";
-    private static final String OUTPUT_ENCHANTMENTS_GET = "commands.edit.flags.enchantmentsget";
-    private static final String OUTPUT_ATTRIBUTES_GET = "commands.edit.flags.attributesget";
-    private static final String OUTPUT_UNBREAKABLE_GET = "commands.edit.flags.unbreakableget";
-    private static final String OUTPUT_CANDESTROY_GET = "commands.edit.flags.candestroyget";
-    private static final String OUTPUT_CANPLACEON_GET = "commands.edit.flags.canplaceonget";
-    private static final String OUTPUT_OTHERS_GET = "commands.edit.flags.othersget";
-    private static final String OUTPUT_DYED_GET = "commands.edit.flags.dyedget";
-    private static final String OUTPUT_TRIM_GET = "commands.edit.flags.trimget";
-    private static final String OUTPUT_ENCHANTMENTS_TOGGLE = "commands.edit.flags.enchantmentstoggle";
-    private static final String OUTPUT_ATTRIBUTES_TOGGLE = "commands.edit.flags.attributestoggle";
-    private static final String OUTPUT_UNBREAKABLE_TOGGLE = "commands.edit.flags.unbreakabletoggle";
-    private static final String OUTPUT_CANDESTROY_TOGGLE = "commands.edit.flags.candestroytoggle";
-    private static final String OUTPUT_CANPLACEON_TOGGLE = "commands.edit.flags.canplaceontoggle";
-    private static final String OUTPUT_OTHERS_TOGGLE = "commands.edit.flags.otherstoggle";
-    private static final String OUTPUT_DYED_TOGGLE = "commands.edit.flags.dyedtoggle";
-    private static final String OUTPUT_TRIM_TOGGLE = "commands.edit.flags.trimtoggle";
+    private static final String OUTPUT_ENCHANTMENTS_GET_ENABLED = "commands.edit.flags.enchantmentsgetenabled";
+    private static final String OUTPUT_ATTRIBUTES_GET_ENABLED = "commands.edit.flags.attributesgetenabled";
+    private static final String OUTPUT_UNBREAKABLE_GET_ENABLED = "commands.edit.flags.unbreakablegetenabled";
+    private static final String OUTPUT_CANDESTROY_GET_ENABLED = "commands.edit.flags.candestroygetenabled";
+    private static final String OUTPUT_CANPLACEON_GET_ENABLED = "commands.edit.flags.canplaceongetenabled";
+    private static final String OUTPUT_OTHERS_GET_ENABLED = "commands.edit.flags.othersgetenabled";
+    private static final String OUTPUT_DYED_GET_ENABLED = "commands.edit.flags.dyedgetenabled";
+    private static final String OUTPUT_TRIM_GET_ENABLED = "commands.edit.flags.trimgetenabled";
+    private static final String OUTPUT_ENCHANTMENTS_GET_DISABLED = "commands.edit.flags.enchantmentsgetdisabled";
+    private static final String OUTPUT_ATTRIBUTES_GET_DISABLED = "commands.edit.flags.attributesgetdisabled";
+    private static final String OUTPUT_UNBREAKABLE_GET_DISABLED = "commands.edit.flags.unbreakablegetdisabled";
+    private static final String OUTPUT_CANDESTROY_GET_DISABLED = "commands.edit.flags.candestroygetdisabled";
+    private static final String OUTPUT_CANPLACEON_GET_DISABLED = "commands.edit.flags.canplaceongetdisabled";
+    private static final String OUTPUT_OTHERS_GET_DISABLED = "commands.edit.flags.othersgetdisabled";
+    private static final String OUTPUT_DYED_GET_DISABLED = "commands.edit.flags.dyedgetdisabled";
+    private static final String OUTPUT_TRIM_GET_DISABLED = "commands.edit.flags.trimgetdisabled";
+    private static final String OUTPUT_ENCHANTMENTS_ENABLE = "commands.edit.flags.enchantmentsenable";
+    private static final String OUTPUT_ATTRIBUTES_ENABLE = "commands.edit.flags.attributesenable";
+    private static final String OUTPUT_UNBREAKABLE_ENABLE = "commands.edit.flags.unbreakableenable";
+    private static final String OUTPUT_CANDESTROY_ENABLE = "commands.edit.flags.candestroyenable";
+    private static final String OUTPUT_CANPLACEON_ENABLE = "commands.edit.flags.canplaceonenable";
+    private static final String OUTPUT_OTHERS_ENABLE = "commands.edit.flags.othersenable";
+    private static final String OUTPUT_DYED_ENABLE = "commands.edit.flags.dyedenable";
+    private static final String OUTPUT_TRIM_ENABLE = "commands.edit.flags.trimenable";
+    private static final String OUTPUT_ENCHANTMENTS_DISABLE = "commands.edit.flags.enchantmentsdisable";
+    private static final String OUTPUT_ATTRIBUTES_DISABLE = "commands.edit.flags.attributesdisable";
+    private static final String OUTPUT_UNBREAKABLE_DISABLE = "commands.edit.flags.unbreakabledisable";
+    private static final String OUTPUT_CANDESTROY_DISABLE = "commands.edit.flags.candestroydisable";
+    private static final String OUTPUT_CANPLACEON_DISABLE = "commands.edit.flags.canplaceondisable";
+    private static final String OUTPUT_OTHERS_DISABLE = "commands.edit.flags.othersdisable";
+    private static final String OUTPUT_DYED_DISABLE = "commands.edit.flags.dyeddisable";
+    private static final String OUTPUT_TRIM_DISABLE = "commands.edit.flags.trimdisable";
     private static final String OUTPUT_ALL_ENABLE = "commands.edit.flags.allenable";
     private static final String OUTPUT_ALL_DISABLE = "commands.edit.flags.alldisable";
     private static final String HIDEFLAGS_KEY = "HideFlags";
@@ -48,9 +64,9 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
@@ -63,14 +79,14 @@ public class FlagsNode {
                 boolean dyed = (hideflags & DYED_MASK) == DYED_MASK;
                 boolean trim = (hideflags & TRIM_MASK) == TRIM_MASK;
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ENCHANTMENTS_GET, enchantments));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ATTRIBUTES_GET, attributes));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_UNBREAKABLE_GET, unbreakable));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANDESTROY_GET, candestroy));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANPLACEON_GET, canplaceon));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_OTHERS_GET, others));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_DYED_GET, dyed));
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_TRIM_GET, trim));
+                context.getSource().sendFeedback(Text.translatable(enchantments ? OUTPUT_ENCHANTMENTS_GET_ENABLED : OUTPUT_ENCHANTMENTS_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(attributes ? OUTPUT_ATTRIBUTES_GET_ENABLED : OUTPUT_ATTRIBUTES_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_UNBREAKABLE_GET_ENABLED : OUTPUT_UNBREAKABLE_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(candestroy ? OUTPUT_CANDESTROY_GET_ENABLED : OUTPUT_CANDESTROY_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(canplaceon ? OUTPUT_CANPLACEON_GET_ENABLED : OUTPUT_CANPLACEON_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(others ? OUTPUT_OTHERS_GET_ENABLED : OUTPUT_OTHERS_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(dyed ? OUTPUT_DYED_GET_ENABLED : OUTPUT_DYED_GET_DISABLED));
+                context.getSource().sendFeedback(Text.translatable(trim ? OUTPUT_TRIM_GET_ENABLED : OUTPUT_TRIM_GET_DISABLED));
                 return hideflags;
             })
             .build();
@@ -78,14 +94,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getEnchantmentsNode = ClientCommandManager
             .literal("enchantments")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean enchantments = (hideflags & ENCHANTMENTS_MASK) == ENCHANTMENTS_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ENCHANTMENTS_GET, enchantments));
+                context.getSource().sendFeedback(Text.translatable(enchantments ? OUTPUT_ENCHANTMENTS_GET_DISABLED : OUTPUT_ENCHANTMENTS_GET_ENABLED));
                 return enchantments ? 1 : 0;
             })
             .build();
@@ -93,14 +109,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getAttributesNode = ClientCommandManager
             .literal("attributes")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean attributes = (hideflags & ATTRIBUTES_MASK) == ATTRIBUTES_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ATTRIBUTES_GET, attributes));
+                context.getSource().sendFeedback(Text.translatable(attributes ? OUTPUT_ATTRIBUTES_GET_DISABLED : OUTPUT_ATTRIBUTES_GET_ENABLED));
                 return attributes ? 1 : 0;
             })
             .build();
@@ -108,14 +124,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getUnbreakableNode = ClientCommandManager
             .literal("unbreakable")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean unbreakable = (hideflags & UNBREAKABLE_MASK) == UNBREAKABLE_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_UNBREAKABLE_GET, unbreakable));
+                context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_UNBREAKABLE_GET_DISABLED : OUTPUT_UNBREAKABLE_GET_ENABLED));
                 return unbreakable ? 1 : 0;
             })
             .build();
@@ -123,14 +139,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getCandestroyNode = ClientCommandManager
             .literal("candestroy")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean candestroy = (hideflags & CANDESTROY_MASK) == CANDESTROY_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANDESTROY_GET, candestroy));
+                context.getSource().sendFeedback(Text.translatable(candestroy ? OUTPUT_CANDESTROY_GET_DISABLED : OUTPUT_CANDESTROY_GET_ENABLED));
                 return candestroy ? 1 : 0;
             })
             .build();
@@ -138,14 +154,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getCanplaceonNode = ClientCommandManager
             .literal("canplaceon")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean canplaceon = (hideflags & CANPLACEON_MASK) == CANPLACEON_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANPLACEON_GET, canplaceon));
+                context.getSource().sendFeedback(Text.translatable(canplaceon ? OUTPUT_CANPLACEON_GET_DISABLED : OUTPUT_CANPLACEON_GET_ENABLED));
                 return canplaceon ? 1 : 0;
             })
             .build();
@@ -153,14 +169,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getOthersNode = ClientCommandManager
             .literal("others")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean others = (hideflags & OTHERS_MASK) == OTHERS_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_OTHERS_GET, others));
+                context.getSource().sendFeedback(Text.translatable(others ? OUTPUT_OTHERS_GET_DISABLED : OUTPUT_OTHERS_GET_ENABLED));
                 return others ? 1 : 0;
             })
             .build();
@@ -168,14 +184,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getDyedNode = ClientCommandManager
             .literal("dyed")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean dyed = (hideflags & DYED_MASK) == DYED_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_DYED_GET, dyed));
+                context.getSource().sendFeedback(Text.translatable(dyed ? OUTPUT_DYED_GET_DISABLED : OUTPUT_DYED_GET_ENABLED));
                 return dyed ? 1 : 0;
             })
             .build();
@@ -183,14 +199,14 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getTrimNode = ClientCommandManager
             .literal("trim")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean trim = (hideflags & TRIM_MASK) == TRIM_MASK;
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_TRIM_GET, trim));
+                context.getSource().sendFeedback(Text.translatable(trim ? OUTPUT_TRIM_GET_DISABLED : OUTPUT_TRIM_GET_ENABLED));
                 return trim ? 1 : 0;
             })
             .build();
@@ -198,20 +214,15 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
             .literal("toggle")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
-                if (hideflags != 0) {
-                    item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, 0);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_ALL_ENABLE));
-                } else {
-                    item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, -1);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_ALL_DISABLE));
-                }
-                ItemManager.setItemStack(context.getSource(), item);
+                item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags == 0 ? -1 : 0);
+                context.getSource().sendFeedback(Text.translatable(hideflags == 0 ? OUTPUT_ALL_DISABLE : OUTPUT_ALL_ENABLE));
+                ItemUtil.setItemStack(context.getSource(), item);
                 return 1;
             })
             .build();
@@ -219,16 +230,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleEnchantmentsNode = ClientCommandManager
             .literal("enchantments")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean enchantments = (hideflags & ENCHANTMENTS_MASK) == ENCHANTMENTS_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ ENCHANTMENTS_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ENCHANTMENTS_TOGGLE, !enchantments));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(enchantments ? OUTPUT_ENCHANTMENTS_DISABLE : OUTPUT_ENCHANTMENTS_ENABLE));
                 return enchantments ? 1 : 0;
             })
             .build();
@@ -236,16 +249,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleAttributesNode = ClientCommandManager
             .literal("attributes")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean attributes = (hideflags & ATTRIBUTES_MASK) == ATTRIBUTES_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ ATTRIBUTES_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_ATTRIBUTES_TOGGLE, !attributes));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(attributes ? OUTPUT_ATTRIBUTES_DISABLE : OUTPUT_ATTRIBUTES_ENABLE));
                 return attributes ? 1 : 0;
             })
             .build();
@@ -253,16 +268,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleUnbreakableNode = ClientCommandManager
             .literal("unbreakable")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean unbreakable = (hideflags & UNBREAKABLE_MASK) == UNBREAKABLE_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ UNBREAKABLE_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_UNBREAKABLE_TOGGLE, !unbreakable));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(unbreakable ? OUTPUT_UNBREAKABLE_DISABLE : OUTPUT_UNBREAKABLE_ENABLE));
                 return unbreakable ? 1 : 0;
             })
             .build();
@@ -270,16 +287,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleCandestroyNode = ClientCommandManager
             .literal("candestroy")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean candestroy = (hideflags & CANDESTROY_MASK) == CANDESTROY_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ CANDESTROY_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANDESTROY_TOGGLE, !candestroy));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(candestroy ? OUTPUT_CANDESTROY_DISABLE : OUTPUT_CANDESTROY_ENABLE));
                 return candestroy ? 1 : 0;
             })
             .build();
@@ -287,16 +306,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleCanplaceonNode = ClientCommandManager
             .literal("canplaceon")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean canplaceon = (hideflags & CANPLACEON_MASK) == CANPLACEON_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ CANPLACEON_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_CANPLACEON_TOGGLE, !canplaceon));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(canplaceon ? OUTPUT_CANPLACEON_DISABLE : OUTPUT_CANPLACEON_ENABLE));
                 return canplaceon ? 1 : 0;
             })
             .build();
@@ -304,16 +325,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleOthersNode = ClientCommandManager
             .literal("others")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean others = (hideflags & OTHERS_MASK) == OTHERS_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ OTHERS_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_OTHERS_TOGGLE, !others));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(others ? OUTPUT_OTHERS_DISABLE : OUTPUT_OTHERS_ENABLE));
                 return others ? 1 : 0;
             })
             .build();
@@ -321,16 +344,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleDyedNode = ClientCommandManager
             .literal("dyed")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean dyed = (hideflags & DYED_MASK) == DYED_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ DYED_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_DYED_TOGGLE, !dyed));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(dyed ? OUTPUT_DYED_DISABLE : OUTPUT_DYED_ENABLE));
                 return dyed ? 1 : 0;
             })
             .build();
@@ -338,16 +363,18 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleTrimNode = ClientCommandManager
             .literal("trim")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+
                 NbtCompound nbt = item.getNbt();
                 int hideflags = 0;
                 if (nbt != null) hideflags = nbt.getInt(HIDEFLAGS_KEY);
                 boolean trim = (hideflags & TRIM_MASK) == TRIM_MASK;
                 item.getOrCreateNbt().putInt(HIDEFLAGS_KEY, hideflags ^ TRIM_MASK);
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_TRIM_TOGGLE, !trim));
+
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(trim ? OUTPUT_TRIM_DISABLE : OUTPUT_TRIM_ENABLE));
                 return trim ? 1 : 0;
             })
             .build();

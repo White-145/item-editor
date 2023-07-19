@@ -1,12 +1,12 @@
 package me.white.itemeditor.node;
 
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.ArgumentUtil;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.Block;
@@ -18,7 +18,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
@@ -41,14 +40,14 @@ public class WhitelistNode {
     private static final String PLACE_KEY = "CanPlaceOn";
     private static final String DESTROY_KEY = "CanDestroy";
 
-    private static Block getBlockArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
-		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
-        RegistryKey<?> registryKey = reference.registryKey();
-        if (!registryKey.isOf(RegistryKeys.BLOCK)) {
-            throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), RegistryKeys.BLOCK.getValue());
-        }
-		return (Block)reference.value();
-	}
+    private static void checkHasWhitelist(FabricClientCommandSource context) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(context);
+        if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
+        NbtCompound nbt = item.getNbt();
+        NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
+        NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
+        if ((place == null || place.isEmpty()) && (destroy == null || place.isEmpty())) throw NO_WHITELIST_EXCEPTION;
+    }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -58,12 +57,15 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack item = ItemManager.getItemStack(context.getSource());
-                if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
+                ItemUtil.checkHasItem(context.getSource());
+                checkHasWhitelist(context.getSource());
+
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
+
                 NbtCompound nbt = item.getNbt();
                 NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
                 NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
-                if ((place == null || place.isEmpty()) && (destroy == null || place.isEmpty())) throw NO_WHITELIST_EXCEPTION;
+
                 if (place != null) {
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PLACE));
                     for (NbtElement entry : place) {
@@ -91,11 +93,15 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getPlaceNode = ClientCommandManager
             .literal("place")
             .executes(context -> {
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
+
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
+
                 if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
                 NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
                 if (place == null || place.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PLACE));
                 for (NbtElement entry : place) {
                     Identifier id = Identifier.tryParse(((NbtString)entry).toString());
@@ -111,11 +117,15 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getDestroyNode = ClientCommandManager
             .literal("destroy")
             .executes(context -> {
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
+
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
+                
                 if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
                 NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
                 if (destroy == null || destroy.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_DESTROY));
                 for (NbtElement entry : destroy) {
                     Identifier id = Identifier.tryParse(((NbtString)entry).toString());
@@ -137,22 +147,22 @@ public class WhitelistNode {
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addPlaceBlockNode = ClientCommandManager
-            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
+            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                Block block = getBlockArgument(context, "block");
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                Block block = ArgumentUtil.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
+
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                NbtCompound nbt = item.getNbt();
-                if (nbt == null) nbt = new NbtCompound();
+                NbtCompound nbt = item.getOrCreateNbt();
                 NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
-                if (place == null) place = new NbtList();
                 if (place.contains(id)) throw ENTRY_EXISTS_EXCEPTION;
                 place.add(id);
                 nbt.put(PLACE_KEY, place);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD_PLACE, block.getName()));
                 return 1;
             })
@@ -165,20 +175,20 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addDestroyBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
 
-                Block block = getBlockArgument(context, "block");
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                Block block = ArgumentUtil.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
+
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                NbtCompound nbt = item.getNbt();
-                if (nbt == null) nbt = new NbtCompound();
+                NbtCompound nbt = item.getOrCreateNbt();
                 NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
-                if (destroy == null) destroy = new NbtList();
                 if (destroy.contains(id)) throw ENTRY_EXISTS_EXCEPTION;
                 destroy.add(id);
                 nbt.put(DESTROY_KEY, destroy);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD_DESTROY, block.getName()));
                 return 1;
             })
@@ -193,22 +203,24 @@ public class WhitelistNode {
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removePlaceBlockNode = ClientCommandManager
-            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
+            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
+                checkHasWhitelist(context.getSource());
 
-                Block block = getBlockArgument(context, "block");
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                Block block = ArgumentUtil.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
+
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
-                if (nbt == null) throw NO_WHITELIST_EXCEPTION;
                 NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
-                if (place == null || place.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+                if (place.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
                 if (!place.contains(id)) throw DOESNT_EXIST_EXCEPTION;
                 place.remove(id);
                 nbt.put(PLACE_KEY, place);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE_PLACE, block.getName()));
                 return 1;
             })
@@ -219,22 +231,24 @@ public class WhitelistNode {
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removeDestroyBlockNode = ClientCommandManager
-            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, Registries.BLOCK.getKey()))
+            .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
+                checkHasWhitelist(context.getSource());
 
-                Block block = getBlockArgument(context, "block");
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                Block block = ArgumentUtil.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
+
                 NbtString id = NbtString.of(Registries.BLOCK.getId(block).toString());
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getNbt();
-                if (nbt == null) throw NO_WHITELIST_EXCEPTION;
                 NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
-                if (destroy == null || destroy.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+                if (destroy.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
                 if (!destroy.contains(id)) throw DOESNT_EXIST_EXCEPTION;
                 destroy.remove(id);
                 nbt.put(DESTROY_KEY, destroy);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE_DESTROY, block.getName()));
                 return 1;
             })
@@ -243,18 +257,17 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
+                checkHasWhitelist(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                
                 NbtCompound nbt = item.getNbt();
-                NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
-                NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
-                if ((place == null || place.isEmpty()) && (destroy == null || destroy.isEmpty())) throw NO_WHITELIST_EXCEPTION;
                 nbt.remove(DESTROY_KEY);
                 nbt.remove(PLACE_KEY);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
                 return 1;
             })
@@ -263,16 +276,17 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearPlaceNode = ClientCommandManager
             .literal("place")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
+                checkHasWhitelist(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                
                 NbtCompound nbt = item.getNbt();
-                NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);
-                if (place == null || place.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+                if (!nbt.contains(PLACE_KEY, NbtElement.LIST_TYPE) || nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE).isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
                 nbt.remove(PLACE_KEY);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_PLACE));
                 return 1;
             })
@@ -281,16 +295,17 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearDestroyNode = ClientCommandManager
             .literal("destroy")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
+                checkHasWhitelist(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-                if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+                
                 NbtCompound nbt = item.getNbt();
-                NbtList destroy = nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE);
-                if (destroy == null || destroy.isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
+                if (!nbt.contains(DESTROY_KEY, NbtElement.LIST_TYPE) || nbt.getList(DESTROY_KEY, NbtElement.STRING_TYPE).isEmpty()) throw NO_SUCH_WHITELIST_EXCEPTION;
                 nbt.remove(DESTROY_KEY);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_DESTROY));
                 return 1;
             })

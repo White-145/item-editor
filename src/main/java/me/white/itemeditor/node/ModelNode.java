@@ -6,14 +6,13 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
 import net.minecraft.text.Text;
 
 public class ModelNode {
@@ -21,6 +20,14 @@ public class ModelNode {
 	private static final String OUTPUT_GET = "commands.edit.model.get";
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
+	private static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
+
+	private static void checkHasModel(FabricClientCommandSource context) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(context);
+		if (!item.hasNbt()) throw NO_MODEL_EXCEPTION;
+		NbtCompound nbt = item.getNbt();
+		if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;
+	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -30,12 +37,11 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
+				ItemUtil.checkHasItem(context.getSource());
+				checkHasModel(context.getSource());
 
-				ItemStack item = ItemManager.getItemStack(context.getSource());
-				NbtCompound nbt = item.getNbt();
-				if (nbt == null || !nbt.contains("CustomModelData")) throw NO_MODEL_EXCEPTION;
-				int model = nbt.getInt("CustomModelData");
+				int model = ItemUtil.getItemStack(context.getSource()).getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
+
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
 				return model;
 			})
@@ -43,44 +49,50 @@ public class ModelNode {
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
-			.build();
-
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
-			.argument("model", IntegerArgumentType.integer(0, 65535))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
+				checkHasModel(context.getSource());
 
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
-				int value = IntegerArgumentType.getInteger(context, "model");
-				NbtCompound nbt = item.getOrCreateNbt();
-				int result = value;
-				if (nbt.contains("CustomModelData", NbtElement.INT_TYPE)) result = nbt.getInt("CustomModelData");
-				if (value == 0) {
-					nbt.remove("CustomModelData");
-				} else {
-					nbt.put("CustomModelData", NbtInt.of(value));
-				}
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+				NbtCompound nbt = item.getNbt();
+				int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
+				nbt.remove(CUSTOM_MODEL_DATA_KEY);
 				item.setNbt(nbt);
-				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(value == 0 ? Text.translatable(OUTPUT_RESET) : Text.translatable(OUTPUT_SET, value));
-				return result;
+
+				ItemUtil.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+				return old;
 			})
 			.build();
 
-		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
-			.literal("reset")
+		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
+			.argument("model", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+				int model = IntegerArgumentType.getInteger(context, "model");
+
+				if (model == 0) {
+					checkHasModel(context.getSource());
+
+					NbtCompound nbt = item.getNbt();
+					int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
+					nbt.remove(CUSTOM_MODEL_DATA_KEY);
+					item.setNbt(nbt);
+
+					ItemUtil.setItemStack(context.getSource(), item);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+					return old;
+				}
 				NbtCompound nbt = item.getOrCreateNbt();
-				if (!nbt.contains("CustomModelData", NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;
-				int result = nbt.getInt("CustomModelData");
-				nbt.remove("CustomModelData");
+				int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
+				nbt.putInt(CUSTOM_MODEL_DATA_KEY, model);
 				item.setNbt(nbt);
-				ItemManager.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-				return result;
+
+				ItemUtil.setItemStack(context.getSource(), item);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
+				return old;
 			})
 			.build();
 		
@@ -89,11 +101,8 @@ public class ModelNode {
 		// ... get
 		node.addChild(getNode);
 
-		// ... set <model>
+		// ... set [<model>]
 		node.addChild(setNode);
 		setNode.addChild(setModelNode);
-
-		// ... reset
-		node.addChild(resetNode);
 	}
 }

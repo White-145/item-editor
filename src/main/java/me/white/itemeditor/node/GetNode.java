@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -20,7 +20,7 @@ public class GetNode {
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
 	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemManager.getItemStack(context);
+		ItemStack item = ItemUtil.getItemStack(context);
 		if (!(item == null || item.isEmpty())) throw HAND_NOT_EMPTY_EXCEPTION;
 	}
 
@@ -36,22 +36,24 @@ public class GetNode {
 
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				ItemStack item = itemArgument.createStack(1, false);
-				ItemManager.setItemStack(context.getSource(), item);
+
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, item.getName()));
 				return 1;
 			})
 			.build();
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
-			.argument("count", IntegerArgumentType.integer(0, 64))
+			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
 				checkCanEdit(context.getSource());
 				
-				if (!ItemManager.getItemStack(context.getSource()).isEmpty()) throw HAND_NOT_EMPTY_EXCEPTION;
 				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
 				int count = IntegerArgumentType.getInteger(context, "count");
+
 				ItemStack item = itemArgument.createStack(count, false);
-				ItemManager.setItemStack(context.getSource(), item);
+				
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, item.getName()));
 				return 1;
 			})

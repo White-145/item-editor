@@ -5,8 +5,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
 import me.white.itemeditor.argument.HexColorArgumentType;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -35,7 +35,7 @@ public class ColorNode {
     private static final String MAP_COLOR_KEY = "MapColor";
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        Item type = ItemManager.getItemStack(context).getItem();
+        Item type = ItemUtil.getItemStack(context).getItem();
         if (!(
             type instanceof DyeableArmorItem ||
             type instanceof DyeableHorseArmorItem ||
@@ -48,15 +48,15 @@ public class ColorNode {
     }
 
     private static void checkHasColor(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemManager.getItemStack(context);
+        ItemStack item = ItemUtil.getItemStack(context);
         NbtCompound nbt = item.getNbt();
         if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
         if (nbt == null) throw NO_COLOR_EXCEPTION;
-        if (!nbt.contains(getColorKey(item), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
+        if (!nbt.contains(getColorKey(context), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
     }
 
-    private static String getColorKey(ItemStack item) throws CommandSyntaxException {
-        Item type = item.getItem();
+    private static String getColorKey(FabricClientCommandSource context) throws CommandSyntaxException {
+        Item type = ItemUtil.getItemStack(context).getItem();
         if (
             type instanceof TippedArrowItem ||
             type instanceof PotionItem ||
@@ -77,6 +77,10 @@ public class ColorNode {
         );
     }
 
+    private static String getHex(int color) {
+        return String.format("#%06X", (0xFFFFFF & color));
+    }
+
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("color")
@@ -85,19 +89,18 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
                 checkHasColor(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
 
-                String colorKey = getColorKey(item);
+                String colorKey = getColorKey(context.getSource());
                 NbtCompound nbt = item.getNbt();
                 if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
-                if (nbt == null) throw NO_COLOR_EXCEPTION;
-                if (!nbt.contains(colorKey, NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
                 int color = nbt.getInt(colorKey);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Integer.toHexString(color)));
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, getHex(color)));
                 return color;
             })
             .build();
@@ -105,12 +108,12 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
-                String colorKey = getColorKey(item);
+                String colorKey = getColorKey(context.getSource());
                 if (isInDisplay(item)) {
                     NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                     display.remove(colorKey);
@@ -121,7 +124,7 @@ public class ColorNode {
                     item.setNbt(nbt);
                 }
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 return 1;
             })
@@ -130,13 +133,13 @@ public class ColorNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
             .argument("color", HexColorArgumentType.hexColor())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 int color = HexColorArgumentType.getHexColor(context, "color");
 
-                String colorKey = getColorKey(item);
+                String colorKey = getColorKey(context.getSource());
                 if (isInDisplay(item)) {
                     NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                     display.putInt(colorKey, color);
@@ -147,8 +150,8 @@ public class ColorNode {
                     item.setNbt(nbt);
                 }
 
-                ItemManager.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Integer.toHexString(color)));
+                ItemUtil.setItemStack(context.getSource(), item);
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getHex(color)));
                 return 1;
             })
             .build();

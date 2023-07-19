@@ -15,24 +15,19 @@ Features:
 - - `... insert <index> [<line>]`
 - - `... add [<line>]`
 - - `... remove <index>`
-- - `... clear`
-- - `... clear before <index>`
-- - `... clear after <index>`
+- - `... clear [before|after <index>]`
 - `... material ...`
 - - `... get`
 - - `... set <material>`
 - `... count ...`
 - - `... get`
-- - `... set [<count>]`
-- - `... add [<count>]`
-- - `... remove [<count>]`
+- - `... set|add|remove [<count>]`
 - - `... stack`
 - `... model ...`
 - - `... get`
-- - `... set <model>`
-- - `... reset`
+- - `... set [<model>]`
 - `... enchantment ...`
-- - `... get <enchantment>`
+- - `... get [<enchantment>]`
 - - `... set <enchantment> [<level>]`
 - - `... remove <enchantment>`
 - - `... clear`
@@ -46,8 +41,7 @@ Features:
 - `... equip`
 - `... color ...`
 - - `... get`
-- - `... set <color>`
-- - `... reset`
+- - `... set [<color>]`
 - `... unbreakable`
 - - `... get`
 - - `... toggle`
@@ -86,6 +80,25 @@ Features:
 - - - `... clear`
 - - - `... clear before <index>`
 - - - `... clear after <index>`
+- `... head ...`
+- - `... get`
+- - `... set [...]`
+- - - `... owner <owner>`
+- - - `... texture <texture>`
+- - `... sound ...`
+- - - `... get`
+- - - `... set <sound>`
+- `... trim ...`
+- - `... get`
+- - `... set <pattern> <material>`
+
+### /!\ NOT DONE SECTION /!\
+- `... firework ...`
+- `... banner ...`
+- `... entity ...`
+- `... items ...`
+- `... optimize ...`
+- `... script ...`
 
 Also available as `/itemeditor:edit`
 

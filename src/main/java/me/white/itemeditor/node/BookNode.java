@@ -8,8 +8,8 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
 import me.white.itemeditor.util.Colored;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -55,13 +55,13 @@ public class BookNode {
     private static final String PAGES_KEY = "pages";
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		Item item = ItemManager.getItemStack(context).getItem();
+		Item item = ItemUtil.getItemStack(context).getItem();
         if (item != Items.WRITTEN_BOOK) throw CANNOT_EDIT_EXCEPTION;
     }
 
     private static void checkHasPages(FabricClientCommandSource context) throws CommandSyntaxException {
 		checkCanEdit(context);
-		ItemStack item = ItemManager.getItemStack(context);
+		ItemStack item = ItemUtil.getItemStack(context);
         if (!item.hasNbt()) throw NO_PAGES_EXCEPTION;
         if (!item.getNbt().contains(PAGES_KEY, NbtElement.LIST_TYPE));
     }
@@ -78,10 +78,10 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> authorGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_AUTHOR_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
                 if (!nbt.contains(AUTHOR_KEY, NbtElement.STRING_TYPE)) throw NO_AUTHOR_EXCEPTION;
@@ -95,15 +95,15 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> authorSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 nbt.putString(AUTHOR_KEY, "");
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, ""));
                 return 1;
             })
@@ -112,16 +112,16 @@ public class BookNode {
         ArgumentCommandNode<FabricClientCommandSource, String> authorSetAuthorNode = ClientCommandManager
             .argument("author", StringArgumentType.greedyString())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 String author = StringArgumentType.getString(context, "author");
                 NbtCompound nbt = item.getOrCreateNbt();
                 nbt.putString(AUTHOR_KEY, author);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, author));
                 return 1;
             })
@@ -134,10 +134,10 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> titleGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_TITLE_EXCEPTION;
                 NbtCompound nbt = item.getNbt();
                 if (!nbt.contains(TITLE_KEY, NbtElement.STRING_TYPE)) throw NO_TITLE_EXCEPTION;
@@ -151,15 +151,15 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> titleSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 nbt.putString(TITLE_KEY, "");
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, ""));
                 return 1;
             })
@@ -168,16 +168,16 @@ public class BookNode {
         ArgumentCommandNode<FabricClientCommandSource, String> titleSetTitleNode = ClientCommandManager
             .argument("title", StringArgumentType.greedyString())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 String title = StringArgumentType.getString(context, "title");
                 NbtCompound nbt = item.getOrCreateNbt();
                 nbt.putString(TITLE_KEY, title);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, title));
                 return 1;
             })
@@ -190,10 +190,10 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 int generation = 0;
                 if (item.hasNbt()) generation = item.getNbt().getInt(GENERATION_KEY);
                 String generationStr = switch (generation) {
@@ -215,16 +215,16 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationSetOriginalNode = ClientCommandManager
             .literal("original")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 int old = nbt.getInt(GENERATION_KEY);
                 nbt.putInt(GENERATION_KEY, 0);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_ORIGINAL)));
                 return old;
             })
@@ -233,16 +233,16 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationSetCopyNode = ClientCommandManager
             .literal("copy")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 int old = nbt.getInt(GENERATION_KEY);
                 nbt.putInt(GENERATION_KEY, 1);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_COPY)));
                 return old;
             })
@@ -251,16 +251,16 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationSetCopyOfCopyNode = ClientCommandManager
             .literal("copy_of_copy")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 int old = nbt.getInt(GENERATION_KEY);
                 nbt.putInt(GENERATION_KEY, 2);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_COPY_OF_COPY)));
                 return old;
             })
@@ -269,16 +269,16 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationSetTatteredNode = ClientCommandManager
             .literal("tattered")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound nbt = item.getOrCreateNbt();
                 int old = nbt.getInt(GENERATION_KEY);
                 nbt.putInt(GENERATION_KEY, 3);
                 item.setNbt(nbt);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_TATTERED)));
                 return old;
             })
@@ -291,10 +291,10 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageGetNode = ClientCommandManager
 		.literal("get")
 		.executes(context -> {
-			ItemManager.checkHasItem(context.getSource());
+			ItemUtil.checkHasItem(context.getSource());
 			checkHasPages(context.getSource());
 			
-			ItemStack item = ItemManager.getItemStack(context.getSource());
+			ItemStack item = ItemUtil.getItemStack(context.getSource());
 			NbtList pages = item.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
 
 			context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_GET));
@@ -310,10 +310,10 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageGetIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemManager.checkHasItem(context.getSource());
+				ItemUtil.checkHasItem(context.getSource());
 				checkHasPages(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource());
+				ItemStack item = ItemUtil.getItemStack(context.getSource());
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
@@ -331,9 +331,9 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageSetIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 99))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
@@ -346,7 +346,7 @@ public class BookNode {
 				}
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_SET, i, ""));
 				return 1;
 			})
@@ -355,9 +355,9 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> pageSetIndexPageNode = ClientCommandManager
 			.argument("page", StringArgumentType.greedyString())
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				Text page = Colored.of(StringArgumentType.getString(context, "page"));
 
@@ -372,7 +372,7 @@ public class BookNode {
 				}
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_SET, i, page));
 				return 1;
 			})
@@ -385,10 +385,10 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageRemoveIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
@@ -396,7 +396,7 @@ public class BookNode {
 				pages.remove(i);
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_REMOVE, i));
 				return 1;
 			})
@@ -405,16 +405,16 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageAddNode = ClientCommandManager
 			.literal("add")
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
 				if (pages == null) pages = new NbtList();
 				pages.add(Colored.EMPTY_LINE);
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_ADD, ""));
 				return pages.size() - 1;
 			})
@@ -423,9 +423,9 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> pageAddPageNode = ClientCommandManager
 			.argument("page", StringArgumentType.greedyString())
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				Text textPage = Colored.of(StringArgumentType.getString(context, "page"));
 
 				NbtString page = NbtString.of(Text.Serializer.toJson(textPage));
@@ -434,7 +434,7 @@ public class BookNode {
 				pages.add(page);
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_ADD, textPage));
 				return pages.size() - 1;
 			})
@@ -447,9 +447,9 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageInsertIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 63))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
@@ -462,7 +462,7 @@ public class BookNode {
 				}
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_INSERT, "", i));
 				return 1;
 			})
@@ -471,9 +471,9 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> pageInsertIndexPageNode = ClientCommandManager
 			.argument("page", StringArgumentType.greedyString())
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 				Text textPage = Colored.of(StringArgumentType.getString(context, "page"));
 
@@ -489,7 +489,7 @@ public class BookNode {
 				}
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_INSERT, textPage, i));
 				return 1;
 			})
@@ -498,16 +498,16 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageClearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
 
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
 				pages.clear();
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_CLEAR));
 				return 1;
 			})
@@ -520,17 +520,17 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 99))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
 				
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
 				for (int j = 0; j < i; ++j) pages.remove(0);
 				item.setSubNbt(PAGES_KEY, pages);
 
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_CLEAR_BEFORE, i));
 				return 1;
 			})
@@ -543,10 +543,10 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 99))
 			.executes(context -> {
-				ItemManager.checkCanEdit(context.getSource());
+				ItemUtil.checkCanEdit(context.getSource());
 				checkHasPages(context.getSource());
 
-				ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				int i = IntegerArgumentType.getInteger(context, "index");
 
 				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
@@ -555,7 +555,7 @@ public class BookNode {
 				for (int j = 0; j < off; ++j) pages.remove(pages.size() - 1);
 				item.setSubNbt(PAGES_KEY, pages);
 				
-				ItemManager.setItemStack(context.getSource(), item);
+				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_CLEAR_AFTER, i));
 				return 1;
 			})

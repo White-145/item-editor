@@ -5,7 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -34,9 +34,9 @@ public class DataNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PATH, NbtHelper.toPrettyPrintedText(item.getNbt())));
                 return 1;
@@ -46,9 +46,9 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> getPathNode = ClientCommandManager
             .argument("path", NbtPathArgumentType.nbtPath())
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
                 if (!item.hasNbt()) throw NO_NBT_EXCEPTION;
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtElement element = path.get(item.getNbt()).get(0);
@@ -68,9 +68,9 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> setPathValueNode = ClientCommandManager
             .argument("value", NbtElementArgumentType.nbtElement())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
                 NbtCompound nbt = item.getNbt();
@@ -82,7 +82,7 @@ public class DataNode {
                 if (old != null && element.equals(old)) throw SET_ALREADY_HAS_EXCEPTION;
                 path.put(nbt, element);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 return 1;
             })
             .build();
@@ -94,16 +94,16 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtCompound> mergeValueNode = ClientCommandManager
             .argument("value", NbtCompoundArgumentType.nbtCompound())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtCompound compound = NbtCompoundArgumentType.getNbtCompound(context, "value");
                 NbtCompound nbt = item.getNbt();
                 if (nbt == null) nbt = new NbtCompound();
                 NbtCompound merged = nbt.copy().copyFrom(compound);
                 if (nbt.equals(merged)) throw MERGE_ALREADY_HAS_EXCEPTION;
                 item.setNbt(merged);
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 return 1;
             })
             .build();
@@ -115,16 +115,16 @@ public class DataNode {
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> removePathNode = ClientCommandManager
             .argument("path", NbtPathArgumentType.nbtPath())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 NbtPath path = context.getArgument("path", NbtPath.class);
                 NbtCompound nbt = item.getNbt();
                 if (nbt == null) throw NO_NBT_EXCEPTION;
                 if (path.count(nbt) == 0) throw NO_SUCH_NBT_EXCEPTION;
                 path.remove(nbt);
                 item.setNbt(nbt);
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 return 1;
             })
             .build();

@@ -13,8 +13,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.ItemManager;
 import me.white.itemeditor.argument.QuotableStringArgumentType;
+import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -65,12 +65,12 @@ public class HeadNode {
     private static final String TEXTURE_FORMAT = "{textures:{SKIN:{url:\"%s\"}}}";
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        Item item = ItemManager.getItemStack(context).getItem();
+        Item item = ItemUtil.getItemStack(context).getItem();
         if (item != Items.PLAYER_HEAD) throw CANNOT_EDIT_EXCEPTION;
     }
 
     private static void checkHasTexture(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemManager.getItemStack(context);
+        ItemStack item = ItemUtil.getItemStack(context);
         if (!item.hasNbt()) throw NO_TEXTURE_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) throw NO_TEXTURE_EXCEPTION;
@@ -85,7 +85,7 @@ public class HeadNode {
     }
 
     private static void checkHasName(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemManager.getItemStack(context);
+        ItemStack item = ItemUtil.getItemStack(context);
         if (!item.hasNbt()) throw NO_OWNER_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) throw NO_OWNER_EXCEPTION;
@@ -94,7 +94,7 @@ public class HeadNode {
     }
 
     private static void checkHasSound(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemManager.getItemStack(context);
+        ItemStack item = ItemUtil.getItemStack(context);
         if (!item.hasNbt()) throw NO_SOUND_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) throw NO_SOUND_EXCEPTION;
@@ -130,12 +130,12 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
                 try {
                     checkHasTexture(context.getSource());
 
-                    ItemStack item = ItemManager.getItemStack(context.getSource());
+                    ItemStack item = ItemUtil.getItemStack(context.getSource());
                     String textureObject = new String(Base64.getDecoder().decode(
                         ((NbtCompound)item
                             .getSubNbt(SKULL_OWNER_KEY)
@@ -155,7 +155,7 @@ public class HeadNode {
                 } catch (CommandSyntaxException e) {
                     checkHasName(context.getSource());
 
-                    ItemStack item = ItemManager.getItemStack(context.getSource());
+                    ItemStack item = ItemUtil.getItemStack(context.getSource());
                     String owner = item.getNbt().getCompound(SKULL_OWNER_KEY).getString(NAME_KEY);
     
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
@@ -167,14 +167,14 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 if (!item.hasNbt() || !item.getNbt().contains(SKULL_OWNER_KEY)) throw NO_TEXTURE_EXCEPTION;
                 item.removeSubNbt(SKULL_OWNER_KEY);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
                 return 1;
             })
@@ -187,15 +187,15 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, String> setOwnerOwnerNode = ClientCommandManager
             .argument("owner", StringArgumentType.word())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 String owner = StringArgumentType.getString(context, "owner");
 
                 item.setSubNbt(SKULL_OWNER_KEY, NbtString.of(owner));
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_SET, owner));
                 return 1;
             })
@@ -208,10 +208,10 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager
             .argument("texture", QuotableStringArgumentType.quotableString())
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 String texture = QuotableStringArgumentType.getQuotableString(context, "texture");
 
                 URL textureUrl;
@@ -235,7 +235,7 @@ public class HeadNode {
                 owner.remove(NAME_KEY);
                 item.setSubNbt(SKULL_OWNER_KEY, owner);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, textureUrl.toString()));
                 return 1;
             })
@@ -248,11 +248,11 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> soundGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemManager.checkHasItem(context.getSource());
+                ItemUtil.checkHasItem(context.getSource());
                 checkCanEdit(context.getSource());
                 checkHasSound(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource());
+                ItemStack item = ItemUtil.getItemStack(context.getSource());
 
                 NbtCompound blockEntityTag = item.getOrCreateSubNbt(BLOCK_ENTITY_TAG_KEY);
                 String sound = blockEntityTag.getString(NOTE_BLOCK_SOUND_KEY);
@@ -265,17 +265,17 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> soundSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
                 checkHasSound(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
                 NbtCompound blockEntityTag = item.getOrCreateSubNbt(BLOCK_ENTITY_TAG_KEY);
                 blockEntityTag.remove(NOTE_BLOCK_SOUND_KEY);
                 item.setSubNbt(BLOCK_ENTITY_TAG_KEY, blockEntityTag);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_RESET));
                 return 1;
             })
@@ -284,17 +284,17 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<SoundEvent>> soundSetSoundNode = ClientCommandManager
             .argument("sound", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.SOUND_EVENT))
             .executes(context -> {
-                ItemManager.checkCanEdit(context.getSource());
+                ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
-                ItemStack item = ItemManager.getItemStack(context.getSource()).copy();
+                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
                 SoundEvent sound = getSoundArgument(context, "sound");
 
                 NbtCompound blockEntityTag = item.getOrCreateSubNbt(BLOCK_ENTITY_TAG_KEY);
                 blockEntityTag.putString(NOTE_BLOCK_SOUND_KEY, sound.getId().toString());
                 item.setSubNbt(BLOCK_ENTITY_TAG_KEY, blockEntityTag);
 
-                ItemManager.setItemStack(context.getSource(), item);
+                ItemUtil.setItemStack(context.getSource(), item);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_SET, sound.getId().toString()));
                 return 1;
             })
