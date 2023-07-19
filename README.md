@@ -1,10 +1,12 @@
-My minecraft mod (fabric 1.20.1) for item editing, that uses client commands.
+# Simple Item Editor
+
+Simple item editor is minecraft mod (fabric 1.20.1) for item editing, that uses client commands.
 
 Not done yet, but feel free to build, use, and suggest new features to add (especially translations, if someone is good at it please message me/pull request/create an issue with translations)
 
-Features:
+## Features:
 
-`/edit` command:
+### `/edit` command:
 - `... name ...`
 - - `... get`
 - - `... set [<name>]`
@@ -92,7 +94,7 @@ Features:
 - - `... get`
 - - `... set <pattern> <material>`
 
-### /!\ NOT DONE SECTION /!\
+#### /!\ NOT DONE SECTION /!\
 - `... firework ...`
 - `... banner ...`
 - `... entity ...`
@@ -100,6 +102,7 @@ Features:
 - `... optimize ...`
 - `... script ...`
 
-Also available as `/itemeditor:edit`
+### `/color` command
+### `/char` command
 
-(literally only 1 command)
+All commands are also available as `/itemeditor:<command>`
