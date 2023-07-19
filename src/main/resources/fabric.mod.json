@@ -3,12 +3,15 @@
 	"id": "item-editor",
 	"version": "${version}",
 	"name": "Item Editor",
-	"description": "Allows to edit items in creative using commands",
+	"description": "Simple item editor using custom commands",
 	"authors": [
-		"White_145"
+		"White_145Gaming"
 	],
+	"contact": {
+		"sources": "https://github.com/White-145/item-editor"
+	},
 	"license": "MIT",
-	"icon": "assets/packet-logger/icon.png",
+	"icon": "assets/item-editor/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [

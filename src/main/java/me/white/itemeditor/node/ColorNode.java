@@ -10,9 +10,15 @@ import me.white.itemeditor.argument.HexColorArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.item.DyeableArmorItem;
+import net.minecraft.item.DyeableHorseArmorItem;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.LingeringPotionItem;
+import net.minecraft.item.PotionItem;
+import net.minecraft.item.SplashPotionItem;
+import net.minecraft.item.TippedArrowItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
@@ -31,15 +37,13 @@ public class ColorNode {
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
         Item type = ItemManager.getItemStack(context).getItem();
         if (!(
-            type.equals(Items.LEATHER_HORSE_ARMOR) ||
-            type.equals(Items.LEATHER_HELMET) ||
-            type.equals(Items.LEATHER_CHESTPLATE) ||
-            type.equals(Items.LEATHER_BOOTS) ||
-            type.equals(Items.TIPPED_ARROW) ||
-            type.equals(Items.POTION) ||
-            type.equals(Items.SPLASH_POTION) ||
-            type.equals(Items.LINGERING_POTION) ||
-            type.equals(Items.FILLED_MAP)
+            type instanceof DyeableArmorItem ||
+            type instanceof DyeableHorseArmorItem ||
+            type instanceof TippedArrowItem ||
+            type instanceof PotionItem ||
+            type instanceof SplashPotionItem ||
+            type instanceof LingeringPotionItem ||
+            type instanceof FilledMapItem
         )) throw CANNOT_EDIT_EXCEPTION;
     }
 
@@ -54,21 +58,23 @@ public class ColorNode {
     private static String getColorKey(ItemStack item) throws CommandSyntaxException {
         Item type = item.getItem();
         if (
-            type.equals(Items.TIPPED_ARROW) ||
-            type.equals(Items.POTION) ||
-            type.equals(Items.SPLASH_POTION) ||
-            type.equals(Items.LINGERING_POTION)
+            type instanceof TippedArrowItem ||
+            type instanceof PotionItem ||
+            type instanceof SplashPotionItem ||
+            type instanceof LingeringPotionItem
         ) return CUSTOM_POTION_COLOR_KEY;
-        if (type.equals(Items.FILLED_MAP)) return MAP_COLOR_KEY;
+        if (type instanceof FilledMapItem) return MAP_COLOR_KEY;
         return COLOR_KEY;
     }
 
     private static boolean isInDisplay(ItemStack item) {
         Item type = item.getItem();
-        return !(type.equals(Items.TIPPED_ARROW) ||
-            type.equals(Items.POTION) ||
-            type.equals(Items.SPLASH_POTION) ||
-            type.equals(Items.LINGERING_POTION));
+        return !(
+            type instanceof TippedArrowItem ||
+            type instanceof PotionItem ||
+            type instanceof SplashPotionItem ||
+            type instanceof LingeringPotionItem
+        );
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
