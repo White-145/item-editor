@@ -5,7 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.argument.HexColorArgumentType;
+import me.white.itemeditor.argument.ColorArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -131,13 +131,13 @@ public class ColorNode {
             .build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
-            .argument("color", HexColorArgumentType.hexColor())
+            .argument("color", ColorArgumentType.hexColor())
             .executes(context -> {
                 ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
-                int color = HexColorArgumentType.getHexColor(context, "color");
+                int color = ColorArgumentType.getHexColor(context, "color");
 
                 String colorKey = getColorKey(context.getSource());
                 if (isInDisplay(item)) {
