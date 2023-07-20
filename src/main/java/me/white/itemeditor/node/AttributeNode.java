@@ -291,7 +291,7 @@ public class AttributeNode {
 				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = ArgumentUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				float amount = FloatArgumentType.getFloat(context, "amount");
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
 
 				ItemStack result = set(item, attribute, amount, operation, slot);
@@ -348,7 +348,7 @@ public class AttributeNode {
 
 				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = ArgumentUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
 
 				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, operation, slot);

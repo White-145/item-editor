@@ -140,7 +140,7 @@ public class DataNode {
         setNode.addChild(setPathNode);
         setPathNode.addChild(setPathValueNode);
 
-        // ... merge <path> <value>
+        // ... merge <value>
         node.addChild(mergeNode);
         mergeNode.addChild(mergeValueNode);
 

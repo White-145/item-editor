@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import me.white.itemeditor.argument.EnumArgumentType;
 import me.white.itemeditor.util.Colored;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -45,14 +46,35 @@ public class BookNode {
     private static final String OUTPUT_PAGES_CLEAR = "";
     private static final String OUTPUT_PAGES_CLEAR_BEFORE = "";
     private static final String OUTPUT_PAGES_CLEAR_AFTER = "";
-    private static final String GENERATION_ORIGINAL = "commands.edit.book.generationoriginal";
-    private static final String GENERATION_COPY = "commands.edit.book.generationcopy";
-    private static final String GENERATION_COPY_OF_COPY = "commands.edit.book.generationcopyofcopy";
-    private static final String GENERATION_TATTERED = "commands.edit.book.generationtattered";
     private static final String AUTHOR_KEY = "author";
     private static final String TITLE_KEY = "title";
     private static final String GENERATION_KEY = "generation";
     private static final String PAGES_KEY = "pages";
+
+	private static enum Generation {
+		ORIGINAL(0, "commands.edit.book.generationoriginal"),
+		COPY(1, "commands.edit.book.generationcopy"),
+		COPY_OF_COPY(2, "commands.edit.book.generationcopyofcopy"),
+		TATTERED(3, "commands.edit.book.generationtattered");
+
+		int id;
+		String translationKey;
+
+		private Generation(int id, String translationKey) {
+			this.id = id;
+			this.translationKey = translationKey;
+		}
+
+		public static Generation byId(int id) {
+			switch (id) {
+				case 0: return ORIGINAL;
+				case 1: return COPY;
+				case 2: return COPY_OF_COPY;
+				case 3: return TATTERED;
+			}
+			return null;
+		}
+	}
 
     private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
 		Item item = ItemUtil.getItemStack(context).getItem();
@@ -196,12 +218,7 @@ public class BookNode {
                 ItemStack item = ItemUtil.getItemStack(context.getSource());
                 int generation = 0;
                 if (item.hasNbt()) generation = item.getNbt().getInt(GENERATION_KEY);
-                String generationStr = switch (generation) {
-                    case 1 -> GENERATION_COPY;
-                    case 2 -> GENERATION_COPY_OF_COPY;
-                    case 3 -> GENERATION_TATTERED;
-                    default -> GENERATION_ORIGINAL;
-                };
+                String generationStr = Generation.byId(generation).translationKey;
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_GET, Text.translatable(generationStr)));
                 return generation;
@@ -212,74 +229,22 @@ public class BookNode {
             .literal("set")
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> generationSetOriginalNode = ClientCommandManager
-            .literal("original")
+        ArgumentCommandNode<FabricClientCommandSource, Generation> generationSetGenerationNode = ClientCommandManager
+			.argument("generation", EnumArgumentType.enumArgument(Generation.class))
             .executes(context -> {
                 ItemUtil.checkCanEdit(context.getSource());
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
+				Generation generation = EnumArgumentType.getEnum(context, "generation", Generation.class);
+
                 NbtCompound nbt = item.getOrCreateNbt();
                 int old = nbt.getInt(GENERATION_KEY);
-                nbt.putInt(GENERATION_KEY, 0);
+                nbt.putInt(GENERATION_KEY, generation.id);
                 item.setNbt(nbt);
 
                 ItemUtil.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_ORIGINAL)));
-                return old;
-            })
-            .build();
-        
-        LiteralCommandNode<FabricClientCommandSource> generationSetCopyNode = ClientCommandManager
-            .literal("copy")
-            .executes(context -> {
-                ItemUtil.checkCanEdit(context.getSource());
-                checkCanEdit(context.getSource());
-
-                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
-                NbtCompound nbt = item.getOrCreateNbt();
-                int old = nbt.getInt(GENERATION_KEY);
-                nbt.putInt(GENERATION_KEY, 1);
-                item.setNbt(nbt);
-
-                ItemUtil.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_COPY)));
-                return old;
-            })
-            .build();
-        
-        LiteralCommandNode<FabricClientCommandSource> generationSetCopyOfCopyNode = ClientCommandManager
-            .literal("copy_of_copy")
-            .executes(context -> {
-                ItemUtil.checkCanEdit(context.getSource());
-                checkCanEdit(context.getSource());
-
-                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
-                NbtCompound nbt = item.getOrCreateNbt();
-                int old = nbt.getInt(GENERATION_KEY);
-                nbt.putInt(GENERATION_KEY, 2);
-                item.setNbt(nbt);
-
-                ItemUtil.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_COPY_OF_COPY)));
-                return old;
-            })
-            .build();
-        
-        LiteralCommandNode<FabricClientCommandSource> generationSetTatteredNode = ClientCommandManager
-            .literal("tattered")
-            .executes(context -> {
-                ItemUtil.checkCanEdit(context.getSource());
-                checkCanEdit(context.getSource());
-
-                ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
-                NbtCompound nbt = item.getOrCreateNbt();
-                int old = nbt.getInt(GENERATION_KEY);
-                nbt.putInt(GENERATION_KEY, 3);
-                item.setNbt(nbt);
-
-                ItemUtil.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(GENERATION_TATTERED)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(generation.translationKey)));
                 return old;
             })
             .build();
@@ -579,10 +544,7 @@ public class BookNode {
         node.addChild(generationNode);
         generationNode.addChild(generationGetNode);
         generationNode.addChild(generationSetNode);
-        generationSetNode.addChild(generationSetOriginalNode);
-        generationSetNode.addChild(generationSetCopyNode);
-        generationSetNode.addChild(generationSetCopyOfCopyNode);
-        generationSetNode.addChild(generationSetTatteredNode);
+        generationSetNode.addChild(generationSetGenerationNode);
 
         // ... page ...
         node.addChild(pageNode);

@@ -65,7 +65,7 @@ public class UnbreakableNode {
         
         rootNode.addChild(node);
 
-		// ... unbreakable get|toggle
+		// ... get|toggle
 		node.addChild(getNode);
 		node.addChild(toggleNode);
     }

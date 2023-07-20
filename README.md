@@ -17,7 +17,8 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... insert <index> [<line>]`
 - - `... add [<line>]`
 - - `... remove <index>`
-- - `... clear [before|after <index>]`
+- - `... clear`
+- - `... clear before|after <index>`
 - `... material ...`
 - - `... get`
 - - `... set <material>`
@@ -48,8 +49,8 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... get`
 - - `... toggle`
 - `... flags ...`
-- - `... get [enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim]`
-- - `... toggle enchantments|attributes|unbreakable|candestroy|canplaceon|others|dyed|trim`
+- - `... get [<flag>]`
+- - `... toggle <flag>`
 - `... whitelist ...`
 - - `... get [place|destroy]`
 - - `... add place|destroy <block>`
@@ -62,7 +63,7 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - `... data ...`
 - - `... get <path>`
 - - `... set <path> <value>`
-- - `... merge <path> <value>`
+- - `... merge <value>`
 - `... book ...`
 - - `... author ...`
 - - - `... get`
@@ -72,7 +73,7 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - - `... set <title>`
 - - `... generation ...`
 - - - `... get`
-- - - `... set original|copy|copy_of_copy|tattered`
+- - - `... set <generation>`
 - - `... page ...`
 - - - `... get [<index>]`
 - - - `... set <index> [<page>]`
@@ -84,15 +85,15 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - - `... clear after <index>`
 - `... head ...`
 - - `... get`
-- - `... set [...]`
-- - - `... owner <owner>`
-- - - `... texture <texture>`
+- - `... set`
+- - `... set owner <owner>`
+- - `... set texture <texture>`
 - - `... sound ...`
 - - - `... get`
 - - - `... set <sound>`
 - `... trim ...`
 - - `... get`
-- - `... set <pattern> <material>`
+- - `... set [<pattern> <material>]`
 
 #### /!\ NOT DONE SECTION /!\
 - `... firework ...`
