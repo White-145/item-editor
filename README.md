@@ -94,9 +94,15 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - `... trim ...`
 - - `... get`
 - - `... set [<pattern> <material>]`
+- `... firework ...`
+- - `... flight ...`
+- - - `... get`
+- - - `... set [<flight>]`
+- - `... star ...`
+- - - `... get`
+- - - `... add <type> <colors> [<flicker>] [<trail>] [<fadeColors>]`
 
 #### /!\ NOT DONE SECTION /!\
-- `... firework ...`
 - `... banner ...`
 - `... entity ...`
 - `... items ...`

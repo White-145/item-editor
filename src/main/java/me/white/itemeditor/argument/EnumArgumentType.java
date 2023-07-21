@@ -1,6 +1,7 @@
 package me.white.itemeditor.argument;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Function;
@@ -52,7 +53,8 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        for (String suggestion : suggestions.keySet()) builder.suggest(suggestion);
+        String remaining = builder.getRemainingLowerCase();
+        for (String suggestion : suggestions.keySet()) if (suggestion.toLowerCase(Locale.ROOT).startsWith(remaining)) builder.suggest(suggestion);
         return builder.buildFuture();
     }
 }

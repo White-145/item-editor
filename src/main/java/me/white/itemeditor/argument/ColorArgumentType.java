@@ -32,6 +32,14 @@ public class ColorArgumentType implements ArgumentType<Integer> {
         this.type = type;
     }
 
+    public static ColorArgumentType hexColor() {
+        return new ColorArgumentType(Type.HEX);
+    }
+
+    public static Integer getHexColor(CommandContext<FabricClientCommandSource> context, String name) {
+        return context.getArgument(name, Integer.class);
+    }
+
     @Override
     public Integer parse(StringReader reader) throws CommandSyntaxException {
         if (type == Type.HEX) {
@@ -55,16 +63,8 @@ public class ColorArgumentType implements ArgumentType<Integer> {
         }
     }
 
-    public static ColorArgumentType hexColor() {
-        return new ColorArgumentType(Type.HEX);
-    }
-
     @Override
     public Collection<String> getExamples() {
         return EXAMPLES;
-    }
-
-    public static Integer getHexColor(CommandContext<FabricClientCommandSource> context, String name) {
-        return context.getArgument(name, Integer.class);
     }
 }

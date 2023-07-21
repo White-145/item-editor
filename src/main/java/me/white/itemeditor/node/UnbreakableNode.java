@@ -20,8 +20,8 @@ public class UnbreakableNode {
 	private static final String OUTPUT_DISABLE = "commands.edit.unbreakable.disable";
 	private static final String UNBREAKABLE_KEY = "Unbreakable";
 
-	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (item.getMaxDamage() == 0) throw CANNOT_EDIT_EXCEPTION;
 	}
 

@@ -22,8 +22,8 @@ public class ModelNode {
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
 	private static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
 
-	private static void checkHasModel(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkHasModel(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!item.hasNbt()) throw NO_MODEL_EXCEPTION;
 		NbtCompound nbt = item.getNbt();
 		if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;

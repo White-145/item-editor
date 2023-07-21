@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.ColorArgumentType;
+import me.white.itemeditor.util.ColorUtil;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -34,8 +35,8 @@ public class ColorNode {
     private static final String COLOR_KEY = "color";
     private static final String MAP_COLOR_KEY = "MapColor";
 
-    private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        Item type = ItemUtil.getItemStack(context).getItem();
+    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+        Item type = ItemUtil.getItemStack(source).getItem();
         if (!(
             type instanceof DyeableArmorItem ||
             type instanceof DyeableHorseArmorItem ||
@@ -47,16 +48,16 @@ public class ColorNode {
         )) throw CANNOT_EDIT_EXCEPTION;
     }
 
-    private static void checkHasColor(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasColor(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         NbtCompound nbt = item.getNbt();
-        if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
+        if (isInDisplay(source)) nbt = item.getSubNbt(DISPLAY_KEY);
         if (nbt == null) throw NO_COLOR_EXCEPTION;
-        if (!nbt.contains(getColorKey(context), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
+        if (!nbt.contains(getColorKey(source), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
     }
 
-    private static String getColorKey(FabricClientCommandSource context) throws CommandSyntaxException {
-        Item type = ItemUtil.getItemStack(context).getItem();
+    private static String getColorKey(FabricClientCommandSource source) throws CommandSyntaxException {
+        Item type = ItemUtil.getItemStack(source).getItem();
         if (
             type instanceof TippedArrowItem ||
             type instanceof PotionItem ||
@@ -67,18 +68,14 @@ public class ColorNode {
         return COLOR_KEY;
     }
 
-    private static boolean isInDisplay(ItemStack item) {
-        Item type = item.getItem();
+    private static boolean isInDisplay(FabricClientCommandSource source) {
+        Item type = ItemUtil.getItemStack(source).getItem();
         return !(
             type instanceof TippedArrowItem ||
             type instanceof PotionItem ||
             type instanceof SplashPotionItem ||
             type instanceof LingeringPotionItem
         );
-    }
-
-    private static String getHex(int color) {
-        return String.format("#%06X", (0xFFFFFF & color));
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -97,10 +94,10 @@ public class ColorNode {
 
                 String colorKey = getColorKey(context.getSource());
                 NbtCompound nbt = item.getNbt();
-                if (isInDisplay(item)) nbt = item.getSubNbt(DISPLAY_KEY);
+                if (isInDisplay(context.getSource())) nbt = item.getSubNbt(DISPLAY_KEY);
                 int color = nbt.getInt(colorKey);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, getHex(color)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, ColorUtil.format(color)));
                 return color;
             })
             .build();
@@ -114,7 +111,7 @@ public class ColorNode {
                 ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
                 String colorKey = getColorKey(context.getSource());
-                if (isInDisplay(item)) {
+                if (isInDisplay(context.getSource())) {
                     NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                     display.remove(colorKey);
                     item.setSubNbt(DISPLAY_KEY, display);
@@ -140,7 +137,7 @@ public class ColorNode {
                 int color = ColorArgumentType.getHexColor(context, "color");
 
                 String colorKey = getColorKey(context.getSource());
-                if (isInDisplay(item)) {
+                if (isInDisplay(context.getSource())) {
                     NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
                     display.putInt(colorKey, color);
                     item.setSubNbt(DISPLAY_KEY, display);
@@ -151,7 +148,7 @@ public class ColorNode {
                 }
 
                 ItemUtil.setItemStack(context.getSource(), item);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getHex(color)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, ColorUtil.format(color)));
                 return 1;
             })
             .build();
@@ -164,5 +161,7 @@ public class ColorNode {
         // ... set [<color>]
         node.addChild(setNode);
         setNode.addChild(setHexColorNode);
+
+        // TODO firework star
     }
 }

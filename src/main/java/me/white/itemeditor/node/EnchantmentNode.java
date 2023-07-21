@@ -44,8 +44,8 @@ public class EnchantmentNode {
 	private static final String ID_KEY = "id";
 	private static final String LVL_KEY = "lvl";
 
-	private static void checkHasEnchantments(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkHasEnchantments(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!item.hasNbt()) throw NO_ENCHANTMENTS_EXCEPTION;
 		NbtCompound nbt = item.getNbt();
 		if (!nbt.contains(ENCHANTMENTS_KEY, NbtElement.LIST_TYPE)) throw NO_ENCHANTMENTS_EXCEPTION;

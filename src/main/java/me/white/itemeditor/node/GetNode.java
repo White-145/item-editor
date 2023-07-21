@@ -19,8 +19,8 @@ public class GetNode {
 	public static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.handnotempty")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
-	private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!(item == null || item.isEmpty())) throw HAND_NOT_EMPTY_EXCEPTION;
 	}
 

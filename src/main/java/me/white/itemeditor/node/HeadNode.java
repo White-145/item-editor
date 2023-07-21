@@ -6,7 +6,6 @@ import java.util.Base64;
 import java.util.UUID;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -14,6 +13,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.QuotableStringArgumentType;
+import me.white.itemeditor.util.ArgumentUtil;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -27,9 +27,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.ClickEvent;
@@ -64,13 +62,13 @@ public class HeadNode {
     private static final String TEXTURE_URL_REGEX = "http(?:s)?:\\/\\/textures\\.minecraft\\.net\\/texture\\/[0-9a-f]+";
     private static final String TEXTURE_FORMAT = "{textures:{SKIN:{url:\"%s\"}}}";
 
-    private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        Item item = ItemUtil.getItemStack(context).getItem();
+    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+        Item item = ItemUtil.getItemStack(source).getItem();
         if (item != Items.PLAYER_HEAD) throw CANNOT_EDIT_EXCEPTION;
     }
 
-    private static void checkHasTexture(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasTexture(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_TEXTURE_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) throw NO_TEXTURE_EXCEPTION;
@@ -84,8 +82,8 @@ public class HeadNode {
         if (textureObject.isEmpty() || !textureObject.matches(TEXTURE_REGEX)) throw NO_TEXTURE_EXCEPTION;
     }
 
-    private static void checkHasName(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasName(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_OWNER_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) throw NO_OWNER_EXCEPTION;
@@ -93,23 +91,14 @@ public class HeadNode {
         if (!owner.contains(NAME_KEY, NbtElement.STRING_TYPE)) throw NO_OWNER_EXCEPTION;
     }
 
-    private static void checkHasSound(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasSound(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_SOUND_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) throw NO_SOUND_EXCEPTION;
         NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
         if (!blockEntityTag.contains(NOTE_BLOCK_SOUND_KEY, NbtElement.STRING_TYPE)) throw NO_SOUND_EXCEPTION;
     }
-
-    private static SoundEvent getSoundArgument(CommandContext<FabricClientCommandSource> context, String key) throws CommandSyntaxException {
-		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
-        RegistryKey<?> registryKey = reference.registryKey();
-        if (!registryKey.isOf(RegistryKeys.SOUND_EVENT)) {
-            throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), RegistryKeys.SOUND_EVENT.getValue());
-        }
-		return (SoundEvent)reference.value();
-	}
 
     private static Text stylizeUrl(URL url) {
         return Text.empty()
@@ -288,7 +277,7 @@ public class HeadNode {
                 checkCanEdit(context.getSource());
 
                 ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
-                SoundEvent sound = getSoundArgument(context, "sound");
+                SoundEvent sound = ArgumentUtil.getRegistryEntryArgument(context, "sound", RegistryKeys.SOUND_EVENT);
 
                 NbtCompound blockEntityTag = item.getOrCreateSubNbt(BLOCK_ENTITY_TAG_KEY);
                 blockEntityTag.putString(NOTE_BLOCK_SOUND_KEY, sound.getId().toString());

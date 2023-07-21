@@ -76,14 +76,14 @@ public class BookNode {
 		}
 	}
 
-    private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-		Item item = ItemUtil.getItemStack(context).getItem();
+    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+		Item item = ItemUtil.getItemStack(source).getItem();
         if (item != Items.WRITTEN_BOOK) throw CANNOT_EDIT_EXCEPTION;
     }
 
-    private static void checkHasPages(FabricClientCommandSource context) throws CommandSyntaxException {
-		checkCanEdit(context);
-		ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasPages(FabricClientCommandSource source) throws CommandSyntaxException {
+		checkCanEdit(source);
+		ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_PAGES_EXCEPTION;
         if (!item.getNbt().contains(PAGES_KEY, NbtElement.LIST_TYPE));
     }
@@ -468,9 +468,7 @@ public class BookNode {
 
 				ItemStack item = ItemUtil.getItemStack(context.getSource()).copy();
 
-				NbtList pages = item.getOrCreateNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE);
-				pages.clear();
-				item.setSubNbt(PAGES_KEY, pages);
+				item.setSubNbt(PAGES_KEY, new NbtList());
 
 				ItemUtil.setItemStack(context.getSource(), item);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGES_CLEAR));

@@ -24,8 +24,8 @@ public class NameNode {
 	private static final String DISPLAY_KEY = "display";
 	private static final String NAME_KEY = "Name";
 
-	private static void checkHasName(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkHasName(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!item.hasNbt()) throw NO_NAME_EXCEPTION;
 		NbtCompound nbt = item.getNbt();
 		if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) throw NO_NAME_EXCEPTION;

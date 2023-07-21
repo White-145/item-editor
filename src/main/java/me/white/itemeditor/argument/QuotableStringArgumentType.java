@@ -10,6 +10,14 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 public class QuotableStringArgumentType implements ArgumentType<String> {
     private QuotableStringArgumentType() { }
 
+    public static QuotableStringArgumentType quotableString() {
+        return new QuotableStringArgumentType();
+    }
+
+    public static String getQuotableString(CommandContext<FabricClientCommandSource> context, String name) {
+        return context.getArgument(name, String.class);
+    }
+
     @Override
     public String parse(StringReader reader) throws CommandSyntaxException {
         char next = reader.peek();
@@ -20,13 +28,5 @@ public class QuotableStringArgumentType implements ArgumentType<String> {
         StringBuilder result = new StringBuilder();
         while (reader.canRead() && reader.peek() != ' ') result.append(reader.read());
         return result.toString();
-    }
-
-    public static QuotableStringArgumentType quotableString() {
-        return new QuotableStringArgumentType();
-    }
-
-    public static String getQuotableString(CommandContext<FabricClientCommandSource> context, String name) {
-        return context.getArgument(name, String.class);
     }
 }

@@ -40,8 +40,8 @@ public class WhitelistNode {
     private static final String PLACE_KEY = "CanPlaceOn";
     private static final String DESTROY_KEY = "CanDestroy";
 
-    private static void checkHasWhitelist(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasWhitelist(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_WHITELIST_EXCEPTION;
         NbtCompound nbt = item.getNbt();
         NbtList place = nbt.getList(PLACE_KEY, NbtElement.STRING_TYPE);

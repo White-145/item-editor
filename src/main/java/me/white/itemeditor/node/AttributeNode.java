@@ -63,8 +63,8 @@ public class AttributeNode {
 		}
 	}
 
-	private static void checkHasAttributes(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkHasAttributes(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!item.hasNbt()) throw NO_ATTRIBUTES_EXCEPTION;
 		NbtCompound nbt = item.getNbt();
 		if (!nbt.contains(ATTRIBUTE_MODIFIERS_KEY)) throw NO_ATTRIBUTES_EXCEPTION;
@@ -72,8 +72,8 @@ public class AttributeNode {
 		if (attributes.isEmpty()) throw NO_ATTRIBUTES_EXCEPTION;
 	}
 
-	private static int get(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static int get(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		Multimap<EntityAttribute, EntityAttributeModifier> attributes;
 		if (slot != null) {
 			Multimap<EntityAttribute, EntityAttributeModifier> dirtyAttributes = item.getAttributeModifiers(slot);
@@ -106,9 +106,9 @@ public class AttributeNode {
             }
 		}
 		if (attributes.isEmpty()) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
-		context.sendFeedback(Text.translatable(OUTPUT_GET));
+		source.sendFeedback(Text.translatable(OUTPUT_GET));
 		attributes.forEach((attr, mod) -> {
-			context.sendFeedback(Text.empty()
+			source.sendFeedback(Text.empty()
 				.append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
 				.append(switch (mod.getOperation()) {
 					case MULTIPLY_BASE -> OPERATION_MULTIPLY;
@@ -131,8 +131,8 @@ public class AttributeNode {
 		return attributes.size();
 	}
 
-	private static int remove(FabricClientCommandSource context, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context).copy();
+	private static int remove(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source).copy();
 		String id = Registries.ATTRIBUTE.getId(attribute).toString();
 
 		NbtList attributes = item.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
@@ -145,9 +145,9 @@ public class AttributeNode {
 		}
 		if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
 		item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
-		ItemUtil.setItemStack(context, item);
+		ItemUtil.setItemStack(source, item);
 		int dif = attributes.size() - newAttributes.size();
-		context.sendFeedback(Text.translatable(OUTPUT_REMOVE, dif));
+		source.sendFeedback(Text.translatable(OUTPUT_REMOVE, dif));
 		return dif;
 	}
 

@@ -22,8 +22,8 @@ public class DurabilityNode {
     private static final String OUTPUT_RESET = "commands.edit.durability.reset";
     private static final String OUTPUT_PERCENT = "commands.edit.durability.percent";
 
-    private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        if (!ItemUtil.getItemStack(context).isDamageable()) throw CANNOT_EDIT_EXCEPTION;
+    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+        if (!ItemUtil.getItemStack(source).isDamageable()) throw CANNOT_EDIT_EXCEPTION;
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {

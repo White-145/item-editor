@@ -37,8 +37,8 @@ public class LoreNode {
 	private static final String DISPLAY_KEY = "display";
 	private static final String LORE_KEY = "Lore";
 
-	private static void checkHasLore(FabricClientCommandSource context) throws CommandSyntaxException {
-		ItemStack item = ItemUtil.getItemStack(context);
+	private static void checkHasLore(FabricClientCommandSource source) throws CommandSyntaxException {
+		ItemStack item = ItemUtil.getItemStack(source);
 		if (!item.hasNbt()) throw NO_LORE_EXCEPTION;
 		NbtCompound nbt = item.getNbt();
 		if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) throw NO_LORE_EXCEPTION;

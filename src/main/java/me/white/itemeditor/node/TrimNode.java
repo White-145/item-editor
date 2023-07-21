@@ -32,13 +32,13 @@ public class TrimNode {
     private static final String PATTERN_KEY = "pattern";
     private static final String MATERIAL_KEY = "material";
 
-    private static void checkCanEdit(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!(item.getItem() instanceof ArmorItem)) throw CANNOT_EDIT_EXCEPTION;
     }
 
-    private static void checkHasTrim(FabricClientCommandSource context) throws CommandSyntaxException {
-        ItemStack item = ItemUtil.getItemStack(context);
+    private static void checkHasTrim(FabricClientCommandSource source) throws CommandSyntaxException {
+        ItemStack item = ItemUtil.getItemStack(source);
         if (!item.hasNbt()) throw NO_TRIM_EXCEPTION;
         NbtCompound trim = item.getSubNbt(TRIM_KEY);
         if (trim == null || !trim.contains(PATTERN_KEY, NbtElement.STRING_TYPE) || !trim.contains(MATERIAL_KEY, NbtElement.STRING_TYPE)) throw NO_TRIM_EXCEPTION;
@@ -47,8 +47,8 @@ public class TrimNode {
         Identifier patternId = Identifier.tryParse(pattern);
         Identifier materialId = Identifier.tryParse(material);
         if (patternId == null || materialId == null) throw NO_TRIM_EXCEPTION;
-        if (context.getRegistryManager().get(RegistryKeys.TRIM_PATTERN).get(patternId) == null) throw NO_TRIM_EXCEPTION;
-        if (context.getRegistryManager().get(RegistryKeys.TRIM_MATERIAL).get(materialId) == null) throw NO_TRIM_EXCEPTION;
+        if (source.getRegistryManager().get(RegistryKeys.TRIM_PATTERN).get(patternId) == null) throw NO_TRIM_EXCEPTION;
+        if (source.getRegistryManager().get(RegistryKeys.TRIM_MATERIAL).get(materialId) == null) throw NO_TRIM_EXCEPTION;
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
