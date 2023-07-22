@@ -23,7 +23,6 @@ loom {
 
 	mods {
 		"item-editor" {
-			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
 	}

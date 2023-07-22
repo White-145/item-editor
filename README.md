@@ -102,14 +102,10 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - - `... get`
 - - - `... add <type> <colors> [<flicker>] [<trail>] [<fadeColors>]`
 
+All commands are also available as `/itemeditor:<command>`
+
 #### /!\ NOT DONE SECTION /!\
 - `... banner ...`
-- `... entity ...`
-- `... items ...`
-- `... optimize ...`
-- `... script ...`
 
 ### `/color` command
 ### `/char` command
-
-All commands are also available as `/itemeditor:<command>`
