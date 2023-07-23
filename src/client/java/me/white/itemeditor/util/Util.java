@@ -17,8 +17,8 @@ import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 
 public class Util {
-	public static CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
-	public static CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
+	public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
+	public static final CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
 
 	public static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
 		checkHasCreative(source);
@@ -33,6 +33,15 @@ public class Util {
 	public static void checkHasItem(FabricClientCommandSource source) throws CommandSyntaxException {
 		ItemStack mainhand = getItemStack(source);
 		if (mainhand == null || mainhand.isEmpty()) throw NO_ITEM_EXCEPTION;
+	}
+
+	public static boolean hasItem(ItemStack stack) {
+		return stack != null && !stack.isEmpty();
+	}
+
+	public static boolean hasCreative(FabricClientCommandSource source) {
+		MinecraftClient client = source.getClient();
+		return client.interactionManager.getCurrentGameMode().isCreative();
 	}
 	
 	public static ItemStack getItemStack(FabricClientCommandSource source) {
@@ -49,18 +58,6 @@ public class Util {
 		inventory.updateItems();
 		source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, item));
 	}
-
-    public static int meanColor(int[] colors) {
-        int red = 0;
-        int green = 0;
-        int blue = 0;
-        for (int color : colors) {
-            red += (color & 0xFF0000) >> 16;
-            green += (color & 0x00FF00) >> 8;
-            blue += (color & 0x0000FF);
-        }
-        return ((red / colors.length) << 16) + ((green / colors.length) << 8) + blue / colors.length;
-    }
 
     public static String formatColor(int color) {
         return String.format("#%06X", (0xFFFFFF & color));

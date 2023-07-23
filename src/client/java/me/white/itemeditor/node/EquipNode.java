@@ -18,15 +18,15 @@ public class EquipNode {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("equip")
 			.executes(context -> {
-                Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource());
-
+				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				PlayerInventory inventory = context.getSource().getPlayer().getInventory();
-				ItemStack headItem = inventory.getArmorStack(3);
+				ItemStack headItem = inventory.getArmorStack(3).copy();
+				
 				Util.setItemStack(context.getSource(), headItem);
-				inventory.setStack(39, item);
-				context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, item));
+				inventory.setStack(39, stack);
+				context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, stack));
 				context.getSource().sendFeedback(Text.translatable(OUTPUT));
 				return headItem.isEmpty() ? 0 : 1;
 			})

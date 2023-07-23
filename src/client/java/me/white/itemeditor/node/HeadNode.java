@@ -34,6 +34,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+// TODO OUTDATED /!\
 public class HeadNode {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
 	public static final CommandSyntaxException NO_OWNER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.noowner")).create();

@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -12,14 +13,12 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.item.trim.ArmorTrimMaterial;
 import net.minecraft.item.trim.ArmorTrimPattern;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 public class TrimNode {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.cannotedit")).create();
@@ -27,27 +26,9 @@ public class TrimNode {
     private static final String OUTPUT_GET = "commands.edit.trim.get";
     private static final String OUTPUT_RESET = "commands.edit.trim.reset";
     private static final String OUTPUT_SET = "commands.edit.trim.set";
-    private static final String TRIM_KEY = "Trim";
-    private static final String PATTERN_KEY = "pattern";
-    private static final String MATERIAL_KEY = "material";
 
-    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
-        ItemStack item = Util.getItemStack(source);
-        if (!(item.getItem() instanceof ArmorItem)) throw CANNOT_EDIT_EXCEPTION;
-    }
-
-    private static void checkHasTrim(FabricClientCommandSource source) throws CommandSyntaxException {
-        ItemStack item = Util.getItemStack(source);
-        if (!item.hasNbt()) throw NO_TRIM_EXCEPTION;
-        NbtCompound trim = item.getSubNbt(TRIM_KEY);
-        if (trim == null || !trim.contains(PATTERN_KEY, NbtElement.STRING_TYPE) || !trim.contains(MATERIAL_KEY, NbtElement.STRING_TYPE)) throw NO_TRIM_EXCEPTION;
-        String pattern = trim.getString(PATTERN_KEY);
-        String material = trim.getString(MATERIAL_KEY);
-        Identifier patternId = Identifier.tryParse(pattern);
-        Identifier materialId = Identifier.tryParse(material);
-        if (patternId == null || materialId == null) throw NO_TRIM_EXCEPTION;
-        if (source.getRegistryManager().get(RegistryKeys.TRIM_PATTERN).get(patternId) == null) throw NO_TRIM_EXCEPTION;
-        if (source.getRegistryManager().get(RegistryKeys.TRIM_MATERIAL).get(materialId) == null) throw NO_TRIM_EXCEPTION;
+    private static boolean canEdit(ItemStack stack) {
+        return stack.getItem() instanceof ArmorItem;
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -58,19 +39,15 @@ public class TrimNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                Util.checkHasItem(context.getSource());
-                checkCanEdit(context.getSource());
-                checkHasTrim(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource());
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (!EditHelper.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
+                ArmorTrim trim = EditHelper.getTrim(stack, context.getSource().getRegistryManager());
+                ArmorTrimPattern pattern = trim.getPattern().value();
+                ArmorTrimMaterial material = trim.getMaterial().value();
 
-                ItemStack item = Util.getItemStack(context.getSource());
-
-                NbtCompound trim = item.getSubNbt(TRIM_KEY);
-                String pattern = trim.getString(PATTERN_KEY);
-                String material = trim.getString(MATERIAL_KEY);
-                ArmorTrimPattern trimPattern = context.getSource().getRegistryManager().get(RegistryKeys.TRIM_PATTERN).get(Identifier.tryParse(pattern));
-                ArmorTrimMaterial trimMaterial = context.getSource().getRegistryManager().get(RegistryKeys.TRIM_MATERIAL).get(Identifier.tryParse(material));
-
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, trimPattern.description(), trimMaterial.description()));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, pattern.description(), material.description()));
                 return 1;
             })
             .build();
@@ -78,13 +55,14 @@ public class TrimNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                Util.checkHasItem(context.getSource());
-                checkCanEdit(context.getSource());
-                checkHasTrim(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (!EditHelper.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
+                EditHelper.setTrim(stack, null, context.getSource().getRegistryManager());
 
-                ItemStack item = Util.getItemStack(context.getSource());
-                item.removeSubNbt(TRIM_KEY);
-
+                Util.setItemStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 return 1;
             })
@@ -97,19 +75,15 @@ public class TrimNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<ArmorTrimMaterial>> setPatternMaterialNode = ClientCommandManager
             .argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.TRIM_MATERIAL))
             .executes(context -> {
-                Util.checkHasItem(context.getSource());
-                checkCanEdit(context.getSource());
-
-                ItemStack item = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 ArmorTrimPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.TRIM_PATTERN);
                 ArmorTrimMaterial material = Util.getRegistryEntryArgument(context, "material", RegistryKeys.TRIM_MATERIAL);
+                EditHelper.setTrim(stack, pattern, material);
 
-                NbtCompound trim = new NbtCompound();
-                trim.putString(PATTERN_KEY, pattern.assetId().toString());
-                trim.putString(MATERIAL_KEY, material.assetName());
-                
-                item.setSubNbt(TRIM_KEY, trim);
-
+                Util.setItemStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, pattern.description(), material.description()));
                 return 1;
             })

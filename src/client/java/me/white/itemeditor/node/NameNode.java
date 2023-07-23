@@ -29,8 +29,8 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
-				ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource());
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasName(stack)) throw NO_NAME_EXCEPTION;
 				Text name = EditHelper.getName(stack);
 				
@@ -42,8 +42,9 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				EditHelper.setName(stack, Text.empty());
 
 				Util.setItemStack(context.getSource(), stack);
@@ -55,8 +56,9 @@ public class NameNode {
 		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
 			.argument("name", StringArgumentType.greedyString())
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				Text name = Colored.of(StringArgumentType.getString(context, "name"));
 				EditHelper.setName(stack, name);
 
@@ -69,8 +71,9 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasName(stack)) throw NO_NAME_EXCEPTION;
 				EditHelper.setName(stack, null);
 

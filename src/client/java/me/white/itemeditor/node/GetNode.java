@@ -16,12 +16,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class GetNode {
-	public static final CommandSyntaxException HAND_NOT_EMPTY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.handnotempty")).create();
+	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.cannotedit")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
-	private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
+	private static boolean canEdit(FabricClientCommandSource source) {
 		ItemStack item = Util.getItemStack(source);
-		if (!(item == null || item.isEmpty())) throw HAND_NOT_EMPTY_EXCEPTION;
+		return item == null || item.isEmpty();
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -32,13 +32,11 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
 			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
 			.executes(context -> {
-				checkCanEdit(context.getSource());
+				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
+				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
-				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
-				ItemStack item = itemArgument.createStack(1, false);
-
-				Util.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, item.getName()));
+				Util.setItemStack(context.getSource(), stack);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, stack.getName()));
 				return 1;
 			})
 			.build();
@@ -46,15 +44,12 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
-				checkCanEdit(context.getSource());
-				
-				ItemStackArgument itemArgument = ItemStackArgumentType.getItemStackArgument(context, "item");
+				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				int count = IntegerArgumentType.getInteger(context, "count");
+				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
 
-				ItemStack item = itemArgument.createStack(count, false);
-				
-				Util.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, item.getName()));
+				Util.setItemStack(context.getSource(), stack);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, stack.getName()));
 				return 1;
 			})
 			.build();

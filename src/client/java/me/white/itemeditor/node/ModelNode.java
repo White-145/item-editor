@@ -6,13 +6,12 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class ModelNode {
@@ -20,14 +19,6 @@ public class ModelNode {
 	private static final String OUTPUT_GET = "commands.edit.model.get";
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
-	private static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
-
-	private static void checkHasModel(FabricClientCommandSource source) throws CommandSyntaxException {
-		ItemStack item = Util.getItemStack(source);
-		if (!item.hasNbt()) throw NO_MODEL_EXCEPTION;
-		NbtCompound nbt = item.getNbt();
-		if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) throw NO_MODEL_EXCEPTION;
-	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -38,9 +29,9 @@ public class ModelNode {
 			.literal("get")
 			.executes(context -> {
 				Util.checkHasItem(context.getSource());
-				checkHasModel(context.getSource());
-
-				int model = Util.getItemStack(context.getSource()).getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
+				ItemStack stack = Util.getItemStack(context.getSource());
+				if (!EditHelper.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+				int model = EditHelper.getModel(stack);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
 				return model;
@@ -51,15 +42,12 @@ public class ModelNode {
 			.literal("set")
 			.executes(context -> {
 				Util.checkCanEdit(context.getSource());
-				checkHasModel(context.getSource());
+				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				if (!EditHelper.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+				int old = EditHelper.getModel(stack);
+				EditHelper.setModel(stack, null);
 
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
-				NbtCompound nbt = item.getNbt();
-				int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
-				nbt.remove(CUSTOM_MODEL_DATA_KEY);
-				item.setNbt(nbt);
-
-				Util.setItemStack(context.getSource(), item);
+				Util.setItemStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
 				return old;
 			})
@@ -69,29 +57,21 @@ public class ModelNode {
 			.argument("model", IntegerArgumentType.integer(0))
 			.executes(context -> {
 				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				int model = IntegerArgumentType.getInteger(context, "model");
-
+				int old = EditHelper.getModel(stack);
 				if (model == 0) {
-					checkHasModel(context.getSource());
+					if (!EditHelper.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+					EditHelper.setModel(stack, null);
 
-					NbtCompound nbt = item.getNbt();
-					int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
-					nbt.remove(CUSTOM_MODEL_DATA_KEY);
-					item.setNbt(nbt);
-
-					Util.setItemStack(context.getSource(), item);
 					context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-					return old;
-				}
-				NbtCompound nbt = item.getOrCreateNbt();
-				int old = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
-				nbt.putInt(CUSTOM_MODEL_DATA_KEY, model);
-				item.setNbt(nbt);
+				} else {
+					EditHelper.setModel(stack, model);
 
-				Util.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
+				}
+
+				Util.setItemStack(context.getSource(), stack);
 				return old;
 			})
 			.build();

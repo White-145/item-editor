@@ -29,11 +29,10 @@ public class MaterialNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource());
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 
-				Item type = Util.getItemStack(context.getSource()).getItem();
-
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, type.getName()));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getItem().getName()));
 				return 1;
 			})
 			.build();
@@ -45,16 +44,16 @@ public class MaterialNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				Item item = Util.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
+				if (stack.getItem() == item) throw ALREADY_IS_EXCEPTION;
+				ItemStack newStack = new ItemStack(item, stack.getCount());
+				newStack.setNbt(stack.getNbt());
 
-				ItemStack item = Util.getItemStack(context.getSource());
-				Item type = Util.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
-				if (item.getItem() == type) throw ALREADY_IS_EXCEPTION;
-				ItemStack newItem = new ItemStack(type, item.getCount());
-				newItem.setNbt(item.getNbt());
-
-				Util.setItemStack(context.getSource(), newItem);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, type.getName()));
+				Util.setItemStack(context.getSource(), newStack);
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getName()));
 				return 1;
 			})
 			.build();

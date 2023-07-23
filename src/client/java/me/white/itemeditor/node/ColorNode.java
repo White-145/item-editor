@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.ColorArgumentType;
+import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -15,12 +16,6 @@ import net.minecraft.item.DyeableHorseArmorItem;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.LingeringPotionItem;
-import net.minecraft.item.PotionItem;
-import net.minecraft.item.SplashPotionItem;
-import net.minecraft.item.TippedArrowItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 
 public class ColorNode {
@@ -29,51 +24,13 @@ public class ColorNode {
     private static final String OUTPUT_GET = "commands.edit.color.get";
     private static final String OUTPUT_SET = "commands.edit.color.set";
     private static final String OUTPUT_RESET = "commands.edit.color.reset";
-    private static final String CUSTOM_POTION_COLOR_KEY = "CustomPotionColor";
-    private static final String DISPLAY_KEY = "display";
-    private static final String COLOR_KEY = "color";
-    private static final String MAP_COLOR_KEY = "MapColor";
 
-    private static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
-        Item type = Util.getItemStack(source).getItem();
-        if (!(
+    private static boolean canEdit(ItemStack stack) {
+        Item type = stack.getItem();
+        return (
             type instanceof DyeableArmorItem ||
             type instanceof DyeableHorseArmorItem ||
-            type instanceof TippedArrowItem ||
-            type instanceof PotionItem ||
-            type instanceof SplashPotionItem ||
-            type instanceof LingeringPotionItem ||
             type instanceof FilledMapItem
-        )) throw CANNOT_EDIT_EXCEPTION;
-    }
-
-    private static void checkHasColor(FabricClientCommandSource source) throws CommandSyntaxException {
-        ItemStack item = Util.getItemStack(source);
-        NbtCompound nbt = item.getNbt();
-        if (isInDisplay(source)) nbt = item.getSubNbt(DISPLAY_KEY);
-        if (nbt == null) throw NO_COLOR_EXCEPTION;
-        if (!nbt.contains(getColorKey(source), NbtElement.INT_TYPE)) throw NO_COLOR_EXCEPTION;
-    }
-
-    private static String getColorKey(FabricClientCommandSource source) throws CommandSyntaxException {
-        Item type = Util.getItemStack(source).getItem();
-        if (
-            type instanceof TippedArrowItem ||
-            type instanceof PotionItem ||
-            type instanceof SplashPotionItem ||
-            type instanceof LingeringPotionItem
-        ) return CUSTOM_POTION_COLOR_KEY;
-        if (type instanceof FilledMapItem) return MAP_COLOR_KEY;
-        return COLOR_KEY;
-    }
-
-    private static boolean isInDisplay(FabricClientCommandSource source) {
-        Item type = Util.getItemStack(source).getItem();
-        return !(
-            type instanceof TippedArrowItem ||
-            type instanceof PotionItem ||
-            type instanceof SplashPotionItem ||
-            type instanceof LingeringPotionItem
         );
     }
 
@@ -85,16 +42,11 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                Util.checkHasItem(context.getSource());
-                checkCanEdit(context.getSource());
-                checkHasColor(context.getSource());
-
-                ItemStack item = Util.getItemStack(context.getSource());
-
-                String colorKey = getColorKey(context.getSource());
-                NbtCompound nbt = item.getNbt();
-                if (isInDisplay(context.getSource())) nbt = item.getSubNbt(DISPLAY_KEY);
-                int color = nbt.getInt(colorKey);
+                ItemStack stack = Util.getItemStack(context.getSource());
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (!EditHelper.hasColor(stack)) throw NO_COLOR_EXCEPTION;
+                int color = EditHelper.getColor(stack);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Util.formatColor(color)));
                 return color;
@@ -104,51 +56,34 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                Util.checkCanEdit(context.getSource());
-                checkCanEdit(context.getSource());
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (!EditHelper.hasColor(stack)) throw NO_COLOR_EXCEPTION;
+                int old = EditHelper.getColor(stack);
+                EditHelper.setColor(stack, null);
 
-                ItemStack item = Util.getItemStack(context.getSource()).copy();
-
-                String colorKey = getColorKey(context.getSource());
-                if (isInDisplay(context.getSource())) {
-                    NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
-                    display.remove(colorKey);
-                    item.setSubNbt(DISPLAY_KEY, display);
-                } else {
-                    NbtCompound nbt = item.getOrCreateNbt();
-                    nbt.remove(colorKey);
-                    item.setNbt(nbt);
-                }
-
-                Util.setItemStack(context.getSource(), item);
+                Util.setItemStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-                return 1;
+                return old;
             })
             .build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
             .argument("color", ColorArgumentType.hex())
             .executes(context -> {
-                Util.checkCanEdit(context.getSource());
-                checkCanEdit(context.getSource());
-
-                ItemStack item = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                int old = EditHelper.getColor(stack);
                 int color = ColorArgumentType.getColor(context, "color");
+                EditHelper.setColor(stack, color);
 
-                String colorKey = getColorKey(context.getSource());
-                if (isInDisplay(context.getSource())) {
-                    NbtCompound display = item.getOrCreateSubNbt(DISPLAY_KEY);
-                    display.putInt(colorKey, color);
-                    item.setSubNbt(DISPLAY_KEY, display);
-                } else {
-                    NbtCompound nbt = item.getOrCreateNbt();
-                    nbt.putInt(colorKey, color);
-                    item.setNbt(nbt);
-                }
-
-                Util.setItemStack(context.getSource(), item);
+                Util.setItemStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Util.formatColor(color)));
-                return 1;
+                return old;
             })
             .build();
 
@@ -160,7 +95,5 @@ public class ColorNode {
         // ... set [<color>]
         node.addChild(setNode);
         setNode.addChild(setHexColorNode);
-
-        // TODO firework star
     }
 }

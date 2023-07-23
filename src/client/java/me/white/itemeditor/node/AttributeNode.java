@@ -1,9 +1,10 @@
 package me.white.itemeditor.node;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import org.apache.commons.lang3.tuple.Triple;
+
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -11,6 +12,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.EnumArgumentType;
+import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -20,16 +22,12 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 
 public class AttributeNode {
 	public static final CommandSyntaxException ALREADY_HAS_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.alreadyexists")).create();
@@ -38,17 +36,12 @@ public class AttributeNode {
 	public static final CommandSyntaxException NO_SUCH_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattributes")).create();
 	private static final String OUTPUT_GET = "commands.edit.attribute.get";
 	private static final String OUTPUT_SET = "commands.edit.attribute.set";
-	private static final String OUTPUT_SET_PERCENT = "commands.edit.attribute.setpercent";
-	private static final String OUTPUT_SET_SLOT = "commands.edit.attribute.setslot";
-	private static final String OUTPUT_SET_PERCENT_SLOT = "commands.edit.attribute.setpercentslot";
+	private static final String OUTPUT_SET_PLACEHOLDER_ENABLE = "commands.edit.attribute.placeholderenable";
+	private static final String OUTPUT_SET_PLACEHOLDER_DISABLE = "commands.edit.attribute.placeholderdisable";
 	private static final String OUTPUT_REMOVE = "commands.edit.attribute.remove";
-	private static final String OUTPUT_RESET = "commands.edit.attribute.reset";
 	private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
-	private static final String OUTPUT_CLEAR_SLOT = "commands.edit.attribute.clearslot";
-	private static final String OPERATION_BASE = "commands.edit.attribute.operationbase";
-	private static final String OPERATION_MULTIPLY = "commands.edit.attribute.operationmultiply";
-	private static final String OPERATION_TOTAL = "commands.edit.attribute.operationtotal";
-	private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
+	private static final String OUTPUT_ATTRIBUTE = "commands.edit.attribute.attribute";
+	private static final String OUTPUT_ATTRIBUTE_SLOT = "commands.edit.attribute.attributeslot";
 
 	private static enum Operation {
 		BASE(EntityAttributeModifier.Operation.ADDITION),
@@ -61,106 +54,85 @@ public class AttributeNode {
 			this.operation = operation;
 		}
 	}
-
-	private static void checkHasAttributes(FabricClientCommandSource source) throws CommandSyntaxException {
-		ItemStack item = Util.getItemStack(source);
-		if (!item.hasNbt()) throw NO_ATTRIBUTES_EXCEPTION;
-		NbtCompound nbt = item.getNbt();
-		if (!nbt.contains(ATTRIBUTE_MODIFIERS_KEY)) throw NO_ATTRIBUTES_EXCEPTION;
-		NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-		if (attributes.isEmpty()) throw NO_ATTRIBUTES_EXCEPTION;
+	
+	private static Text translate(Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> attribute) {
+		Text name = Text.translatable(attribute.getLeft().getTranslationKey());
+		Text value = Text.empty()
+			.append(attribute.getMiddle().getValue() > 0 ? "+" : "")
+			.append(attribute.getMiddle().getOperation() == EntityAttributeModifier.Operation.ADDITION
+				? Text.empty()
+					.append(String.valueOf(attribute.getMiddle().getValue()))
+				: Text.empty()
+					.append(String.valueOf(attribute.getMiddle().getValue() * 100))
+					.append("%")
+			);
+		return attribute.getRight() == null
+			? Text.translatable(OUTPUT_ATTRIBUTE, name, value)
+			: Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.getRight().getName());
 	}
 
 	private static int get(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
-		ItemStack item = Util.getItemStack(source);
-		Multimap<EntityAttribute, EntityAttributeModifier> attributes;
-		if (slot != null) {
-			Multimap<EntityAttribute, EntityAttributeModifier> dirtyAttributes = item.getAttributeModifiers(slot);
-			if (attribute != null) {
-				String id = Registries.ATTRIBUTE.getId(attribute).toString();
-				attributes = HashMultimap.create();
-				dirtyAttributes.forEach((attr, mod) -> {
-					if (mod.getName().equals(id)) attributes.put(attr, mod);
-				});
-			} else {
-				attributes = dirtyAttributes;
+		ItemStack stack = Util.getItemStack(source);
+		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+		if (!EditHelper.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
+		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : EditHelper.getAttributes(stack)) {
+			if ((attribute == null || attribute.equals(dirtyAttribute.getLeft())) && (slot == null || slot.equals(dirtyAttribute.getRight()))) {
+				attributes.add(dirtyAttribute);
 			}
-		} else {
-			String id = null;
-			if (attribute != null) id = Registries.ATTRIBUTE.getId(attribute).toString();
-			attributes = HashMultimap.create();
-            NbtList nbtList = item.getNbt().getList("AttributeModifiers", NbtElement.COMPOUND_TYPE);
-            for (int i = 0; i < nbtList.size(); ++i) {
-                NbtCompound nbtCompound = nbtList.getCompound(i);
-                EntityAttributeModifier entityAttributeModifier = EntityAttributeModifier.fromNbt(nbtCompound);
-                Optional<EntityAttribute> optional = Registries.ATTRIBUTE.getOrEmpty(Identifier.tryParse(nbtCompound.getString("AttributeName")));
-                if (
-					!optional.isPresent() ||
-					entityAttributeModifier == null ||
-					(attribute != null && !entityAttributeModifier.getName().equals(id)) ||
-					entityAttributeModifier.getId().getLeastSignificantBits() == 0L ||
-					entityAttributeModifier.getId().getMostSignificantBits() == 0L
-				) continue;
-                attributes.put(optional.get(), entityAttributeModifier);
-            }
 		}
 		if (attributes.isEmpty()) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
+
 		source.sendFeedback(Text.translatable(OUTPUT_GET));
-		attributes.forEach((attr, mod) -> {
+		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> triple : attributes) {
 			source.sendFeedback(Text.empty()
-				.append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-				.append(switch (mod.getOperation()) {
-					case MULTIPLY_BASE -> OPERATION_MULTIPLY;
-					case MULTIPLY_TOTAL -> OPERATION_TOTAL;
-					default -> OPERATION_BASE;
-				})
-				.append(" ")
-				.append(Text.translatable(attr.getTranslationKey()))
-				.append(" ")
-				.append(mod.getValue() > 0 ? "+" : "")
-				.append(mod.getOperation() == EntityAttributeModifier.Operation.ADDITION
-					? Text.empty()
-						.append(String.valueOf(mod.getValue()))
-					: Text.empty()
-						.append(String.valueOf(mod.getValue() * 100))
-						.append("%")
-				)
+				.append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
+				.append(translate(triple))
 			);
-		});
+		}
 		return attributes.size();
 	}
 
 	private static int remove(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
-		ItemStack item = Util.getItemStack(source).copy();
-		String id = Registries.ATTRIBUTE.getId(attribute).toString();
-
-		NbtList attributes = item.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-		NbtList newAttributes = new NbtList();
-		for (NbtElement nbtAttr : attributes) {
-			String nbtId = ((NbtCompound)nbtAttr).getString("Name");
-			String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
-			if (nbtId.equals(id) && (slot == null || nbtSlot.isEmpty() || slot.getName().equals(nbtSlot))) continue;
-			newAttributes.add(nbtAttr);
+		ItemStack stack = Util.getItemStack(source).copy();
+		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+		if (!Util.hasCreative(source)) throw Util.NOT_CREATIVE_EXCEPTION;
+		if (!EditHelper.hasAttributesPlaceholder(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
+		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> dirtyAttributes = EditHelper.getAttributes(stack);
+		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : dirtyAttributes) {
+			if ((attribute != null && !attribute.equals(dirtyAttribute.getLeft())) || (slot != null && !slot.equals(dirtyAttribute.getRight()))) {
+				attributes.add(dirtyAttribute);
+			}
 		}
-		if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
-		item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
-		Util.setItemStack(source, item);
-		int dif = attributes.size() - newAttributes.size();
+		if (attributes.equals(dirtyAttributes)) throw NO_SUCH_ATTRIBUTES_EXCEPTION;
+		int dif = dirtyAttributes.size() - attributes.size();
+		EditHelper.setAttributes(stack, attributes);
+
+		Util.setItemStack(source, stack);
 		source.sendFeedback(Text.translatable(OUTPUT_REMOVE, dif));
 		return dif;
 	}
 
-	private static ItemStack set(ItemStack item, EntityAttribute attribute, float amount, EntityAttributeModifier.Operation operation, EquipmentSlot slot) throws CommandSyntaxException {
+	private static int set(FabricClientCommandSource source, EntityAttribute attribute, EntityAttributeModifier modifier, EquipmentSlot slot) throws CommandSyntaxException {
+		ItemStack stack = Util.getItemStack(source).copy();
+		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+		if (!Util.hasCreative(source)) throw Util.NOT_CREATIVE_EXCEPTION;
 		if (attribute == null) {
-			if (item.getSubNbt(ATTRIBUTE_MODIFIERS_KEY) != null) throw ALREADY_HAS_ATTRIBUTES_EXCEPTION;
-			NbtList attributes = new NbtList();
-			attributes.add(new NbtCompound());
-			item.setSubNbt(ATTRIBUTE_MODIFIERS_KEY, attributes);
-			return item;
+			boolean hasPlaceholder = EditHelper.hasAttributesPlaceholder(stack);
+			EditHelper.setAttributePlaceholder(stack, !hasPlaceholder);
+
+			source.sendFeedback(Text.translatable(hasPlaceholder ? OUTPUT_SET_PLACEHOLDER_DISABLE : OUTPUT_SET_PLACEHOLDER_ENABLE));
+		} else {
+			List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>(EditHelper.getAttributes(stack));
+			Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> triple = Triple.of(attribute, modifier, slot);
+			attributes.add(triple);
+			EditHelper.setAttributes(stack, attributes);
+
+			source.sendFeedback(Text.translatable(OUTPUT_SET, translate(triple)));
 		}
-		EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), (double)amount, operation);
-		item.addAttributeModifier(attribute, modifier, slot);
-		return item;
+		Util.setItemStack(source, stack);
+		return 1;
 	}
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -171,9 +143,6 @@ public class AttributeNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
 				return get(context.getSource(), null, null);
 			})
 			.build();
@@ -181,9 +150,6 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> getSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
 				return get(context.getSource(), null, slot);
 			})
@@ -192,9 +158,6 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getSlotAttributeNode = ClientCommandManager
 			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
-				checkHasAttributes(context.getSource());
-
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				return get(context.getSource(), attribute, slot);
@@ -208,9 +171,6 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> removeAttributeNode = ClientCommandManager
 			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				checkHasAttributes(context.getSource());
-
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				return remove(context.getSource(), attribute, null);
 			})
@@ -219,9 +179,6 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> removeAttributeSlotNode = ClientCommandManager
 			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				checkHasAttributes(context.getSource());
-
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				return remove(context.getSource(), attribute, slot);
@@ -231,12 +188,7 @@ public class AttributeNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack result = set(Util.getItemStack(context.getSource()).copy(), null, 0, null, null);
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-				return 1;
+				return set(context.getSource(), null, null, null);
 			})
 			.build();
 		
@@ -247,133 +199,76 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, Float> setAttributeAmountNode = ClientCommandManager
 			.argument("amount", FloatArgumentType.floatArg())
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				float amount = FloatArgumentType.getFloat(context, "amount");
-
-				ItemStack result = set(item, attribute, amount, EntityAttributeModifier.Operation.ADDITION, null);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Text.translatable(attribute.getTranslationKey()), amount));
-				return 1;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, EntityAttributeModifier.Operation.ADDITION);
+				return set(context.getSource(), attribute, modifier, null);
 			})
 			.build();
 			
 		ArgumentCommandNode<FabricClientCommandSource, Operation> setAttributeAmountOperationNode = ClientCommandManager
 			.argument("operation", EnumArgumentType.enumArgument(Operation.class))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				float amount = FloatArgumentType.getFloat(context, "amount");
 				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
-
-				ItemStack result = set(item, attribute, amount, operation, null);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(
-					operation == EntityAttributeModifier.Operation.ADDITION ? OUTPUT_SET : OUTPUT_SET_PERCENT,
-					Text.translatable(attribute.getTranslationKey()), amount
-				));
-				return 1;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
+				return set(context.getSource(), attribute, modifier, null);
 			})
 			.build();
 			
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeAmountOperationSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				float amount = FloatArgumentType.getFloat(context, "amount");
 				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-
-				ItemStack result = set(item, attribute, amount, operation, slot);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(
-					operation == EntityAttributeModifier.Operation.ADDITION ? OUTPUT_SET_SLOT : OUTPUT_SET_PERCENT_SLOT,
-					Text.translatable(attribute.getTranslationKey()), amount, slot.getName()
-				));
-				return 1;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
+				return set(context.getSource(), attribute, modifier, slot);
 			})
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> setAttributeInfinityNode = ClientCommandManager
 			.literal("infinity")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-
-				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION, null);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Registries.ATTRIBUTE.getId(attribute), "Infinity"));
-				return 1;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION);
+				return set(context.getSource(), attribute, modifier, null);
 			})
 			.build();
 			
 		ArgumentCommandNode<FabricClientCommandSource, Operation> setAttributeInfinityOperationNode = ClientCommandManager
 			.argument("operation", EnumArgumentType.enumArgument(Operation.class))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
-
-				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, operation, null);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(
-					operation == EntityAttributeModifier.Operation.ADDITION ? OUTPUT_SET : OUTPUT_SET_PERCENT,
-					Text.translatable(attribute.getTranslationKey()), "Infinity"
-				));
-				return 1;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
+				return set(context.getSource(), attribute, modifier, null);
 			})
 			.build();
 			
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeInfinityOperationSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EntityAttribute attribute = Util.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
 				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", Operation.class).operation;
+				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-
-				ItemStack result = set(item, attribute, Float.POSITIVE_INFINITY, operation, slot);
-
-				Util.setItemStack(context.getSource(), result);
-				context.getSource().sendFeedback(Text.translatable(
-					operation == EntityAttributeModifier.Operation.ADDITION ? OUTPUT_SET_SLOT : OUTPUT_SET_PERCENT_SLOT,
-					Text.translatable(attribute.getTranslationKey()), "Infinity", slot.getName()
-				));
-				return 1;
+				return set(context.getSource(), attribute, modifier, slot);
 			})
 			.build();
 		
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				checkHasAttributes(context.getSource());
+				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+				if (!EditHelper.hasAttributesPlaceholder(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+				EditHelper.setAttributes(stack, null);
 
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
-
-				NbtCompound nbt = item.getNbt();
-				nbt.remove(ATTRIBUTE_MODIFIERS_KEY);
-				item.setNbt(nbt);
-
-				Util.setItemStack(context.getSource(), item);
+				Util.setItemStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return 1;
 			})
@@ -382,27 +277,8 @@ public class AttributeNode {
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> clearSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
-				checkHasAttributes(context.getSource());
-
-				ItemStack item = Util.getItemStack(context.getSource()).copy();
 				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-
-				NbtCompound nbt = item.getNbt();
-				NbtList attributes = nbt.getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
-
-				NbtList newAttributes = new NbtList();
-				for (NbtElement nbtAttr : attributes) {
-					String nbtSlot = ((NbtCompound)nbtAttr).getString("Slot");
-					if (!nbtSlot.equals(slot.getName())) newAttributes.add(nbtAttr);
-				}
-				if (newAttributes.equals(attributes)) throw NO_SUCH_ATTRIBUTE_EXCEPTION;
-				nbt.put(ATTRIBUTE_MODIFIERS_KEY, newAttributes);
-				item.setNbt(nbt);
-
-				Util.setItemStack(context.getSource(), item);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_SLOT));
-				return 1;
+				return remove(context.getSource(), null, slot);
 			})
 			.build();
 		
