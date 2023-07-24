@@ -20,21 +20,6 @@ public class Util {
 	public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
 	public static final CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
 
-	public static void checkCanEdit(FabricClientCommandSource source) throws CommandSyntaxException {
-		checkHasCreative(source);
-		checkHasItem(source);
-	}
-
-	public static void checkHasCreative(FabricClientCommandSource source) throws CommandSyntaxException {
-		MinecraftClient client = source.getClient();
-		if (!client.interactionManager.getCurrentGameMode().isCreative()) throw NOT_CREATIVE_EXCEPTION;
-	}
-
-	public static void checkHasItem(FabricClientCommandSource source) throws CommandSyntaxException {
-		ItemStack mainhand = getItemStack(source);
-		if (mainhand == null || mainhand.isEmpty()) throw NO_ITEM_EXCEPTION;
-	}
-
 	public static boolean hasItem(ItemStack stack) {
 		return stack != null && !stack.isEmpty();
 	}

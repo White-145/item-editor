@@ -74,7 +74,7 @@ public class AttributeNode {
 	private static int get(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
 		ItemStack stack = Util.getItemStack(source);
 		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-		if (!EditHelper.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+		if (!EditHelper.hasAttributes(stack, true)) throw NO_ATTRIBUTES_EXCEPTION;
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
 		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : EditHelper.getAttributes(stack)) {
 			if ((attribute == null || attribute.equals(dirtyAttribute.getLeft())) && (slot == null || slot.equals(dirtyAttribute.getRight()))) {
@@ -97,7 +97,7 @@ public class AttributeNode {
 		ItemStack stack = Util.getItemStack(source).copy();
 		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 		if (!Util.hasCreative(source)) throw Util.NOT_CREATIVE_EXCEPTION;
-		if (!EditHelper.hasAttributesPlaceholder(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+		if (!EditHelper.hasAttributes(stack, true)) throw NO_ATTRIBUTES_EXCEPTION;
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> dirtyAttributes = EditHelper.getAttributes(stack);
 		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : dirtyAttributes) {
@@ -119,7 +119,7 @@ public class AttributeNode {
 		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 		if (!Util.hasCreative(source)) throw Util.NOT_CREATIVE_EXCEPTION;
 		if (attribute == null) {
-			boolean hasPlaceholder = EditHelper.hasAttributesPlaceholder(stack);
+			boolean hasPlaceholder = EditHelper.hasAttributes(stack);
 			EditHelper.setAttributePlaceholder(stack, !hasPlaceholder);
 
 			source.sendFeedback(Text.translatable(hasPlaceholder ? OUTPUT_SET_PLACEHOLDER_DISABLE : OUTPUT_SET_PLACEHOLDER_ENABLE));
@@ -265,7 +265,7 @@ public class AttributeNode {
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-				if (!EditHelper.hasAttributesPlaceholder(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+				if (!EditHelper.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
 				EditHelper.setAttributes(stack, null);
 
 				Util.setItemStack(context.getSource(), stack);

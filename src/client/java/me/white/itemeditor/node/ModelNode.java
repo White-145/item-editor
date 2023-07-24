@@ -28,8 +28,9 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				Util.checkHasItem(context.getSource());
 				ItemStack stack = Util.getItemStack(context.getSource());
+				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!EditHelper.hasModel(stack)) throw NO_MODEL_EXCEPTION;
 				int model = EditHelper.getModel(stack);
 
@@ -41,8 +42,9 @@ public class ModelNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!EditHelper.hasModel(stack)) throw NO_MODEL_EXCEPTION;
 				int old = EditHelper.getModel(stack);
 				EditHelper.setModel(stack, null);
@@ -56,8 +58,9 @@ public class ModelNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
 			.argument("model", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				Util.checkCanEdit(context.getSource());
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				int model = IntegerArgumentType.getInteger(context, "model");
 				int old = EditHelper.getModel(stack);
 				if (model == 0) {

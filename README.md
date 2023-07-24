@@ -101,11 +101,22 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... star ...`
 - - - `... get`
 - - - `... add <type> <colors> [<flicker>] [<trail>] [<fadeColors>]`
+- `... banner ...`
+- - `... get [<index>]`
+- - `... set <index> <pattern> <color>`
+- - `... remove <index>`
+- - `... add <pattern> <color>`
+- - `... insert <index> <pattern> <color>`
+- - `... clear`
+- - `... clear before <index>`
+- - `... clear after <index>`
 
 All commands are also available as `/itemeditor:<command>`
 
 #### /!\ NOT DONE SECTION /!\
-- `... banner ...`
+- `... items ...`
+- `... entity ...`
+- `... script ...`
 
 ### `/color` command
 ### `/char` command

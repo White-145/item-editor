@@ -59,6 +59,8 @@ public class EditCommand {
 		FireworkNode.register(editNode, registryAccess);
 		// ... banner ...
 		BannerNode.register(editNode, registryAccess);
+		// ... potion ...
+		PotionNode.register(editNode, registryAccess);
 
 		// BETA RELEASE
 

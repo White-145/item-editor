@@ -32,6 +32,7 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
 			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
 			.executes(context -> {
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
@@ -44,6 +45,7 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
+				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				int count = IntegerArgumentType.getInteger(context, "count");
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);

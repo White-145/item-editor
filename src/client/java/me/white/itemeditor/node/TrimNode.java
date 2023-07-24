@@ -60,7 +60,7 @@ public class TrimNode {
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
-                EditHelper.setTrim(stack, null, context.getSource().getRegistryManager());
+                EditHelper.setTrim(stack, null);
 
                 Util.setItemStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
