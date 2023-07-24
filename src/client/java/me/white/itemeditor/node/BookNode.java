@@ -12,7 +12,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.EnumArgumentType;
-import me.white.itemeditor.util.Colored;
+import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -287,14 +287,14 @@ public class BookNode {
 			})
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> pageSetIndexPageNode = ClientCommandManager
-			.argument("page", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> pageSetIndexPageNode = ClientCommandManager
+			.argument("page", TextArgumentType.all())
 			.executes(context -> {
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				Text page = Colored.of(StringArgumentType.getString(context, "page"));
+				Text page = TextArgumentType.getText(context, "page");
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				if (pages.size() <= index) {
 					int off = pages.size() - index + 1;
@@ -350,13 +350,13 @@ public class BookNode {
 			})
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, String> pageAddPageNode = ClientCommandManager
-			.argument("page", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> pageAddPageNode = ClientCommandManager
+			.argument("page", TextArgumentType.all())
 			.executes(context -> {
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				Text page = Colored.of(StringArgumentType.getString(context, "page"));
+				Text page = TextArgumentType.getText(context, "page");
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				pages.add(page);
 				EditHelper.setBookPages(stack, pages);
@@ -394,14 +394,14 @@ public class BookNode {
 			})
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> pageInsertIndexPageNode = ClientCommandManager
-			.argument("page", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> pageInsertIndexPageNode = ClientCommandManager
+			.argument("page", TextArgumentType.all())
 			.executes(context -> {
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				Text page = Colored.of(StringArgumentType.getString(context, "page"));
+				Text page = TextArgumentType.getText(context, "page");
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				if (pages.size() <= index) {
 					int off = pages.size() - index;

@@ -1,12 +1,11 @@
 package me.white.itemeditor.node;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.Colored;
+import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -53,13 +52,14 @@ public class NameNode {
 			})
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager
-			.argument("name", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> setNameNode = ClientCommandManager
+			.argument("name", TextArgumentType.visual())
 			.executes(context -> {
                 ItemStack stack = Util.getItemStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				Text name = Colored.of(StringArgumentType.getString(context, "name"));
+				// Text name = Colored.of(StringArgumentType.getString(context, "name"));
+				Text name = TextArgumentType.getText(context, "name");
 				EditHelper.setName(stack, name);
 
 				Util.setItemStack(context.getSource(), stack);

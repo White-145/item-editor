@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.Colored;
+import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -102,14 +101,14 @@ public class LoreNode {
 			})
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> setIndexLineNode = ClientCommandManager
-			.argument("line", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> setIndexLineNode = ClientCommandManager
+			.argument("line", TextArgumentType.visual())
 			.executes(context -> {
                 ItemStack stack = Util.getItemStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				Text line = Colored.of(StringArgumentType.getString(context, "line"));
+				Text line = TextArgumentType.getText(context, "line");
 				List<Text> lore = new ArrayList<>(EditHelper.getLore(stack));
 				if (lore.size() <= index) {
 					int off = lore.size() - index + 1;
@@ -165,13 +164,13 @@ public class LoreNode {
 			})
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, String> addLineNode = ClientCommandManager
-			.argument("line", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> addLineNode = ClientCommandManager
+			.argument("line", TextArgumentType.visual())
 			.executes(context -> {
                 ItemStack stack = Util.getItemStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				Text line = Colored.of(StringArgumentType.getString(context, "line"));
+				Text line = TextArgumentType.getText(context, "line");
 				List<Text> lore = new ArrayList<>(EditHelper.getLore(stack));
 				lore.add(line);
 				EditHelper.setLore(stack, lore);
@@ -209,14 +208,14 @@ public class LoreNode {
 			})
 			.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, String> insertIndexLineNode = ClientCommandManager
-			.argument("line", StringArgumentType.greedyString())
+		ArgumentCommandNode<FabricClientCommandSource, Text> insertIndexLineNode = ClientCommandManager
+			.argument("line", TextArgumentType.visual())
 			.executes(context -> {
                 ItemStack stack = Util.getItemStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				Text line = Colored.of(StringArgumentType.getString(context, "line"));
+				Text line = TextArgumentType.getText(context, "line");
 				List<Text> lore = new ArrayList<>(EditHelper.getLore(stack));
 				if (lore.size() <= index) {
 					int off = lore.size() - index;

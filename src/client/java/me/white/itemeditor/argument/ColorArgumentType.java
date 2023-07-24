@@ -85,7 +85,7 @@ public class ColorArgumentType implements ArgumentType<Integer> {
             if (!reader.canRead(6)) throw INVALID_HEX_COLOR_EXCEPTION.create(reader.getRemaining());
             for (int i = 0; i < 6; ++i) {
                 char ch = Character.toLowerCase(reader.read());
-                if (!(ch >= '0' || ch <= '9' || ch >= 'a' || ch <= 'f')) {
+                if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))) {
                     throw INVALID_HEX_COLOR_EXCEPTION.create(reader.getRemaining());
                 } else {
                     rgb += Math.pow(16, 5 - i) * ((ch >= '0' && ch <= '9') ? (int)(ch - '0') : (int)(ch - 'a') + 10);
