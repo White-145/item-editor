@@ -2,6 +2,7 @@ package me.white.itemeditor.util;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -19,6 +20,7 @@ import net.minecraft.world.GameMode;
 public class Util {
 	public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
 	public static final CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
+	public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.outofbounds", index, size));
 
 	public static boolean hasItem(ItemStack stack) {
 		return stack != null && !stack.isEmpty();

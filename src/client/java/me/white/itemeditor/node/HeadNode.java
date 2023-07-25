@@ -10,7 +10,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.argument.QuotableStringArgumentType;
 import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -131,13 +130,13 @@ public class HeadNode {
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager
-            .argument("texture", QuotableStringArgumentType.quotableString())
+            .argument("texture", StringArgumentType.greedyString())
             .executes(context -> {
                 ItemStack stack = Util.getItemStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                String texture = QuotableStringArgumentType.getQuotableString(context, "texture");
+                String texture = StringArgumentType.getString(context, "texture");
                 if (!EditHelper.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION.create(texture);
                 EditHelper.setHeadTexture(stack, texture);
 

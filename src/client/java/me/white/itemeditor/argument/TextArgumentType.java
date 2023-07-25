@@ -19,7 +19,7 @@ public class TextArgumentType implements ArgumentType<Text> {
     public static DynamicCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidhex", ch));
     public static DynamicCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidunicode", ch));
     public static DynamicCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidescape", ch));
-    public static DynamicCommandExceptionType INVALID_COLOR_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidcolor", ch));
+    public static DynamicCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidcolor", ch));
 	public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     boolean colors;
@@ -161,25 +161,37 @@ public class TextArgumentType implements ArgumentType<Text> {
 				reader.skip();
                 
                 switch (reader.peek()) {
-                    case '#': {
+                    case '#':  // hex color
                         int color = ColorArgumentType.hex().parse(reader);
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = EMPTY_STYLE.withColor(color);
                         break;
-                    }
-                    case '_': {
+                    case '_':  // space
+                        reader.skip();
                         builder.append(' ');
                         break;
-                    }
-                    default: {
+                    case '<':  // keybind
+                        reader.skip();
+                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        builder = new StringBuilder();
+                        String keybind = reader.readStringUntil('>');
+                        texts.add(Text.keybind(keybind).setStyle(style));
+                        break;
+                    case '[':  // translation
+                        reader.skip();
+                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        builder = new StringBuilder();
+                        String translation = reader.readStringUntil(']');
+                        texts.add(Text.translatable(translation).setStyle(style));
+                        break;
+                    default:  // color code
                         char ch = reader.read();
-                        if (!isHex(ch) && !isModifier(ch)) throw INVALID_COLOR_EXCEPTION.create(ch);
+                        if (!isHex(ch) && !isModifier(ch)) throw INVALID_PLACEHOLDER_EXCEPTION.create(ch);
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = modifyStyleWith(style, Character.toLowerCase(ch));
                         break;
-                    }
                 }
 			} else {
 				builder.append(reader.read());

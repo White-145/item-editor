@@ -110,6 +110,8 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... clear`
 - - `... clear before <index>`
 - - `... clear after <index>`
+- `... potion ...`
+- - `... get [<effect>]`
 
 All commands are also available as `/itemeditor:<command>`
 

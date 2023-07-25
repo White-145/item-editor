@@ -1,9 +1,6 @@
 package me.white.itemeditor.node;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.HashMap;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -26,7 +23,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class EnchantmentNode {
-	public static final CommandSyntaxException EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
+	public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
 	public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
 	public static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
 	public static final CommandSyntaxException HAS_GLINT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.hasglint")).create();
@@ -51,11 +48,11 @@ public class EnchantmentNode {
 				if (!EditHelper.hasEnchantments(stack, true)) throw NO_ENCHANTMENTS_EXCEPTION;
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
-				List<Pair<Enchantment, Integer>> enchantments = EditHelper.getEnchantments(stack);
-				for (Pair<Enchantment, Integer> enchantment : enchantments) {
+				HashMap<Enchantment, Integer> enchantments = EditHelper.getEnchantments(stack);
+				for (Enchantment enchantment : enchantments.keySet()) {
 					context.getSource().sendFeedback(Text.empty()
 						.append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-						.append(enchantment.getLeft().getName(enchantment.getRight()))
+						.append(enchantment.getName(enchantments.get(enchantment)))
 					);
 				}
 				return 1;
@@ -69,17 +66,10 @@ public class EnchantmentNode {
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasEnchantments(stack, true)) throw NO_ENCHANTMENTS_EXCEPTION;
 				Enchantment enchantment = Util.getRegistryEntryArgument(context, "enchantment", RegistryKeys.ENCHANTMENT);
-				List<Pair<Enchantment, Integer>> enchantments = EditHelper.getEnchantments(stack);
-				Pair<Enchantment, Integer> matching = null;
-				for (Pair<Enchantment, Integer> pair : enchantments) {
-					if (pair.getLeft().equals(enchantment)) {
-						matching = pair;
-						break;
-					}
-				}
-				if (matching == null) throw DOESNT_EXIST_EXCEPTION;
+				HashMap<Enchantment, Integer> enchantments = EditHelper.getEnchantments(stack);
+				if (!enchantments.containsKey(enchantment)) throw DOESNT_EXIST_EXCEPTION;
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, enchantment.getName(matching.getRight())));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, enchantment.getName(enchantments.get(enchantment))));
 				return 1;
 			})
 			.build();
@@ -95,23 +85,16 @@ public class EnchantmentNode {
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				Enchantment enchantment = Util.getRegistryEntryArgument(context, "enchantment", RegistryKeys.ENCHANTMENT);
-				List<Pair<Enchantment, Integer>> enchantments = EditHelper.getEnchantments(stack);
-				List<Pair<Enchantment, Integer>> newEnchantments = new ArrayList<>();
-				int old = 0;
-				for (Pair<Enchantment, Integer> pair : enchantments) {
-					if (pair.getLeft().equals(enchantment)) {
-						old = pair.getRight();
-						if (old == 1) throw EXISTS_EXCEPTION;
-					} else {
-						newEnchantments.add(pair);
-					}
-				}
-				newEnchantments.add(Pair.of(enchantment, 1));
-				EditHelper.setEnchantments(stack, newEnchantments);
+				HashMap<Enchantment, Integer> enchantments = EditHelper.getEnchantments(stack);
+				Integer old = null;
+				if (enchantments.containsKey(enchantment)) old = enchantments.get(enchantment);
+				if (old != null && old.equals(1)) throw ALREADY_EXISTS_EXCEPTION;
+				enchantments.put(enchantment, 1);
+				EditHelper.setEnchantments(stack, enchantments);
 
 				Util.setItemStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getName(1)));
-				return old;
+				return old == null ? 0 : old;
 			})
 			.build();
 
@@ -122,24 +105,17 @@ public class EnchantmentNode {
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				Enchantment enchantment = Util.getRegistryEntryArgument(context, "enchantment", RegistryKeys.ENCHANTMENT);
-				int lvl = IntegerArgumentType.getInteger(context, "level");
-				List<Pair<Enchantment, Integer>> enchantments = EditHelper.getEnchantments(stack);
-				List<Pair<Enchantment, Integer>> newEnchantments = new ArrayList<>();
-				int old = 0;
-				for (Pair<Enchantment, Integer> pair : enchantments) {
-					if (pair.getLeft().equals(enchantment)) {
-						old = pair.getRight();
-						if (old == lvl) throw EXISTS_EXCEPTION;
-					} else {
-						newEnchantments.add(pair);
-					}
-				}
-				newEnchantments.add(Pair.of(enchantment, lvl));
-				EditHelper.setEnchantments(stack, newEnchantments);
+				HashMap<Enchantment, Integer> enchantments = EditHelper.getEnchantments(stack);
+				int level = IntegerArgumentType.getInteger(context, "level");
+				Integer old = null;
+				if (enchantments.containsKey(enchantment)) old = enchantments.get(enchantment);
+				if (old != null && old.equals(level)) throw ALREADY_EXISTS_EXCEPTION;
+				enchantments.put(enchantment, level);
+				EditHelper.setEnchantments(stack, enchantments);
 
 				Util.setItemStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getName(lvl)));
-				return old;
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getName(level)));
+				return old == null ? 0 : old;
 			})
 			.build();
 
@@ -153,18 +129,17 @@ public class EnchantmentNode {
 				ItemStack stack = Util.getItemStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-				if (!EditHelper.hasEnchantments(stack, true)) throw NO_ENCHANTMENTS_EXCEPTION;
+				if (!EditHelper.hasEnchantments(stack)) throw NO_ENCHANTMENTS_EXCEPTION;
 				Enchantment enchantment = Util.getRegistryEntryArgument(context, "enchantment", RegistryKeys.ENCHANTMENT);
-				List<Pair<Enchantment, Integer>> enchantments = EditHelper.getEnchantments(stack);
-				List<Pair<Enchantment, Integer>> newEnchantments = new ArrayList<>();
-				for (Pair<Enchantment, Integer> pair : enchantments) {
-					if (!pair.getLeft().equals(enchantment)) newEnchantments.add(pair);
-				}
-				EditHelper.setEnchantments(stack, newEnchantments);
+				HashMap<Enchantment, Integer> enchantments = EditHelper.getEnchantments(stack);
+				if (!enchantments.containsKey(enchantment)) throw DOESNT_EXIST_EXCEPTION;
+				int old = enchantments.get(enchantment);
+				enchantments.remove(enchantment);
+				EditHelper.setEnchantments(stack, enchantments);
 
 				Util.setItemStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
-				return newEnchantments.size();
+				return old;
 			})
 			.build();
 

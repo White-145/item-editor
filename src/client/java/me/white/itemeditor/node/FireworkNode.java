@@ -6,7 +6,6 @@ import java.util.List;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -31,7 +30,6 @@ public class FireworkNode {
     public static final CommandSyntaxException NO_FLIGHT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.noflight")).create();
     public static final CommandSyntaxException NO_STARS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.nostars")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
-    public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((i, size) -> Text.translatable("commands.edit.firework.error.outofbounds", i, size));
     private static final String OUTPUT_FLIGHT_GET = "commands.edit.firework.flightget";
     private static final String OUTPUT_FLIGHT_SET = "commands.edit.firework.flightset";
     private static final String OUTPUT_STAR = "commands.edit.firework.stargetstar";
@@ -274,7 +272,7 @@ public class FireworkNode {
                 if (!EditHelper.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
                 int index = IntegerArgumentType.getInteger(context, "index");
                 List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(EditHelper.getFireworkExplosions(stack));
-                if (explosions.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, explosions.size());
+                if (explosions.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, explosions.size());
                 explosions.remove(index);
                 EditHelper.setFireworkExplosions(stack, explosions);
 

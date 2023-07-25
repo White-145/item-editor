@@ -7,7 +7,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
@@ -30,7 +29,6 @@ public class BookNode {
 	public static final CommandSyntaxException NO_AUTHOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.noauthor")).create();
 	public static final CommandSyntaxException NO_TITLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.notitle")).create();
 	public static final CommandSyntaxException NO_PAGES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.nopages")).create();
-	public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.book.error.pageoutofbounds", index, size));
     private static final String OUTPUT_AUTHOR_GET = "commands.edit.book.authorget";
     private static final String OUTPUT_AUTHOR_SET = "commands.edit.book.authorset";
     private static final String OUTPUT_AUTHOR_RESET = "commands.edit.book.authorreset";
@@ -236,7 +234,7 @@ public class BookNode {
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET));
 				for (int i = 0; i < pages.size(); ++i) {
 					context.getSource().sendFeedback(Text.empty()
-						.append(Text.literal(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+						.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
 						.append(pages.get(i))
 					);
 				}
@@ -252,7 +250,7 @@ public class BookNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				List<Text> pages = EditHelper.getBookPages(stack);
-				if (pages.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
+				if (pages.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 				Text page = pages.get(index);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, page));
@@ -324,7 +322,7 @@ public class BookNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
-				if (pages.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
+				if (pages.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 				pages.remove(index);
 				EditHelper.setBookPages(stack, pages);
 
@@ -447,7 +445,7 @@ public class BookNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				List<Text> pages = EditHelper.getBookPages(stack);
-				if (pages.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
+				if (pages.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 				pages = pages.subList(index, pages.size());
 				EditHelper.setBookPages(stack, pages);
 
@@ -470,7 +468,7 @@ public class BookNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				List<Text> pages = EditHelper.getBookPages(stack);
-				if (pages.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
+				if (pages.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 				pages = pages.subList(0, index + 1);
 				EditHelper.setBookPages(stack, pages);
 

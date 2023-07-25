@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -23,7 +22,6 @@ import net.minecraft.util.Formatting;
 
 public class LoreNode {
 	public static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.nolore")).create();
-	public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.lore.error.outofbounds", index, size));
 	private static final String OUTPUT_GET = "commands.edit.lore.get";
 	private static final String OUTPUT_GET_LINE = "commands.edit.lore.getline";
 	private static final String OUTPUT_SET = "commands.edit.lore.set";
@@ -50,7 +48,7 @@ public class LoreNode {
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
 				for (int i = 0; i < lore.size(); ++i) {
 					context.getSource().sendFeedback(Text.empty()
-						.append(Text.literal(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+						.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
 						.append(lore.get(i))
 					);
 				}
@@ -66,7 +64,7 @@ public class LoreNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasLore(stack)) throw NO_LORE_EXCEPTION;
 				List<Text> lore = EditHelper.getLore(stack);
-				if (lore.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+				if (lore.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 				Text line = lore.get(index);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, line));
@@ -138,7 +136,7 @@ public class LoreNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasLore(stack)) throw NO_LORE_EXCEPTION;
 				List<Text> lore = new ArrayList<>(EditHelper.getLore(stack));
-				if (lore.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+				if (lore.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 				lore.remove(index);
 				EditHelper.setLore(stack, lore);
 
@@ -261,7 +259,7 @@ public class LoreNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasLore(stack)) throw NO_LORE_EXCEPTION;
 				List<Text> lore = EditHelper.getLore(stack);
-				if (lore.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+				if (lore.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 				lore = lore.subList(index, lore.size());
 				EditHelper.setLore(stack, lore);
 
@@ -284,7 +282,7 @@ public class LoreNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasLore(stack)) throw NO_LORE_EXCEPTION;
 				List<Text> lore = EditHelper.getLore(stack);
-				if (lore.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+				if (lore.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 				lore = lore.subList(0, index + 1);
 				EditHelper.setLore(stack, lore);
 

@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -34,7 +33,6 @@ import net.minecraft.util.Identifier;
 public class BannerNode {
     private static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.cannotedit")).create();
     private static final CommandSyntaxException NO_PATTERNS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nopatterns")).create();
-    private static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.banner.error.outofbounds", index, size));
     private static final String OUTPUT_GET = "commands.edit.banner.get";
     private static final String OUTPUT_GET_PATTERN = "commands.edit.banner.getpattern";
     private static final String OUTPUT_SET = "commands.edit.banner.set";
@@ -80,7 +78,7 @@ public class BannerNode {
 				for (int i = 0; i < patterns.size(); ++i) {
 					Pair<BannerPattern, Integer> pattern = patterns.get(i);
 					context.getSource().sendFeedback(Text.empty()
-						.append(Text.literal(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+						.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
 						.append(translation(pattern))
 					);
 				}
@@ -97,7 +95,7 @@ public class BannerNode {
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				Pair<BannerPattern, Integer> pattern = patterns.get(index);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PATTERN, translation(pattern)));
@@ -129,7 +127,7 @@ public class BannerNode {
 				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
 				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.set(index, Pair.of(pattern, color));
 				EditHelper.setBannerPatterns(stack, patterns);
 
@@ -153,7 +151,7 @@ public class BannerNode {
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.remove(index);
 				EditHelper.setBannerPatterns(stack, patterns);
 
@@ -212,7 +210,7 @@ public class BannerNode {
 				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
 				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.add(index, Pair.of(pattern, color));
 				EditHelper.setBannerPatterns(stack, patterns);
 
@@ -251,7 +249,7 @@ public class BannerNode {
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				int off = patterns.size() - index;
 				patterns = patterns.subList(index, patterns.size());
 				EditHelper.setBannerPatterns(stack, patterns);
@@ -275,7 +273,7 @@ public class BannerNode {
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns = patterns.subList(0, index + 1);
 				EditHelper.setBannerPatterns(stack, patterns);
 

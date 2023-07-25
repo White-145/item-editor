@@ -2,6 +2,7 @@ package me.white.itemeditor.util;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -51,6 +53,11 @@ public class EditHelper {
     private static final String CAN_DESTROY_KEY = "CanDestroy";
     private static final String CAN_PLACE_ON_KEY = "CanPlaceOn";
     private static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
+    private static final String CUSTOM_POTION_EFFECTS_KEY = "CustomPotionEffects";
+    private static final String CUSTOM_POTION_EFFECTS_ID_KEY = "Id";
+    private static final String CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY = "Amplifier";
+    private static final String CUSTOM_POTION_EFFECTS_DURATION_KEY = "Duration";
+    private static final String CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY = "ShowParticles";
     private static final String DISPLAY_KEY = "display";
     private static final String DISPLAY_COLOR_KEY = "color";
     private static final String DISPLAY_LORE_KEY = "Lore";
@@ -146,6 +153,14 @@ public class EditHelper {
         Identifier id = Identifier.tryParse(sound);
         if (id == null) return false;
         return Registries.SOUND_EVENT.containsId(id);
+    }
+
+    public static boolean isValidPotionEffect(NbtCompound nbt) {
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_DURATION_KEY, NbtElement.INT_TYPE)) return false;
+        StatusEffect effect = StatusEffect.byRawId(nbt.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
+        return effect != null;
     }
     
     public static boolean hasAttributes(ItemStack stack, boolean validate) {
@@ -357,6 +372,22 @@ public class EditHelper {
         return hasWhitelistDestroy(stack, false);
     }
 
+    public static boolean hasPotionEffects(ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList customPotionEffects = nbt.getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
+        if (!validate) return !customPotionEffects.isEmpty();
+        for (NbtElement customPotionEffect : customPotionEffects) {
+            if (isValidPotionEffect((NbtCompound)customPotionEffect)) return true;
+        }
+        return false;
+    }
+
+    public static boolean hasPotionEffects(ItemStack stack) {
+        return hasPotionEffects(stack, false);
+    }
+
     public static List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> getAttributes(ItemStack stack) {
         if (!hasAttributes(stack, true)) return List.of();
         NbtList nbtAttributeModifiers = stack.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
@@ -424,16 +455,16 @@ public class EditHelper {
         return stack.getNbt().getCompound(DISPLAY_KEY).getInt(getColorKey(stack.getItem()));
     }
 
-    public static List<Pair<Enchantment, Integer>> getEnchantments(ItemStack stack) {
-        if (!hasEnchantments(stack, true)) return List.of();
+    public static HashMap<Enchantment, Integer> getEnchantments(ItemStack stack) {
+        if (!hasEnchantments(stack, true)) return new HashMap<>();
         NbtList nbtEnchantments = stack.getNbt().getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
-        List<Pair<Enchantment, Integer>> enchantments = new ArrayList<>();
+        HashMap<Enchantment, Integer> enchantments = new HashMap<>();
         for (NbtElement nbtEnchantment : nbtEnchantments) {
             NbtCompound enchantment = (NbtCompound)nbtEnchantment;
             if (!isValidEnchantment(enchantment)) continue;
             String id = enchantment.getString(ENCHANTMENTS_ID_KEY);
             int lvl = enchantment.getInt(ENCHANTMENTS_LVL_KEY);
-            enchantments.add(Pair.of(Registries.ENCHANTMENT.get(Identifier.tryParse(id)), lvl));
+            enchantments.put(Registries.ENCHANTMENT.get(Identifier.tryParse(id)), lvl);
         }
         return enchantments;
     }
@@ -554,6 +585,25 @@ public class EditHelper {
         for (int i = 0; i < FLAGS_AMOUNT; ++i) {
             int mask = 1 << i;
             result.add((flags & mask) == mask);
+        }
+        return result;
+    }
+
+    public static HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(ItemStack stack) {
+        if (!hasPotionEffects(stack, true)) return new HashMap<>();
+        HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> result = new HashMap<>();
+        NbtList customPotionEffects = stack.getNbt().getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
+        for (NbtElement customPotionEffect : customPotionEffects) {
+            NbtCompound potionEffect = (NbtCompound)customPotionEffect;
+            if (!isValidPotionEffect(potionEffect)) continue;
+            StatusEffect effect = StatusEffect.byRawId(potionEffect.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
+            int amplifier = potionEffect.getInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY);
+            int duration = potionEffect.getInt(CUSTOM_POTION_EFFECTS_DURATION_KEY);
+            if (!potionEffect.contains(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, NbtElement.BYTE_TYPE)) {
+                result.put(effect, Triple.of(amplifier, duration, null));
+            } else {
+                result.put(effect, Triple.of(amplifier, duration, potionEffect.getBoolean(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY)));
+            }
         }
         return result;
     }
@@ -710,7 +760,7 @@ public class EditHelper {
         }
     }
 
-    public static void setEnchantments(ItemStack stack, List<Pair<Enchantment, Integer>> enchantments) {
+    public static void setEnchantments(ItemStack stack, HashMap<Enchantment, Integer> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             if (!hasEnchantments(stack)) return;
 
@@ -719,10 +769,10 @@ public class EditHelper {
             stack.setNbt(nbt);
         } else {
             NbtList nbtEnchantments = new NbtList();
-            for (Pair<Enchantment, Integer> enchantment : enchantments) {
+            for (Enchantment enchantment : enchantments.keySet()) {
                 NbtCompound nbtEnchantment = new NbtCompound();
-                nbtEnchantment.putString(ENCHANTMENTS_ID_KEY, Registries.ENCHANTMENT.getId(enchantment.getLeft()).toString());
-                nbtEnchantment.putInt(ENCHANTMENTS_LVL_KEY, enchantment.getRight());
+                nbtEnchantment.putString(ENCHANTMENTS_ID_KEY, Registries.ENCHANTMENT.getId(enchantment).toString());
+                nbtEnchantment.putInt(ENCHANTMENTS_LVL_KEY, enchantments.get(enchantment));
                 nbtEnchantments.add(nbtEnchantment);
             }
 
@@ -760,13 +810,13 @@ public class EditHelper {
             stack.setNbt(nbt);
         } else {
             NbtList nbtExplosions = new NbtList();
-            for (Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>> enchantment : explosions) {
+            for (Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>> explosion : explosions) {
                 NbtCompound nbtExplosion = new NbtCompound();
-                nbtExplosion.putInt(FIREWORKS_EXPLOSIONS_TYPE_KEY, enchantment.getA());
-                nbtExplosion.putIntArray(FIREWORKS_EXPLOSIONS_COLORS_KEY, enchantment.getB());
-                nbtExplosion.putBoolean(FIREWORKS_EXPLOSIONS_FLICKER_KEY, enchantment.getC());
-                nbtExplosion.putBoolean(FIREWORKS_EXPLOSIONS_TRAIL_KEY, enchantment.getD());
-                nbtExplosion.putIntArray(FIREWORKS_EXPLOSIONS_FADE_COLORS_KEY, enchantment.getE());
+                nbtExplosion.putInt(FIREWORKS_EXPLOSIONS_TYPE_KEY, explosion.getA());
+                nbtExplosion.putIntArray(FIREWORKS_EXPLOSIONS_COLORS_KEY, explosion.getB());
+                nbtExplosion.putBoolean(FIREWORKS_EXPLOSIONS_FLICKER_KEY, explosion.getC());
+                nbtExplosion.putBoolean(FIREWORKS_EXPLOSIONS_TRAIL_KEY, explosion.getD());
+                nbtExplosion.putIntArray(FIREWORKS_EXPLOSIONS_FADE_COLORS_KEY, explosion.getE());
                 nbtExplosions.add(nbtExplosion);
             }
 
@@ -1006,6 +1056,31 @@ public class EditHelper {
 
             NbtCompound nbt = stack.getOrCreateNbt();
             nbt.putInt(HIDE_FLAGS_KEY, result);
+            stack.setNbt(nbt);
+        }
+    }
+
+    public static void setPotionEffects(ItemStack stack, HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> effects) {
+        if (effects == null || effects.isEmpty()) {
+            if (!hasPotionEffects(stack)) return;
+
+            NbtCompound nbt = stack.getNbt();
+            nbt.remove(CUSTOM_POTION_EFFECTS_KEY);
+            stack.setNbt(nbt);
+        } else {
+            NbtList potionEffects = new NbtList();
+            for (StatusEffect effect : effects.keySet()) {
+                NbtCompound potionEffect = new NbtCompound();
+                Triple<Integer, Integer, Boolean> data = effects.get(effect);
+                potionEffect.putInt(CUSTOM_POTION_EFFECTS_ID_KEY, StatusEffect.getRawId(effect));
+                potionEffect.putInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, data.getLeft());
+                potionEffect.putInt(CUSTOM_POTION_EFFECTS_DURATION_KEY, data.getMiddle());
+                if (data.getRight() != null) potionEffect.putBoolean(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, data.getRight());
+                potionEffects.add(potionEffect);
+            }
+
+            NbtCompound nbt = stack.getOrCreateNbt();
+            nbt.put(CUSTOM_POTION_EFFECTS_KEY, potionEffects);
             stack.setNbt(nbt);
         }
     }
