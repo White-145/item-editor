@@ -27,10 +27,8 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-// TODO OUTDATED /!\
 public class HeadNode {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
-	public static final CommandSyntaxException NO_OWNER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.noowner")).create();
 	public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
 	public static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
 	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.alreadyis")).create();
@@ -44,7 +42,7 @@ public class HeadNode {
     private static final String OUTPUT_SOUND_RESET = "commands.edit.head.soundreset";
     private static final String OUTPUT_SOUND_SET = "commands.edit.head.soundset";
 
-    private static boolean canEdit(ItemStack stack) throws CommandSyntaxException {
+    private static boolean canEdit(ItemStack stack) {
         Item item = stack.getItem();
         return item == Items.PLAYER_HEAD;
     }
@@ -68,7 +66,7 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (EditHelper.hasHeadTexture(stack, true)) {
@@ -92,14 +90,14 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasHeadOwner(stack) && !EditHelper.hasHeadTexture(stack, true)) throw NO_TEXTURE_EXCEPTION;
                 EditHelper.setHeadTexture(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
                 return 1;
             })
@@ -112,14 +110,14 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, String> setOwnerOwnerNode = ClientCommandManager
             .argument("owner", StringArgumentType.word())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 String owner = StringArgumentType.getString(context, "owner");
                 EditHelper.setHeadOwner(stack, owner);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_SET, owner));
                 return 1;
             })
@@ -132,7 +130,7 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager
             .argument("texture", StringArgumentType.greedyString())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -140,7 +138,7 @@ public class HeadNode {
                 if (!EditHelper.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION.create(texture);
                 EditHelper.setHeadTexture(stack, texture);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 try {
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, stylizeUrl(new URL(texture))));
                 } catch (MalformedURLException e) {
@@ -157,7 +155,7 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> soundGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasHeadSound(stack, true)) throw NO_SOUND_EXCEPTION;
@@ -171,14 +169,14 @@ public class HeadNode {
         LiteralCommandNode<FabricClientCommandSource> soundSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasHeadSound(stack)) throw NO_SOUND_EXCEPTION;
                 EditHelper.setHeadSound(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_RESET));
                 return 1;
             })
@@ -187,14 +185,14 @@ public class HeadNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<SoundEvent>> soundSetSoundNode = ClientCommandManager
             .argument("sound", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.SOUND_EVENT))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 SoundEvent sound = Util.getRegistryEntryArgument(context, "sound", RegistryKeys.SOUND_EVENT);
                 EditHelper.setHeadSound(stack, sound);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_SET, sound.toString()));
                 return 1;
             })

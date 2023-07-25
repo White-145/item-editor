@@ -10,7 +10,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
@@ -21,11 +20,11 @@ public class DurabilityNode {
     private static final String OUTPUT_RESET = "commands.edit.durability.reset";
     private static final String OUTPUT_PERCENT = "commands.edit.durability.percent";
 
-    private static boolean canEdit(ItemStack stack) throws CommandSyntaxException {
+    private static boolean canEdit(ItemStack stack) {
         return stack.isDamageable();
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("durability")
             .build();
@@ -33,7 +32,7 @@ public class DurabilityNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int damage = stack.getDamage();
@@ -46,14 +45,14 @@ public class DurabilityNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 stack.setDamage(0);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 return stack.getMaxDamage();
             })
             .build();
@@ -61,7 +60,7 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager
             .argument("durability", IntegerArgumentType.integer())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -69,7 +68,7 @@ public class DurabilityNode {
                 stack.setDamage(stack.getMaxDamage() - damage);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, damage));
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 return stack.getMaxDamage() - damage;
             })
             .build();
@@ -81,7 +80,7 @@ public class DurabilityNode {
         ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
             .argument("percentage", DoubleArgumentType.doubleArg(0, 100))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -91,7 +90,7 @@ public class DurabilityNode {
                 stack.setDamage((int)(stack.getMaxDamage() * (1 - percentage / 100)));
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 return old;
             })
             .build();

@@ -68,7 +68,7 @@ public class BannerNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
@@ -89,7 +89,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
@@ -118,7 +118,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -131,7 +131,7 @@ public class BannerNode {
 				patterns.set(index, Pair.of(pattern, color));
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -144,7 +144,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -155,7 +155,7 @@ public class BannerNode {
 				patterns.remove(index);
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
 				return patterns.size();
 			})
@@ -172,7 +172,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> addPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
@@ -181,7 +181,7 @@ public class BannerNode {
 				patterns.add(Pair.of(pattern, color));
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -202,7 +202,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
@@ -214,7 +214,7 @@ public class BannerNode {
 				patterns.add(index, Pair.of(pattern, color));
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, index, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -223,14 +223,14 @@ public class BannerNode {
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int oldSize = EditHelper.getBannerPatterns(stack).size();
 				EditHelper.setBannerPatterns(stack, null);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return oldSize;
 			})
@@ -243,7 +243,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(1))
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
@@ -254,7 +254,7 @@ public class BannerNode {
 				patterns = patterns.subList(index, patterns.size());
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, index));
 				return off;
 			})
@@ -267,7 +267,7 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
@@ -277,7 +277,7 @@ public class BannerNode {
 				patterns = patterns.subList(0, index + 1);
 				EditHelper.setBannerPatterns(stack, patterns);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, index));
 				return patterns.size();
 			})

@@ -15,7 +15,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
 
 public class Util {
 	public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
@@ -31,19 +30,16 @@ public class Util {
 		return client.interactionManager.getCurrentGameMode().isCreative();
 	}
 	
-	public static ItemStack getItemStack(FabricClientCommandSource source) {
-		ItemStack item = source.getPlayer().getInventory().getMainHandStack();
-		return item;
+	public static ItemStack getStack(FabricClientCommandSource source) {
+		return source.getPlayer().getInventory().getMainHandStack();
 	}
 
-	public static void setItemStack(FabricClientCommandSource source, ItemStack item) throws CommandSyntaxException {
-		MinecraftClient client = source.getClient();
-		if (client.interactionManager.getCurrentGameMode() != GameMode.CREATIVE) throw NOT_CREATIVE_EXCEPTION;
+	public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
+		if (!hasCreative(source)) throw NOT_CREATIVE_EXCEPTION;
 		PlayerInventory inventory = source.getPlayer().getInventory();
 		int slot = inventory.selectedSlot;
-		inventory.setStack(slot, item);
-		inventory.updateItems();
-		source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, item));
+		inventory.setStack(slot, stack);
+		source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));
 	}
 
     public static String formatColor(int color) {

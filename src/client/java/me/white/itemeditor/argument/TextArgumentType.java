@@ -54,10 +54,11 @@ public class TextArgumentType implements ArgumentType<Text> {
         char result;
         if (reader.peek() == '\\') reader.skip();
         switch (reader.peek()) {
-            case 'n':
+            case 'n' -> {
                 reader.skip();
                 return "\n";
-            case 'x':
+            }
+            case 'x' -> {
                 reader.skip();
                 result = 0;
                 for (int i = 0; i < 2; ++i) {
@@ -69,7 +70,8 @@ public class TextArgumentType implements ArgumentType<Text> {
                     }
                 }
                 return String.valueOf(result);
-            case 'u':
+            }
+            case 'u' -> {
                 reader.skip();
                 result = 0;
                 for (int i = 0; i < 4; ++i) {
@@ -81,11 +83,11 @@ public class TextArgumentType implements ArgumentType<Text> {
                     }
                 }
                 return String.valueOf(result);
-            case '\\':
-            case '&':
+            }
+            case '\\', '&' -> {
                 return String.valueOf(reader.read());
-            default:
-                throw INVALID_ESCAPE_SEQUENCE_EXCEPTION.create(reader.read());
+            }
+            default -> throw INVALID_ESCAPE_SEQUENCE_EXCEPTION.create(reader.read());
         }
     }
 
@@ -98,54 +100,31 @@ public class TextArgumentType implements ArgumentType<Text> {
     }
 
     private static Style modifyStyleWith(Style style, char ch) {
-		switch (ch) {
-			case '0':
-				return EMPTY_STYLE.withColor(Formatting.BLACK);
-			case '1':
-				return EMPTY_STYLE.withColor(Formatting.DARK_BLUE);
-			case '2':
-				return EMPTY_STYLE.withColor(Formatting.DARK_GREEN);
-			case '3':
-				return EMPTY_STYLE.withColor(Formatting.DARK_AQUA);
-			case '4':
-				return EMPTY_STYLE.withColor(Formatting.DARK_RED);
-			case '5':
-				return EMPTY_STYLE.withColor(Formatting.DARK_PURPLE);
-			case '6':
-				return EMPTY_STYLE.withColor(Formatting.GOLD);
-			case '7':
-				return EMPTY_STYLE.withColor(Formatting.GRAY);
-			case '8':
-				return EMPTY_STYLE.withColor(Formatting.DARK_GRAY);
-			case '9':
-				return EMPTY_STYLE.withColor(Formatting.BLUE);
-			case 'a':
-				return EMPTY_STYLE.withColor(Formatting.GREEN);
-			case 'b':
-				return EMPTY_STYLE.withColor(Formatting.AQUA);
-			case 'c':
-				return EMPTY_STYLE.withColor(Formatting.RED);
-			case 'd':
-				return EMPTY_STYLE.withColor(Formatting.LIGHT_PURPLE);
-			case 'e':
-				return EMPTY_STYLE.withColor(Formatting.YELLOW);
-			case 'f':
-				return EMPTY_STYLE.withColor(Formatting.WHITE);
-			case 'k':
-				return style.withObfuscated(true);
-			case 'l':
-				return style.withBold(true);
-			case 'm':
-				return style.withStrikethrough(true);
-			case 'n':
-				return style.withUnderline(true);
-			case 'o':
-				return style.withItalic(true);
-			case 'r':
-				return EMPTY_STYLE;
-			default:
-				return style;
-		}
+        return switch (ch) {
+            case '0' -> EMPTY_STYLE.withColor(Formatting.BLACK);
+            case '1' -> EMPTY_STYLE.withColor(Formatting.DARK_BLUE);
+            case '2' -> EMPTY_STYLE.withColor(Formatting.DARK_GREEN);
+            case '3' -> EMPTY_STYLE.withColor(Formatting.DARK_AQUA);
+            case '4' -> EMPTY_STYLE.withColor(Formatting.DARK_RED);
+            case '5' -> EMPTY_STYLE.withColor(Formatting.DARK_PURPLE);
+            case '6' -> EMPTY_STYLE.withColor(Formatting.GOLD);
+            case '7' -> EMPTY_STYLE.withColor(Formatting.GRAY);
+            case '8' -> EMPTY_STYLE.withColor(Formatting.DARK_GRAY);
+            case '9' -> EMPTY_STYLE.withColor(Formatting.BLUE);
+            case 'a' -> EMPTY_STYLE.withColor(Formatting.GREEN);
+            case 'b' -> EMPTY_STYLE.withColor(Formatting.AQUA);
+            case 'c' -> EMPTY_STYLE.withColor(Formatting.RED);
+            case 'd' -> EMPTY_STYLE.withColor(Formatting.LIGHT_PURPLE);
+            case 'e' -> EMPTY_STYLE.withColor(Formatting.YELLOW);
+            case 'f' -> EMPTY_STYLE.withColor(Formatting.WHITE);
+            case 'k' -> style.withObfuscated(true);
+            case 'l' -> style.withBold(true);
+            case 'm' -> style.withStrikethrough(true);
+            case 'n' -> style.withUnderline(true);
+            case 'o' -> style.withItalic(true);
+            case 'r' -> EMPTY_STYLE;
+            default -> style;
+        };
 	}
 
     @Override
@@ -159,39 +138,39 @@ public class TextArgumentType implements ArgumentType<Text> {
 				builder.append(readEscaped(reader));
 			} else if (reader.peek() == '&') {
 				reader.skip();
-                
+
                 switch (reader.peek()) {
-                    case '#':  // hex color
+                    case '#' -> {  // hex color
                         int color = ColorArgumentType.hex().parse(reader);
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = EMPTY_STYLE.withColor(color);
-                        break;
-                    case '_':  // space
+                    }
+                    case '_' -> {  // space
                         reader.skip();
                         builder.append(' ');
-                        break;
-                    case '<':  // keybind
+                    }
+                    case '<' -> {  // keybind
                         reader.skip();
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         String keybind = reader.readStringUntil('>');
                         texts.add(Text.keybind(keybind).setStyle(style));
-                        break;
-                    case '[':  // translation
+                    }
+                    case '[' -> {  // translation
                         reader.skip();
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         String translation = reader.readStringUntil(']');
                         texts.add(Text.translatable(translation).setStyle(style));
-                        break;
-                    default:  // color code
+                    }
+                    default -> {  // color code
                         char ch = reader.read();
                         if (!isHex(ch) && !isModifier(ch)) throw INVALID_PLACEHOLDER_EXCEPTION.create(ch);
                         texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = modifyStyleWith(style, Character.toLowerCase(ch));
-                        break;
+                    }
                 }
 			} else {
 				builder.append(reader.read());

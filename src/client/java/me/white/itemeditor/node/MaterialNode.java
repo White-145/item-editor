@@ -29,7 +29,7 @@ public class MaterialNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getItem().getName()));
@@ -44,7 +44,7 @@ public class MaterialNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				Item item = Util.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
@@ -52,7 +52,7 @@ public class MaterialNode {
 				ItemStack newStack = new ItemStack(item, stack.getCount());
 				newStack.setNbt(stack.getNbt());
 
-				Util.setItemStack(context.getSource(), newStack);
+				Util.setStack(context.getSource(), newStack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getName()));
 				return 1;
 			})

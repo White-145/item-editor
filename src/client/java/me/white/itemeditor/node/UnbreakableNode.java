@@ -8,7 +8,6 @@ import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
@@ -23,7 +22,7 @@ public class UnbreakableNode {
 		return stack.getMaxDamage() != 0;
 	}
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("unbreakable")
             .build();
@@ -31,7 +30,7 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				boolean isUnbreakable = EditHelper.getUnbreakable(stack);
@@ -44,14 +43,14 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
 			.literal("toggle")
 			.executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				boolean isUnbreakable = EditHelper.getUnbreakable(stack);
 				EditHelper.setUnbreakable(stack, !isUnbreakable);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
 				return isUnbreakable ? 1 : 0;
 			})

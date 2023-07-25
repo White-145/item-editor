@@ -553,9 +553,8 @@ public class EditHelper {
         List<Block> result = new ArrayList<>();
         for (NbtElement nbtBlock : nbtPlace) {
             Identifier id = Identifier.tryParse(nbtBlock.asString());
-            if (id == null) continue;
+            if (id == null || !Registries.BLOCK.containsId(id)) continue;
             Block block = Registries.BLOCK.get(id);
-            if (block == null) continue;
             result.add(block);
         }
         return result;
@@ -567,9 +566,8 @@ public class EditHelper {
         List<Block> result = new ArrayList<>();
         for (NbtElement nbtBlock : nbtDestroy) {
             Identifier id = Identifier.tryParse(nbtBlock.asString());
-            if (id == null) continue;
+            if (id == null || !Registries.BLOCK.containsId(id)) continue;
             Block block = Registries.BLOCK.get(id);
-            if (block == null) continue;
             result.add(block);
         }
         return result;

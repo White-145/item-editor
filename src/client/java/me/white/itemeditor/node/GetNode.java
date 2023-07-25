@@ -20,7 +20,7 @@ public class GetNode {
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
 	private static boolean canEdit(FabricClientCommandSource source) {
-		ItemStack item = Util.getItemStack(source);
+		ItemStack item = Util.getStack(source);
 		return item == null || item.isEmpty();
 	}
 
@@ -36,7 +36,7 @@ public class GetNode {
 				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, stack.getName()));
 				return 1;
 			})
@@ -50,7 +50,7 @@ public class GetNode {
 				int count = IntegerArgumentType.getInteger(context, "count");
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, stack.getName()));
 				return 1;
 			})

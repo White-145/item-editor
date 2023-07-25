@@ -45,7 +45,7 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistPlace(stack) && !EditHelper.hasWhitelistDestroy(stack)) throw NO_WHITELIST_EXCEPTION;
                 List<Block> place = EditHelper.getWhitelistPlace(stack);
@@ -76,7 +76,7 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getPlaceNode = ClientCommandManager
             .literal("place")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistPlace(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
                 List<Block> place = EditHelper.getWhitelistPlace(stack);
@@ -94,7 +94,7 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> getDestroyNode = ClientCommandManager
             .literal("destroy")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistDestroy(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
                 List<Block> destroy = EditHelper.getWhitelistDestroy(stack);
@@ -121,7 +121,7 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addPlaceBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 Block block = Util.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
@@ -130,7 +130,7 @@ public class WhitelistNode {
                 place.add(block);
                 EditHelper.setWhitelistPlace(stack, place);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD_PLACE, block.getName()));
                 return 1;
             })
@@ -143,7 +143,7 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> addDestroyBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 Block block = Util.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
@@ -152,7 +152,7 @@ public class WhitelistNode {
                 destroy.add(block);
                 EditHelper.setWhitelistDestroy(stack, destroy);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD_DESTROY, block.getName()));
                 return 1;
             })
@@ -169,7 +169,7 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removePlaceBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistPlace(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
@@ -179,7 +179,7 @@ public class WhitelistNode {
                 place.remove(block);
                 EditHelper.setWhitelistPlace(stack, place);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE_PLACE, block.getName()));
                 return 1;
             })
@@ -192,18 +192,17 @@ public class WhitelistNode {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<Block>> removeDestroyBlockNode = ClientCommandManager
             .argument("block", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BLOCK))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistDestroy(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
                 Block block = Util.getRegistryEntryArgument(context, "block", RegistryKeys.BLOCK);
                 List<Block> destroy = new ArrayList<>(EditHelper.getWhitelistDestroy(stack));
-                System.out.println(destroy.toString());
                 if (!destroy.contains(block)) throw DOESNT_EXIST_EXCEPTION;
                 destroy.remove(block);
                 EditHelper.setWhitelistDestroy(stack, destroy);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE_DESTROY, block.getName()));
                 return 1;
             })
@@ -212,14 +211,14 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistPlace(stack) && !EditHelper.hasWhitelistDestroy(stack)) throw NO_WHITELIST_EXCEPTION;
                 EditHelper.setWhitelistPlace(stack, null);
                 EditHelper.setWhitelistDestroy(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
                 return 1;
             })
@@ -228,13 +227,13 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearPlaceNode = ClientCommandManager
             .literal("place")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistPlace(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
                 EditHelper.setWhitelistPlace(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_PLACE));
                 return 1;
             })
@@ -243,13 +242,13 @@ public class WhitelistNode {
         LiteralCommandNode<FabricClientCommandSource> clearDestroyNode = ClientCommandManager
             .literal("destroy")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!EditHelper.hasWhitelistDestroy(stack)) throw NO_SUCH_WHITELIST_EXCEPTION;
                 EditHelper.setWhitelistDestroy(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_DESTROY));
                 return 1;
             })

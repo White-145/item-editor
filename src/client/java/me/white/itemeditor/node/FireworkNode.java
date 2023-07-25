@@ -17,7 +17,6 @@ import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.FireworkRocketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
@@ -27,7 +26,6 @@ import oshi.util.tuples.Quintet;
 
 public class FireworkNode {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannoteddit")).create();
-    public static final CommandSyntaxException NO_FLIGHT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.noflight")).create();
     public static final CommandSyntaxException NO_STARS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.nostars")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
     private static final String OUTPUT_FLIGHT_GET = "commands.edit.firework.flightget";
@@ -39,19 +37,19 @@ public class FireworkNode {
     private static final String OUTPUT_STAR_REMOVE = "commands.edit.firework.remove";
     private static final String OUTPUT_STAR_CLEAR = "commands.edit.firework.clear";
 
-    private static enum Type {
+    private enum Type {
         SMALL(0, "commands.edit.firework.typesmall"),
         LARGE(1, "commands.edit.firework.typelarge"),
         STAR(2, "commands.edit.firework.typestar"),
         CREEPER(3, "commands.edit.firework.typecreeper"),
         BURST(4, "commands.edit.firework.typeburst");
         
-        int id;
-        String translation;
+        final int id;
+        final String translationKey;
 
-        private Type(int id, String translation) {
+        Type(int id, String translation) {
             this.id = id;
-            this.translation = translation;
+            this.translationKey = translation;
         }
 
         public static Type byId(int id) {
@@ -72,7 +70,7 @@ public class FireworkNode {
     private static Text starTranslation(Type type, List<Integer> colors) {
         String[] colorFormatted = new String[colors.size()];
         for (int i = 0; i < colors.size(); ++i) colorFormatted[i] = Util.formatColor(colors.get(i));
-        return Text.translatable(OUTPUT_STAR, Text.translatable(type.translation), String.join(", ", colorFormatted));
+        return Text.translatable(OUTPUT_STAR, Text.translatable(type.translationKey), String.join(", ", colorFormatted));
     }
 
     private static Text starTranslation(Type type, List<Integer> colors, List<Integer> fadeColors) {
@@ -80,10 +78,10 @@ public class FireworkNode {
         for (int i = 0; i < colors.size(); ++i) colorsFormatted[i] = Util.formatColor(colors.get(i));
         String[] fadeColorsFormatted = new String[fadeColors.size()];
         for (int i = 0; i < fadeColors.size(); ++i) fadeColorsFormatted[i] = Util.formatColor(fadeColors.get(i));
-        return Text.translatable(OUTPUT_STAR_FADE, Text.translatable(type.translation), String.join(", ", colorsFormatted), String.join(", ", fadeColorsFormatted));
+        return Text.translatable(OUTPUT_STAR_FADE, Text.translatable(type.translationKey), String.join(", ", colorsFormatted), String.join(", ", fadeColorsFormatted));
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
             .literal("firework")
             .build();
@@ -95,7 +93,7 @@ public class FireworkNode {
         LiteralCommandNode<FabricClientCommandSource> flightGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int flight = EditHelper.getFireworkFlight(stack);
@@ -108,7 +106,7 @@ public class FireworkNode {
         LiteralCommandNode<FabricClientCommandSource> flightSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -116,7 +114,7 @@ public class FireworkNode {
                 if (old == 0) throw FLIGHT_ALREADY_IS_EXCEPTION;
                 EditHelper.setFireworkFlight(stack, 0);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_FLIGHT_SET, 0));
                 return old;
             })
@@ -125,7 +123,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> flightSetFlightNode = ClientCommandManager
             .argument("flight", IntegerArgumentType.integer(-128, 127))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -134,7 +132,7 @@ public class FireworkNode {
                 if (old == flight) throw FLIGHT_ALREADY_IS_EXCEPTION;
                 EditHelper.setFireworkFlight(stack, flight);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_FLIGHT_SET, flight));
                 return old;
             })
@@ -147,7 +145,7 @@ public class FireworkNode {
         LiteralCommandNode<FabricClientCommandSource> starGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
@@ -160,7 +158,7 @@ public class FireworkNode {
                     List<Integer> colors = explosion.getB();
                     List<Integer> fadeColors = explosion.getE();
                     context.getSource().sendFeedback(Text.empty()
-                        .append(Text.literal(String.valueOf(i) + ". ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
+                        .append(Text.literal(i + ". ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
                         .append(fadeColors.isEmpty() ? starTranslation(type, colors) : starTranslation(type, colors, fadeColors))
                     );
                 }
@@ -179,7 +177,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, List<Integer>> starAddTypeColorsNode = ClientCommandManager
             .argument("colors", ListArgumentType.listArgument(ColorArgumentType.hex()))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -189,7 +187,7 @@ public class FireworkNode {
                 explosions.add(new Quintet<>(type.id, colors, false, false, List.of()));
                 EditHelper.setFireworkExplosions(stack, explosions);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
@@ -198,7 +196,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> starAddTypeColorsFlickerNode = ClientCommandManager
             .argument("flicker", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -209,7 +207,7 @@ public class FireworkNode {
                 explosions.add(new Quintet<>(type.id, colors, flicker, false, List.of()));
                 EditHelper.setFireworkExplosions(stack, explosions);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
@@ -218,7 +216,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> starAddTypeColorsFlickerTrailNode = ClientCommandManager
             .argument("trail", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -230,7 +228,7 @@ public class FireworkNode {
                 explosions.add(new Quintet<>(type.id, colors, flicker, trail, List.of()));
                 EditHelper.setFireworkExplosions(stack, explosions);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
@@ -239,7 +237,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, List<Integer>> starAddTypeColorsFlickerTrailFadecolorsNode = ClientCommandManager
             .argument("fadeColors", ListArgumentType.listArgument(ColorArgumentType.hex()))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy().copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy().copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -252,7 +250,7 @@ public class FireworkNode {
                 explosions.add(new Quintet<>(type.id, colors, flicker, trail, fadeColors));
                 EditHelper.setFireworkExplosions(stack, explosions);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors, fadeColors)));
                 return explosions.size() - 1;
             })
@@ -265,7 +263,7 @@ public class FireworkNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> starRemoveIndexNode = ClientCommandManager
             .argument("index", IntegerArgumentType.integer(0))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -276,7 +274,7 @@ public class FireworkNode {
                 explosions.remove(index);
                 EditHelper.setFireworkExplosions(stack, explosions);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_REMOVE, index));
                 return 1;
             })
@@ -285,14 +283,14 @@ public class FireworkNode {
         LiteralCommandNode<FabricClientCommandSource> starClearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
                 EditHelper.setFireworkExplosions(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_CLEAR));
                 return 1;
             })

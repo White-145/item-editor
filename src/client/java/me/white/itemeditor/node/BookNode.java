@@ -16,7 +16,6 @@ import me.white.itemeditor.util.EditHelper;
 import me.white.itemeditor.util.Util;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -47,28 +46,28 @@ public class BookNode {
     private static final String OUTPUT_PAGE_CLEAR_BEFORE = "commands.edit.book.pageclearbefore";
     private static final String OUTPUT_PAGE_CLEAR_AFTER = "commands.edit.book.pageclearafter";
 
-	private static enum Generation {
+	private enum Generation {
 		ORIGINAL(0, "commands.edit.book.generationoriginal"),
 		COPY(1, "commands.edit.book.generationcopy"),
 		COPY_OF_COPY(2, "commands.edit.book.generationcopyofcopy"),
 		TATTERED(3, "commands.edit.book.generationtattered");
 
-		int id;
-		String translationKey;
+		final int id;
+		final String translationKey;
 
-		private Generation(int id, String translationKey) {
+		Generation(int id, String translationKey) {
 			this.id = id;
 			this.translationKey = translationKey;
 		}
 
 		public static Generation byId(int id) {
-			switch (id) {
-				case 0: return ORIGINAL;
-				case 1: return COPY;
-				case 2: return COPY_OF_COPY;
-				case 3: return TATTERED;
-			}
-			return null;
+			return switch (id) {
+				case 0 -> ORIGINAL;
+				case 1 -> COPY;
+				case 2 -> COPY_OF_COPY;
+				case 3 -> TATTERED;
+				default -> null;
+			};
 		}
 	}
 
@@ -77,7 +76,7 @@ public class BookNode {
         return item == Items.WRITTEN_BOOK;
     }
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 			.literal("book")
 			.build();
@@ -89,7 +88,7 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> authorGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBookAuthor(stack)) throw NO_AUTHOR_EXCEPTION;
@@ -103,14 +102,14 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> authorSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBookAuthor(stack)) throw NO_AUTHOR_EXCEPTION;
 				EditHelper.setBookAuthor(stack, null);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_RESET));
                 return 1;
             })
@@ -119,14 +118,14 @@ public class BookNode {
         ArgumentCommandNode<FabricClientCommandSource, String> authorSetAuthorNode = ClientCommandManager
             .argument("author", StringArgumentType.greedyString())
             .executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 String author = StringArgumentType.getString(context, "author");
 				EditHelper.setBookAuthor(stack, author);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, author));
 				return 1;
 			})
@@ -139,7 +138,7 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> titleGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBookTitle(stack)) throw NO_TITLE_EXCEPTION;
@@ -153,14 +152,14 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> titleSetNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				if (!EditHelper.hasBookTitle(stack)) throw NO_TITLE_EXCEPTION;
 				EditHelper.setBookTitle(stack, null);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_RESET));
                 return 1;
             })
@@ -169,14 +168,14 @@ public class BookNode {
         ArgumentCommandNode<FabricClientCommandSource, String> titleSetTitleNode = ClientCommandManager
             .argument("title", StringArgumentType.greedyString())
             .executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 String title = StringArgumentType.getString(context, "title");
 				EditHelper.setBookTitle(stack, title);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, title));
 				return 1;
 			})
@@ -189,7 +188,7 @@ public class BookNode {
         LiteralCommandNode<FabricClientCommandSource> generationGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource());
+				ItemStack stack = Util.getStack(context.getSource());
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				int generation = EditHelper.getBookGeneration(stack);
@@ -206,14 +205,14 @@ public class BookNode {
         ArgumentCommandNode<FabricClientCommandSource, Generation> generationSetGenerationNode = ClientCommandManager
 			.argument("generation", EnumArgumentType.enumArgument(Generation.class))
             .executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
 				Generation generation = EnumArgumentType.getEnum(context, "generation", Generation.class);
 				EditHelper.setBookGeneration(stack, generation.id);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GENERATION_SET, Text.translatable(generation.translationKey)));
 				return generation.id;
             })
@@ -226,7 +225,7 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageGetNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource());
+				ItemStack stack = Util.getStack(context.getSource());
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				List<Text> pages = EditHelper.getBookPages(stack);
@@ -245,7 +244,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageGetIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource());
+				ItemStack stack = Util.getStack(context.getSource());
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
@@ -265,7 +264,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageSetIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 255))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
@@ -279,7 +278,7 @@ public class BookNode {
 				pages.set(index, Text.empty());
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, ""));
 				return pages.size();
 			})
@@ -288,7 +287,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageSetIndexPageNode = ClientCommandManager
 			.argument("page", TextArgumentType.all())
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
@@ -303,7 +302,7 @@ public class BookNode {
 				pages.set(index, page);
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, page));
 				return pages.size();
 			})
@@ -316,7 +315,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageRemoveIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
@@ -326,7 +325,7 @@ public class BookNode {
 				pages.remove(index);
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_REMOVE, index));
 				return pages.size();
 			})
@@ -335,14 +334,14 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageAddNode = ClientCommandManager
 			.literal("add")
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				pages.add(Text.empty());
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, ""));
 				return pages.size() - 1;
 			})
@@ -351,7 +350,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageAddPageNode = ClientCommandManager
 			.argument("page", TextArgumentType.all())
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				Text page = TextArgumentType.getText(context, "page");
@@ -359,7 +358,7 @@ public class BookNode {
 				pages.add(page);
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, page));
 				return pages.size() - 1;
 			})
@@ -372,13 +371,13 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageInsertIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0, 255))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				if (pages.size() <= index) {
-					int off = pages.size() - index;
+					int off = index - pages.size();
 					for (int i = 0; i < off; ++i) {
 						pages.add(Text.empty());
 					}
@@ -386,7 +385,7 @@ public class BookNode {
 				pages.add(index, Text.empty());
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, index, ""));
 				return pages.size();
 			})
@@ -395,14 +394,14 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageInsertIndexPageNode = ClientCommandManager
 			.argument("page", TextArgumentType.all())
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				Text page = TextArgumentType.getText(context, "page");
 				List<Text> pages = new ArrayList<>(EditHelper.getBookPages(stack));
 				if (pages.size() <= index) {
-					int off = pages.size() - index;
+					int off = index - pages.size();
 					for (int i = 0; i < off; ++i) {
 						pages.add(Text.empty());
 					}
@@ -410,7 +409,7 @@ public class BookNode {
 				pages.add(index, page);
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, index, page));
 				return pages.size();
 			})
@@ -419,14 +418,14 @@ public class BookNode {
 		LiteralCommandNode<FabricClientCommandSource> pageClearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!EditHelper.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
 				int old = EditHelper.getBookPages(stack).size();
 				EditHelper.setBookPages(stack, null);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_CLEAR));
 				return old;
 			})
@@ -439,7 +438,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
@@ -449,7 +448,7 @@ public class BookNode {
 				pages = pages.subList(index, pages.size());
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_CLEAR_BEFORE, index));
 				return pages.size();
 			})
@@ -462,7 +461,7 @@ public class BookNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> pageClearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				ItemStack stack = Util.getItemStack(context.getSource()).copy();
+				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
@@ -472,7 +471,7 @@ public class BookNode {
 				pages = pages.subList(0, index + 1);
 				EditHelper.setBookPages(stack, pages);
 
-				Util.setItemStack(context.getSource(), stack);
+				Util.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_CLEAR_AFTER, index));
 				return pages.size();
 			})

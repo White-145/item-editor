@@ -21,11 +21,11 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
     }
     
     public static <T, U extends ArgumentType<T>> ListArgumentType<T, U> listArgument(U argumentType) {
-        return new ListArgumentType<T, U>(argumentType, ',');
+        return new ListArgumentType<>(argumentType, ',');
     }
     
     public static <T, U extends ArgumentType<T>> ListArgumentType<T, U> listArgument(U argumentType, char delimeter) {
-        return new ListArgumentType<T, U>(argumentType, delimeter);
+        return new ListArgumentType<>(argumentType, delimeter);
     }
 
     @SuppressWarnings("unchecked")

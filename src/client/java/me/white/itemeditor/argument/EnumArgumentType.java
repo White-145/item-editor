@@ -3,8 +3,8 @@ package me.white.itemeditor.argument;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
-import com.google.common.base.Function;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,21 +21,21 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 
     private HashMap<String, T> suggestions;
 
-    private EnumArgumentType(Class<T> clazz, Function<String, String> formatter) {
+    private EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
         suggestions = new HashMap<>();
 
         T[] constants = clazz.getEnumConstants();
         for (T constant : constants) {
-            suggestions.put(formatter.apply(constant.name()), constant);
+            suggestions.put(formatter.apply(constant), constant);
         }
     }
 
     public static <T extends Enum<T>> EnumArgumentType<T> enumArgument(Class<T> clazz) {
-        return new EnumArgumentType<T>(clazz, (name) -> name.toLowerCase());
+        return new EnumArgumentType<>(clazz, t -> t.name().toLowerCase());
     }
 
-    public static <T extends Enum<T>> EnumArgumentType<T> enumArgument(Class<T> clazz, Function<String, String> formatter) {
-        return new EnumArgumentType<T>(clazz, formatter);
+    public static <T extends Enum<T>> EnumArgumentType<T> enumArgument(Class<T> clazz, Function<T, String> formatter) {
+        return new EnumArgumentType<>(clazz, formatter);
     }
 
     public static <T> T getEnum(CommandContext<FabricClientCommandSource> context, String name, Class<T> clazz) {

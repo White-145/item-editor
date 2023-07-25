@@ -59,7 +59,7 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
@@ -80,7 +80,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> getIndexNode = ClientCommandManager
             .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource());
+                ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
@@ -101,7 +101,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> setEffectNode = ClientCommandManager
             .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -115,7 +115,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -124,7 +124,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectLevelNode = ClientCommandManager
             .argument("level", IntegerArgumentType.integer(1, 256))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -139,7 +139,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -148,7 +148,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectLevelDurationNode = ClientCommandManager
             .argument("duration", IntegerArgumentType.integer(1))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -164,7 +164,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -173,7 +173,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectLevelDurationParticlesNode = ClientCommandManager
             .argument("particles", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -190,7 +190,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -199,7 +199,7 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> setEffectLevelInfinityNode = ClientCommandManager
             .literal("infinity")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -214,7 +214,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -223,7 +223,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectLevelInfinityParticlesNode = ClientCommandManager
             .argument("particles", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -239,7 +239,7 @@ public class PotionNode {
                 potionEffects.put(effect, potion);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -252,7 +252,7 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> removeEffectNode = ClientCommandManager
         .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
@@ -263,7 +263,7 @@ public class PotionNode {
                 potionEffects.remove(effect);
                 EditHelper.setPotionEffects(stack, potionEffects);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, effect.getName()));
                 return potionEffects.size();
             })
@@ -272,7 +272,7 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
-                ItemStack stack = Util.getItemStack(context.getSource()).copy();
+                ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
@@ -280,7 +280,7 @@ public class PotionNode {
                 int old = EditHelper.getPotionEffects(stack).size();
                 EditHelper.setPotionEffects(stack, null);
 
-                Util.setItemStack(context.getSource(), stack);
+                Util.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
                 return old;
             })
