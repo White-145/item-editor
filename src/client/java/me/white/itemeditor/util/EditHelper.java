@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.primitives.Ints;
 
@@ -87,8 +89,8 @@ public class EditHelper {
     private static final String TRIM_PATTERN_KEY = "pattern";
     private static final String UNBREAKABLE_KEY = "Unbreakable";
     private static final String HIDE_FLAGS_KEY = "HideFlags";
-    private static final String HEAD_TEXTURE_REGEX = "\\{\"textures\":\\{\"SKIN\":\\{\"url\":\"http(?:s)?:\\/\\/textures\\.minecraft\\.net\\/texture\\/[0-9a-fA-F]+\"\\}\\}\\}";
-    private static final String HEAD_TEXTURE_URL_REGEX = "https?:\\/\\/textures\\.minecraft\\.net\\/texture\\/[0-9a-fA-F]+";
+    private static final String HEAD_TEXTURE_REGEX = "\\{\"textures\":\\{\"SKIN\":\\{\"url\":\"https?://textures\\.minecraft\\.net/texture/[0-9a-fA-F]+\"}}}";
+    private static final String HEAD_TEXTURE_URL_REGEX = "https?://textures\\.minecraft\\.net/texture/[0-9a-fA-F]+";
     private static final String HEAD_TEXTURE_OBJECT = "{\"textures\":{\"SKIN\":{\"url\":\"%s\"}}}";
     public static final int FLAGS_AMOUNT = 8;
     public static final int GENERATIONS_AMOUNT = 4;
@@ -98,7 +100,7 @@ public class EditHelper {
         return DISPLAY_COLOR_KEY;
     }
 
-    public static boolean isValidEnchantment(NbtCompound nbt) {
+    public static boolean isValidEnchantment(@NotNull NbtCompound nbt) {
         if (nbt.isEmpty()) return false;
         if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) return false;
         if (!nbt.contains(ENCHANTMENTS_LVL_KEY, NbtElement.INT_TYPE)) return false;
@@ -107,7 +109,7 @@ public class EditHelper {
         return Registries.ENCHANTMENT.containsId(id);
     }
 
-    public static boolean isValidAttribute(NbtCompound nbt) {
+    public static boolean isValidAttribute(@NotNull NbtCompound nbt) {
         if (!nbt.contains(ATTRIBUTE_MODIFIERS_AMOUNT_KEY, NbtElement.DOUBLE_TYPE)) return false;
         if (!nbt.contains(ATTRIBUTE_MODIFIERS_UUID_KEY, NbtElement.INT_ARRAY_TYPE)) return false;
         UUID uuid = nbt.getUuid(ATTRIBUTE_MODIFIERS_UUID_KEY);
@@ -119,7 +121,7 @@ public class EditHelper {
         return operation >= 0 && operation < EntityAttributeModifier.Operation.values().length;
     }
 
-    public static boolean isValidPattern(NbtCompound nbt) {
+    public static boolean isValidPattern(@NotNull NbtCompound nbt) {
         if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY, NbtElement.INT_TYPE)) return false;
         int color = nbt.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
         if (color < 0 || color >= 16) return false;
@@ -128,7 +130,7 @@ public class EditHelper {
         return BannerPattern.byId(pattern) != null;
     }
 
-    public static boolean isValidTrim(NbtCompound nbt, DynamicRegistryManager registryManager) {
+    public static boolean isValidTrim(@NotNull NbtCompound nbt, @NotNull DynamicRegistryManager registryManager) {
         if (!nbt.contains(TRIM_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
         if (!nbt.contains(TRIM_MATERIAL_KEY, NbtElement.STRING_TYPE)) return false;
         Identifier pattern = Identifier.tryParse(nbt.getString(TRIM_PATTERN_KEY));
@@ -137,7 +139,7 @@ public class EditHelper {
         return material != null && registryManager.get(RegistryKeys.TRIM_MATERIAL).containsId(material);
     }
 
-    public static boolean isValidHeadTexture(String texture) {
+    public static boolean isValidHeadTexture(@NotNull String texture) {
         String value = new String(Base64.getDecoder().decode(texture));
         System.out.println(value);
         System.out.println(HEAD_TEXTURE_REGEX);
@@ -145,17 +147,17 @@ public class EditHelper {
         return value.matches(HEAD_TEXTURE_REGEX);
     }
 
-    public static boolean isValidHeadTextureUrl(String url) {
+    public static boolean isValidHeadTextureUrl(@NotNull String url) {
         return url.matches(HEAD_TEXTURE_URL_REGEX);
     }
 
-    public static boolean isValidSound(String sound) {
+    public static boolean isValidSound(@NotNull String sound) {
         Identifier id = Identifier.tryParse(sound);
         if (id == null) return false;
         return Registries.SOUND_EVENT.containsId(id);
     }
 
-    public static boolean isValidPotionEffect(NbtCompound nbt) {
+    public static boolean isValidPotionEffect(@NotNull NbtCompound nbt) {
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_DURATION_KEY, NbtElement.INT_TYPE)) return false;
@@ -163,7 +165,7 @@ public class EditHelper {
         return effect != null;
     }
     
-    public static boolean hasAttributes(ItemStack stack, boolean validate) {
+    public static boolean hasAttributes(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(ATTRIBUTE_MODIFIERS_KEY, NbtElement.LIST_TYPE)) return false;
@@ -175,11 +177,11 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasAttributes(ItemStack stack) {
+    public static boolean hasAttributes(@NotNull ItemStack stack) {
         return hasAttributes(stack, false);
     }
 
-    public static boolean hasBannerPatterns(ItemStack stack, boolean validate) {
+    public static boolean hasBannerPatterns(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -193,23 +195,23 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasBannerPatterns(ItemStack stack) {
+    public static boolean hasBannerPatterns(@NotNull ItemStack stack) {
         return hasBannerPatterns(stack, false);
     }
 
-    public static boolean hasBookAuthor(ItemStack stack) {
+    public static boolean hasBookAuthor(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         return nbt.contains(AUTHOR_KEY, NbtElement.STRING_TYPE);
     }
 
-    public static boolean hasBookTitle(ItemStack stack) {
+    public static boolean hasBookTitle(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         return nbt.contains(TITLE_KEY, NbtElement.STRING_TYPE);
     }
 
-    public static boolean hasBookPages(ItemStack stack) {
+    public static boolean hasBookPages(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(PAGES_KEY, NbtElement.LIST_TYPE)) return false;
@@ -217,7 +219,7 @@ public class EditHelper {
         return !pages.isEmpty();
     }
 
-    public static boolean hasColor(ItemStack stack) {
+    public static boolean hasColor(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -225,7 +227,7 @@ public class EditHelper {
         return display.contains(getColorKey(stack.getItem()), NbtElement.INT_TYPE);
     }
 
-    public static boolean hasEnchantments(ItemStack stack, boolean validate) {
+    public static boolean hasEnchantments(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(ENCHANTMENTS_KEY, NbtElement.LIST_TYPE)) return false;
@@ -237,11 +239,11 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasEnchantments(ItemStack stack) {
+    public static boolean hasEnchantments(@NotNull ItemStack stack) {
         return hasEnchantments(stack, false);
     }
 
-    public static boolean hasFireworkExplosions(ItemStack stack) {
+    public static boolean hasFireworkExplosions(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -252,7 +254,7 @@ public class EditHelper {
         return !explosions.isEmpty();
     }
 
-    public static boolean hasHeadOwner(ItemStack stack) {
+    public static boolean hasHeadOwner(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -260,7 +262,7 @@ public class EditHelper {
         return skullOwner.contains(SKULL_OWNER_NAME_KEY, NbtElement.STRING_TYPE);
     }
 
-    public static boolean hasHeadTexture(ItemStack stack, boolean validate) {
+    public static boolean hasHeadTexture(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -277,11 +279,11 @@ public class EditHelper {
         return isValidHeadTexture(value);
     }
 
-    public static boolean hasHeadTexture(ItemStack stack) {
+    public static boolean hasHeadTexture(@NotNull ItemStack stack) {
         return hasHeadTexture(stack, false);
     }
 
-    public static boolean hasHeadSound(ItemStack stack, boolean validate) {
+    public static boolean hasHeadSound(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -292,11 +294,11 @@ public class EditHelper {
         return isValidSound(sound);
     }
 
-    public static boolean hasHeadSound(ItemStack stack) {
+    public static boolean hasHeadSound(@NotNull ItemStack stack) {
         return hasHeadSound(stack, false);
     }
 
-    public static boolean hasLore(ItemStack stack) {
+    public static boolean hasLore(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -306,7 +308,7 @@ public class EditHelper {
         return !lore.isEmpty();
     }
 
-    public static boolean hasModel(ItemStack stack) {
+    public static boolean hasModel(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) return false;
@@ -314,7 +316,7 @@ public class EditHelper {
         return model > 0;
     }
 
-    public static boolean hasName(ItemStack stack) {
+    public static boolean hasName(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -322,21 +324,21 @@ public class EditHelper {
         return display.contains(DISPLAY_NAME_KEY, NbtElement.STRING_TYPE);
     }
 
-    public static boolean hasTrim(ItemStack stack, boolean validate, DynamicRegistryManager registryManager) {
+    public static boolean hasTrim(@NotNull ItemStack stack, boolean validate, @Nullable DynamicRegistryManager registryManager) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(TRIM_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        if (!validate) return true;
+        if (!validate || registryManager == null) return true;
         NbtCompound trim = nbt.getCompound(TRIM_KEY);
         return isValidTrim(trim, registryManager);
     }
 
-    public static boolean hasTrim(ItemStack stack) {
+    public static boolean hasTrim(@NotNull ItemStack stack) {
         // registry manager is required only for validation
         return hasTrim(stack, false, null);
     }
 
-    public static boolean hasWhitelistPlace(ItemStack stack, boolean validate) {
+    public static boolean hasWhitelistPlace(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(CAN_PLACE_ON_KEY, NbtElement.LIST_TYPE)) return false;
@@ -350,11 +352,11 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasWhitelistPlace(ItemStack stack) {
+    public static boolean hasWhitelistPlace(@NotNull ItemStack stack) {
         return hasWhitelistPlace(stack, false);
     }
 
-    public static boolean hasWhitelistDestroy(ItemStack stack, boolean validate) {
+    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(CAN_DESTROY_KEY, NbtElement.LIST_TYPE)) return false;
@@ -368,11 +370,11 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasWhitelistDestroy(ItemStack stack) {
+    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack) {
         return hasWhitelistDestroy(stack, false);
     }
 
-    public static boolean hasPotionEffects(ItemStack stack, boolean validate) {
+    public static boolean hasPotionEffects(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_KEY, NbtElement.LIST_TYPE)) return false;
@@ -384,11 +386,11 @@ public class EditHelper {
         return false;
     }
 
-    public static boolean hasPotionEffects(ItemStack stack) {
+    public static boolean hasPotionEffects(@NotNull ItemStack stack) {
         return hasPotionEffects(stack, false);
     }
 
-    public static List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> getAttributes(ItemStack stack) {
+    public static @NotNull List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> getAttributes(@NotNull ItemStack stack) {
         if (!hasAttributes(stack, true)) return List.of();
         NbtList nbtAttributeModifiers = stack.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
         List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
@@ -411,7 +413,7 @@ public class EditHelper {
         return attributes;
     }
 
-    public static List<Pair<BannerPattern, Integer>> getBannerPatterns(ItemStack stack) {
+    public static @NotNull List<Pair<BannerPattern, Integer>> getBannerPatterns(@NotNull ItemStack stack) {
         if (!hasBannerPatterns(stack, true)) return List.of();
         NbtList nbtPatterns = stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
         List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>();
@@ -425,23 +427,23 @@ public class EditHelper {
         return patterns;
     }
 
-    public static String getBookAuthor(ItemStack stack) {
+    public static @Nullable String getBookAuthor(@NotNull ItemStack stack) {
         if (!hasBookAuthor(stack)) return null;
         return stack.getNbt().getString(AUTHOR_KEY);
     }
 
-    public static String getBookTitle(ItemStack stack) {
+    public static @Nullable String getBookTitle(@NotNull ItemStack stack) {
         if (!hasBookTitle(stack)) return null;
         return stack.getNbt().getString(TITLE_KEY);
     }
 
-    public static int getBookGeneration(ItemStack stack) {
+    public static int getBookGeneration(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return 0;
         int generation = stack.getNbt().getInt(GENERATION_KEY);
         return generation >= 0 && generation < 3 ? generation : 0;
     }
 
-    public static List<Text> getBookPages(ItemStack stack) {
+    public static @NotNull List<Text> getBookPages(@NotNull ItemStack stack) {
         if (!hasBookPages(stack)) return List.of();
         List<Text> pages = new ArrayList<>();
         for (NbtElement page : stack.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE)) {
@@ -450,12 +452,12 @@ public class EditHelper {
         return pages;
     }
 
-    public static int getColor(ItemStack stack) {
+    public static int getColor(@NotNull ItemStack stack) {
         if (!hasColor(stack)) return 0;
         return stack.getNbt().getCompound(DISPLAY_KEY).getInt(getColorKey(stack.getItem()));
     }
 
-    public static HashMap<Enchantment, Integer> getEnchantments(ItemStack stack) {
+    public static @NotNull HashMap<Enchantment, Integer> getEnchantments(@NotNull ItemStack stack) {
         if (!hasEnchantments(stack, true)) return new HashMap<>();
         NbtList nbtEnchantments = stack.getNbt().getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
         HashMap<Enchantment, Integer> enchantments = new HashMap<>();
@@ -469,7 +471,7 @@ public class EditHelper {
         return enchantments;
     }
 
-    public static List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> getFireworkExplosions(ItemStack stack) {
+    public static @NotNull List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> getFireworkExplosions(@NotNull ItemStack stack) {
         if (!hasFireworkExplosions(stack)) return List.of();
         NbtList nbtExplosions = stack.getNbt().getCompound(FIREWORKS_KEY).getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
         List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> result = new ArrayList<>();
@@ -480,12 +482,12 @@ public class EditHelper {
             boolean flicker = explosion.getBoolean(FIREWORKS_EXPLOSIONS_FLICKER_KEY);
             boolean trail = explosion.getBoolean(FIREWORKS_EXPLOSIONS_TRAIL_KEY);
             int[] fadeColors = explosion.getIntArray(FIREWORKS_EXPLOSIONS_FADE_COLORS_KEY);
-            result.add(new Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>(type, Ints.asList(colors), flicker, trail, Ints.asList(fadeColors)));
+            result.add(new Quintet<>(type, Ints.asList(colors), flicker, trail, Ints.asList(fadeColors)));
         }
         return result;
     }
 
-    public static int getFireworkFlight(ItemStack stack) {
+    public static int getFireworkFlight(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return 0;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return 0;
@@ -493,26 +495,26 @@ public class EditHelper {
         return fireworks.getInt(FIREWORKS_FLIGHT_KEY);
     }
 
-    public static String getHeadOwner(ItemStack stack) {
+    public static @Nullable String getHeadOwner(@NotNull ItemStack stack) {
         if (!hasHeadOwner(stack)) return null;
         return stack.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
     }
 
-    public static String getHeadTexture(ItemStack stack) {
+    public static @Nullable String getHeadTexture(@NotNull ItemStack stack) {
         if (!hasHeadTexture(stack, true)) return null;
         String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
         String textureObj = new String(Base64.getDecoder().decode(texture));
         return textureObj.substring(28, textureObj.length() - 4);
     }
 
-    public static SoundEvent getHeadSound(ItemStack stack) {
+    public static @Nullable SoundEvent getHeadSound(@NotNull ItemStack stack) {
         if (!hasHeadSound(stack)) return null;
         Identifier id = Identifier.tryParse(stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND));
         if (id == null) return null;
         return Registries.SOUND_EVENT.get(id);
     }
 
-    public static List<Text> getLore(ItemStack stack) {
+    public static @NotNull List<Text> getLore(@NotNull ItemStack stack) {
         if (!hasLore(stack)) return List.of();
         NbtList nbtLore = stack.getNbt().getCompound(DISPLAY_KEY).getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
         List<Text> lore = new ArrayList<>();
@@ -523,17 +525,17 @@ public class EditHelper {
         return lore;
     }
 
-    public static int getModel(ItemStack stack) {
+    public static int getModel(@NotNull ItemStack stack) {
         if (!hasModel(stack)) return 0;
         return stack.getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
     }
 
-    public static Text getName(ItemStack stack) {
+    public static @Nullable Text getName(@NotNull ItemStack stack) {
         if (!hasName(stack)) return null;
         return Text.Serializer.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
     }
 
-    public static ArmorTrim getTrim(ItemStack stack, DynamicRegistryManager registryManager) {
+    public static @Nullable ArmorTrim getTrim(@NotNull ItemStack stack, @NotNull DynamicRegistryManager registryManager) {
         if (!hasTrim(stack, true, registryManager)) return null;
         NbtCompound nbtTrim = stack.getNbt().getCompound(TRIM_KEY);
         Identifier patternId = Identifier.tryParse(nbtTrim.getString(TRIM_PATTERN_KEY));
@@ -545,12 +547,12 @@ public class EditHelper {
         return new ArmorTrim(materialRegistry.getEntry(material), patternRegistry.getEntry(pattern));
     }
 
-    public static List<Block> getWhitelistPlace(ItemStack stack) {
+    public static @NotNull List<Block> getWhitelistPlace(@NotNull ItemStack stack) {
         if (!hasWhitelistPlace(stack, true)) return List.of();
         NbtList nbtPlace = stack.getNbt().getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
         List<Block> result = new ArrayList<>();
         for (NbtElement nbtBlock : nbtPlace) {
-            Identifier id = Identifier.tryParse(((NbtString)nbtBlock).asString());
+            Identifier id = Identifier.tryParse(nbtBlock.asString());
             if (id == null) continue;
             Block block = Registries.BLOCK.get(id);
             if (block == null) continue;
@@ -559,12 +561,12 @@ public class EditHelper {
         return result;
     }
 
-    public static List<Block> getWhitelistDestroy(ItemStack stack) {
+    public static @NotNull List<Block> getWhitelistDestroy(@NotNull ItemStack stack) {
         if (!hasWhitelistDestroy(stack, true)) return List.of();
         NbtList nbtDestroy = stack.getNbt().getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
         List<Block> result = new ArrayList<>();
         for (NbtElement nbtBlock : nbtDestroy) {
-            Identifier id = Identifier.tryParse(((NbtString)nbtBlock).asString());
+            Identifier id = Identifier.tryParse(nbtBlock.asString());
             if (id == null) continue;
             Block block = Registries.BLOCK.get(id);
             if (block == null) continue;
@@ -573,12 +575,12 @@ public class EditHelper {
         return result;
     }
 
-    public static boolean getUnbreakable(ItemStack stack) {
+    public static boolean getUnbreakable(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         return stack.getNbt().getBoolean(UNBREAKABLE_KEY);
     }
 
-    public static List<Boolean> getFlags(ItemStack stack) {
+    public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
         List<Boolean> result = new ArrayList<>();
         if (!stack.hasNbt()) return result;
         int flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
@@ -589,7 +591,7 @@ public class EditHelper {
         return result;
     }
 
-    public static HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(ItemStack stack) {
+    public static @NotNull HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(@NotNull ItemStack stack) {
         if (!hasPotionEffects(stack, true)) return new HashMap<>();
         HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> result = new HashMap<>();
         NbtList customPotionEffects = stack.getNbt().getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
@@ -608,7 +610,7 @@ public class EditHelper {
         return result;
     }
     
-    public static void setAttributes(ItemStack stack, List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes) {
+    public static void setAttributes(@NotNull ItemStack stack, @Nullable List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes) {
         if (attributes == null || attributes.isEmpty()) {
             if (!hasAttributes(stack)) return;
 
@@ -635,7 +637,7 @@ public class EditHelper {
         }
     }
     
-    public static void setAttributePlaceholder(ItemStack stack, boolean placeholder) {
+    public static void setAttributePlaceholder(@NotNull ItemStack stack, boolean placeholder) {
         if (hasAttributes(stack) == placeholder) return;
         if (!placeholder) {
             NbtCompound nbt = stack.getOrCreateNbt();
