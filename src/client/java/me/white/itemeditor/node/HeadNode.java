@@ -174,7 +174,7 @@ public class HeadNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 if (!ItemUtil.hasNoteBlockSound(stack)) throw NO_SOUND_EXCEPTION;
-                ItemUtil.setHeadSound(stack, null);
+                ItemUtil.setNoteBlockSound(stack, null);
 
                 EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_RESET));
@@ -190,7 +190,7 @@ public class HeadNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 SoundEvent sound = EditorUtil.getRegistryEntryArgument(context, "sound", RegistryKeys.SOUND_EVENT);
-                ItemUtil.setHeadSound(stack, sound);
+                ItemUtil.setNoteBlockSound(stack, sound);
 
                 EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_SET, sound.toString()));

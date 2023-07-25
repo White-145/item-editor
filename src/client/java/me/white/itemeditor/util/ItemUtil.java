@@ -949,6 +949,12 @@ public class ItemUtil {
         return result;
     }
 
+    /**
+     * Sets attribute modifiers to the stack
+     *
+     * @param stack Item stack to modify
+     * @param attributes Attribute modifiers to set
+     */
     public static void setAttributes(@NotNull ItemStack stack, @Nullable List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes) {
         if (attributes == null || attributes.isEmpty()) {
             if (!hasAttributes(stack)) return;
@@ -975,7 +981,13 @@ public class ItemUtil {
             stack.setNbt(nbt);
         }
     }
-    
+
+    /**
+     * Sets attribute modifiers placeholder to remove default attribute modifiers
+     *
+     * @param stack Item stack to modify
+     * @param placeholder Do apply placeholder
+     */
     public static void setAttributePlaceholder(@NotNull ItemStack stack, boolean placeholder) {
         if (hasAttributes(stack) == placeholder) return;
         if (!placeholder) {
@@ -993,6 +1005,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets banner patterns to the stack
+     *
+     * @param stack Item stack to modify
+     * @param patterns Banner patterns to set. Removes tag if null or empty
+     */
     public static void setBannerPatterns(@NotNull ItemStack stack, @Nullable List<Pair<BannerPattern, Integer>> patterns) {
         if (patterns == null || patterns.isEmpty()) {
             if (!hasBannerPatterns(stack)) return;
@@ -1021,6 +1039,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets book author to the stack
+     *
+     * @param stack Item stack to modify
+     * @param author Book author to set. Removes tag if null
+     */
     public static void setBookAuthor(@NotNull ItemStack stack, @Nullable String author) {
         if (author == null) {
             if (!hasBookAuthor(stack)) return;
@@ -1035,6 +1059,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets book title to the stack
+     *
+     * @param stack Item stack to modify
+     * @param title Book title to set. Removes tag if null
+     */
     public static void setBookTitle(@NotNull ItemStack stack, @Nullable String title) {
         if (title == null) {
             if (!hasBookTitle(stack)) return;
@@ -1049,6 +1079,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets book generation to the stack
+     *
+     * @param stack Item stack to modify
+     * @param generation Book generation to set. Removes tag if null or invalid
+     */
     public static void setBookGeneration(@NotNull ItemStack stack, @Nullable Integer generation) {
         if (generation == null || generation < 0 || generation >= GENERATIONS_AMOUNT) {
             if (!stack.hasNbt()) return;
@@ -1063,6 +1099,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets book pages to the stack
+     *
+     * @param stack Item stack to modify
+     * @param pages Book pages to set. Removes tag if null or empty
+     */
     public static void setBookPages(@NotNull ItemStack stack, @Nullable List<Text> pages) {
         if (pages == null || pages.isEmpty()) {
             if (!hasBookPages(stack)) return;
@@ -1082,6 +1124,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets custom color to the stack
+     *
+     * @param stack Item stack to modify
+     * @param color Custom color to set. Removes tag if null
+     */
     public static void setColor(@NotNull ItemStack stack, @Nullable Integer color) {
         // TODO: support for more items such as firework stars and potions
         if (color == null) {
@@ -1101,6 +1149,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets enchantments to the stack
+     *
+     * @param stack Item stack to modify
+     * @param enchantments Enchantments to set. Removes tag if null or empty
+     */
     public static void setEnchantments(@NotNull ItemStack stack, @Nullable HashMap<Enchantment, Integer> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             if (!hasEnchantments(stack)) return;
@@ -1123,6 +1177,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets enchantment glint to the stack
+     *
+     * @param stack Item stack to modify
+     * @param glint Do apply glint
+     */
     public static void setEnchantmentGlint(@NotNull ItemStack stack, boolean glint) {
         if (hasEnchantments(stack) == glint) return;
         if (!glint) {
@@ -1140,6 +1200,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets firework explosions to the stack
+     *
+     * @param stack Item stack to modify
+     * @param explosions Firework explosions to set. Removes tag if null or empty
+     */
     public static void setFireworkExplosions(@NotNull ItemStack stack, @Nullable List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions) {
         if (explosions == null || explosions.isEmpty()) {
             if (!hasFireworkExplosions(stack)) return;
@@ -1169,6 +1235,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets firework flight to the stack
+     *
+     * @param stack Item stack to modify
+     * @param flight Firework flight to set. Removes tag if null
+     */
     public static void setFireworkFlight(@NotNull ItemStack stack, @Nullable Integer flight) {
         if (flight == null) {
             if (!stack.hasNbt()) return;
@@ -1187,6 +1259,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets head owner name to the stack
+     *
+     * @param stack Item stack to modify
+     * @param owner Head owner name to set. Removes tag if null
+     */
     public static void setHeadOwner(@NotNull ItemStack stack, @Nullable String owner) {
         if (owner == null) {
             if (!hasHeadOwner(stack)) return;
@@ -1203,6 +1281,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets head texture to the stack
+     *
+     * @param stack Item stack to modify
+     * @param texture Head texture to set. Removes tag if null
+     */
     public static void setHeadTexture(@NotNull ItemStack stack, @Nullable String texture) {
         if (texture == null) {
             if (!hasHeadTexture(stack)) return;
@@ -1227,7 +1311,13 @@ public class ItemUtil {
         }
     }
 
-    public static void setHeadSound(@NotNull ItemStack stack, @Nullable SoundEvent sound) {
+    /**
+     * Sets note block sound to the stack
+     *
+     * @param stack Item stack to modify
+     * @param sound Note block sound to set. Removes tag if null
+     */
+    public static void setNoteBlockSound(@NotNull ItemStack stack, @Nullable SoundEvent sound) {
         if (sound == null) {
             if (!hasNoteBlockSound(stack)) return;
 
@@ -1247,6 +1337,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets lore to the stack
+     *
+     * @param stack Item stack to modify
+     * @param lore Lore to set. Removes tag if null or empty
+     */
     public static void setLore(@NotNull ItemStack stack, @Nullable List<Text> lore) {
         if (lore == null || lore.isEmpty()) {
             if (!hasLore(stack)) return;
@@ -1270,6 +1366,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets custom model to the stack
+     *
+     * @param stack Item stack to modify
+     * @param model Custom model to set. Removes tag if null or less than 1
+     */
     public static void setModel(@NotNull ItemStack stack, @Nullable Integer model) {
         if (model == null || model <= 0) {
             if (!hasModel(stack)) return;
@@ -1284,6 +1386,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets custom name to the stack
+     *
+     * @param stack Item stack to modify
+     * @param name Custom name to set. Removes tag if null
+     */
     public static void setName(@NotNull ItemStack stack, @Nullable Text name) {
         if (name == null) {
             if (!hasName(stack)) return;
@@ -1302,6 +1410,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets armor trim to the stack
+     *
+     * @param stack Item stack to modify
+     * @param trim Armor trim to set. Removes tag if null
+     */
     public static void setTrim(@NotNull ItemStack stack, @Nullable ArmorTrim trim) {
         if (trim == null) {
             if (!hasTrim(stack, null)) return;
@@ -1320,6 +1434,13 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets armor trim to the stack
+     *
+     * @param stack Item stack to modify
+     * @param pattern Trim pattern to set
+     * @param material Trim material to set
+     */
     public static void setTrim(@NotNull ItemStack stack, @NotNull ArmorTrimPattern pattern, @NotNull ArmorTrimMaterial material) {
         NbtCompound nbtTrim = new NbtCompound();
         nbtTrim.putString(TRIM_PATTERN_KEY, pattern.assetId().toString());
@@ -1330,6 +1451,12 @@ public class ItemUtil {
         stack.setNbt(nbt);
     }
 
+    /**
+     * Sets placing whitelist to the stack
+     *
+     * @param stack Item stack to modify
+     * @param place Placing whitelist to set. Removes tag if null or empty
+     */
     public static void setWhitelistPlace(@NotNull ItemStack stack, @Nullable List<Block> place) {
         if (place == null || place.isEmpty()) {
             if (!hasWhitelistPlace(stack)) return;
@@ -1349,6 +1476,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets destroying whitelist to the stack
+     *
+     * @param stack Item stack to modify
+     * @param destroy Destroying whitelist to set. Removes tag if null or empty
+     */
     public static void setWhitelistDestroy(@NotNull ItemStack stack, @Nullable List<Block> destroy) {
         if (destroy == null || destroy.isEmpty()) {
             if (!hasWhitelistDestroy(stack)) return;
@@ -1368,6 +1501,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets unbreakability to the stack
+     *
+     * @param stack Item stack to modify
+     * @param unbreakable Unbreakability to set. Removes tag if null
+     */
     public static void setUnbreakable(@NotNull ItemStack stack, @Nullable Boolean unbreakable) {
         if (unbreakable == null) {
             if (!stack.hasNbt()) return;
@@ -1382,8 +1521,14 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets display flags to the stack
+     *
+     * @param stack Item stack to modify
+     * @param flags Display flags to set. Removes tag if null or empty
+     */
     public static void setFlags(@NotNull ItemStack stack, @Nullable List<Boolean> flags) {
-        if (flags == null) {
+        if (flags == null || flags.isEmpty()) {
             if (!stack.hasNbt()) return;
 
             NbtCompound nbt = stack.getNbt();
@@ -1401,6 +1546,12 @@ public class ItemUtil {
         }
     }
 
+    /**
+     * Sets potion effects to the stack
+     *
+     * @param stack Item stack to modify
+     * @param effects Potion effects to set. Removes tag if null or empty
+     */
     public static void setPotionEffects(@NotNull ItemStack stack, @Nullable HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> effects) {
         if (effects == null || effects.isEmpty()) {
             if (!hasPotionEffects(stack)) return;
