@@ -3,6 +3,7 @@ package me.white.itemeditor.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import me.white.itemeditor.ItemEditor;
 import me.white.itemeditor.node.*;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -10,57 +11,61 @@ import net.minecraft.command.CommandRegistryAccess;
 
 public class EditCommand {
 	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-		LiteralCommandNode<FabricClientCommandSource> editNode = ClientCommandManager
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 			.literal("edit")
 			.build();
 		
-		LiteralCommandNode<FabricClientCommandSource> namespacedEditNode = ClientCommandManager
+		LiteralCommandNode<FabricClientCommandSource> nodeNamespaced = ClientCommandManager
 			.literal("itemeditor:edit")
-			.redirect(editNode)
+			.redirect(node)
 			.build();
 
 		// ... material ...
-		MaterialNode.register(editNode, registryAccess);
+		MaterialNode.register(node, registryAccess);
 		// ... name ...
-		NameNode.register(editNode);
+		NameNode.register(node);
 		// ... lore ...
-		LoreNode.register(editNode);
+		LoreNode.register(node);
 		// ... count ...
-		CountNode.register(editNode);
+		CountNode.register(node);
 		// ... model ...
-		ModelNode.register(editNode);
+		ModelNode.register(node);
 		// ... enchantment ...
-		EnchantmentNode.register(editNode, registryAccess);
+		EnchantmentNode.register(node, registryAccess);
 		// ... get ...
-		GetNode.register(editNode, registryAccess);
+		GetNode.register(node, registryAccess);
 		// ... attribute ...
-		AttributeNode.register(editNode, registryAccess);
+		AttributeNode.register(node, registryAccess);
 		// ... color ...
-		ColorNode.register(editNode);
+		ColorNode.register(node);
 		// ... hideflags ...
-		FlagsNode.register(editNode);
+		FlagsNode.register(node);
 		// ... equip
-		EquipNode.register(editNode);
+		EquipNode.register(node);
 		// ... unbreakable
-		UnbreakableNode.register(editNode);
+		UnbreakableNode.register(node);
 		// ... whitelist ...
-		WhitelistNode.register(editNode, registryAccess);
+		WhitelistNode.register(node, registryAccess);
 		// ... durability ...
-		DurabilityNode.register(editNode);
+		DurabilityNode.register(node);
 		// ... data ...
-		DataNode.register(editNode);
+		DataNode.register(node);
 		// ... book ...
-		BookNode.register(editNode);
+		BookNode.register(node);
 		// ... head ...
-		HeadNode.register(editNode, registryAccess);
+		HeadNode.register(node, registryAccess);
 		// ... trim ...
-		TrimNode.register(editNode, registryAccess);
+		try {
+			TrimNode.register(node, registryAccess);
+		} catch (IllegalStateException e) {
+			ItemEditor.LOGGER.error("Failed to load trim node");
+		}
 		// ... firework ...
-		FireworkNode.register(editNode);
+		FireworkNode.register(node);
 		// ... banner ...
-		BannerNode.register(editNode, registryAccess);
+		BannerNode.register(node, registryAccess);
 		// ... potion ...
-		PotionNode.register(editNode, registryAccess);
+		PotionNode.register(node, registryAccess);
 
 		// BETA RELEASE
 
@@ -69,7 +74,7 @@ public class EditCommand {
 		// ... entity ...
 		// ... optimize ...
 		
-		dispatcher.getRoot().addChild(editNode);
-		dispatcher.getRoot().addChild(namespacedEditNode);
+		dispatcher.getRoot().addChild(node);
+		dispatcher.getRoot().addChild(nodeNamespaced);
 	}
 }

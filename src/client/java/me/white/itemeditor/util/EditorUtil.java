@@ -47,8 +47,8 @@ public class EditorUtil {
     }
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getRegistryEntryArgument(CommandContext<FabricClientCommandSource> source, String key, RegistryKey<Registry<T>> registryEntryKey) throws CommandSyntaxException {
-		RegistryEntry.Reference<?> reference = source.getArgument(key, RegistryEntry.Reference.class);
+	public static <T> T getRegistryEntryArgument(CommandContext<FabricClientCommandSource> context, String key, RegistryKey<Registry<T>> registryEntryKey) throws CommandSyntaxException {
+		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
 	    RegistryKey<?> registryKey = reference.registryKey();
 	    if (!registryKey.isOf(registryEntryKey)) throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryEntryKey.getValue());
 		return (T)reference.value();

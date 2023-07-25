@@ -227,5 +227,7 @@
 
   "commands.edit.error.notcreative": "notcreative",
   "commands.edit.error.noitem": "noitem",
-  "commands.edit.error.outofbounds": "outofbounds %s %s"
+  "commands.edit.error.outofbounds": "outofbounds %s %s",
+
+  "commands.testing.registry": "registry %s"
 }
