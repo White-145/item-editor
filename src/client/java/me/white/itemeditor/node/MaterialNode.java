@@ -5,7 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -29,8 +29,8 @@ public class MaterialNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getItem().getName()));
 				return 1;
@@ -44,15 +44,15 @@ public class MaterialNode {
 		ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
 			.argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				Item item = Util.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				Item item = EditorUtil.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
 				if (stack.getItem() == item) throw ALREADY_IS_EXCEPTION;
 				ItemStack newStack = new ItemStack(item, stack.getCount());
 				newStack.setNbt(stack.getNbt());
 
-				Util.setStack(context.getSource(), newStack);
+				EditorUtil.setStack(context.getSource(), newStack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, item.getName()));
 				return 1;
 			})

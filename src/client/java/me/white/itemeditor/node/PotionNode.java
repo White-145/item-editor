@@ -11,8 +11,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -59,11 +59,11 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                if (!ItemUtil.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
                 for (StatusEffect effect : potionEffects.keySet()) {
@@ -80,12 +80,12 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> getIndexNode = ClientCommandManager
             .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                if (!ItemUtil.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 if (!potionEffects.containsKey(effect)) throw DOESNT_EXIST_EXCEPTION;
                 Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
 
@@ -101,21 +101,21 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> setEffectNode = ClientCommandManager
             .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(1, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -124,22 +124,22 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectLevelNode = ClientCommandManager
             .argument("level", IntegerArgumentType.integer(1, 256))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 int level = IntegerArgumentType.getInteger(context, "level") - 1;
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -148,23 +148,23 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectLevelDurationNode = ClientCommandManager
             .argument("duration", IntegerArgumentType.integer(1))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 int level = IntegerArgumentType.getInteger(context, "level") - 1;
                 int duration = IntegerArgumentType.getInteger(context, "duration");
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(level, duration, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -173,24 +173,24 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectLevelDurationParticlesNode = ClientCommandManager
             .argument("particles", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 int level = IntegerArgumentType.getInteger(context, "level") - 1;
                 int duration = IntegerArgumentType.getInteger(context, "duration");
                 boolean particles = BoolArgumentType.getBool(context, "particles");
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(level, duration, particles);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -199,22 +199,22 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> setEffectLevelInfinityNode = ClientCommandManager
             .literal("infinity")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 int level = IntegerArgumentType.getInteger(context, "level") - 1;
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -223,23 +223,23 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectLevelInfinityParticlesNode = ClientCommandManager
             .argument("particles", BoolArgumentType.bool())
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 int level = IntegerArgumentType.getInteger(context, "level") - 1;
                 boolean particles = BoolArgumentType.getBool(context, "particles");
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, particles);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
                 }
                 potionEffects.put(effect, potion);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(effect, potion)));
                 return potionEffects.size();
             })
@@ -252,18 +252,18 @@ public class PotionNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<StatusEffect>> removeEffectNode = ClientCommandManager
         .argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!EditHelper.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!ItemUtil.hasPotionEffects(stack, true)) throw NO_POTION_EFFECTS_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                StatusEffect effect = Util.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = EditHelper.getPotionEffects(stack);
+                StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
+                HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
                 if (!potionEffects.containsKey(effect)) throw DOESNT_EXIST_EXCEPTION;
                 potionEffects.remove(effect);
-                EditHelper.setPotionEffects(stack, potionEffects);
+                ItemUtil.setPotionEffects(stack, potionEffects);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, effect.getName()));
                 return potionEffects.size();
             })
@@ -272,15 +272,15 @@ public class PotionNode {
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasPotionEffects(stack, false)) throw NO_POTION_EFFECTS_EXCEPTION;
-                int old = EditHelper.getPotionEffects(stack).size();
-                EditHelper.setPotionEffects(stack, null);
+                if (!ItemUtil.hasPotionEffects(stack, false)) throw NO_POTION_EFFECTS_EXCEPTION;
+                int old = ItemUtil.getPotionEffects(stack).size();
+                ItemUtil.setPotionEffects(stack, null);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
                 return old;
             })

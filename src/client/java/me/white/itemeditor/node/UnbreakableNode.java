@@ -4,8 +4,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
@@ -30,10 +30,10 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				boolean isUnbreakable = EditHelper.getUnbreakable(stack);
+				boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
 
 				context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
 				return isUnbreakable ? 1 : 0;
@@ -43,14 +43,14 @@ public class UnbreakableNode {
 		LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
 			.literal("toggle")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				boolean isUnbreakable = EditHelper.getUnbreakable(stack);
-				EditHelper.setUnbreakable(stack, !isUnbreakable);
+				boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
+				ItemUtil.setUnbreakable(stack, !isUnbreakable);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
 				return isUnbreakable ? 1 : 0;
 			})

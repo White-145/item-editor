@@ -6,8 +6,8 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.ColorArgumentType;
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.DyeableArmorItem;
@@ -41,13 +41,13 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasColor(stack)) throw NO_COLOR_EXCEPTION;
-                int color = EditHelper.getColor(stack);
+                if (!ItemUtil.hasColor(stack)) throw NO_COLOR_EXCEPTION;
+                int color = ItemUtil.getColor(stack);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, Util.formatColor(color)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, EditorUtil.formatColor(color)));
                 return color;
             })
             .build();
@@ -55,15 +55,15 @@ public class ColorNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasColor(stack)) throw NO_COLOR_EXCEPTION;
-                int old = EditHelper.getColor(stack);
-                EditHelper.setColor(stack, null);
+                if (!ItemUtil.hasColor(stack)) throw NO_COLOR_EXCEPTION;
+                int old = ItemUtil.getColor(stack);
+                ItemUtil.setColor(stack, null);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 return old;
             })
@@ -72,16 +72,16 @@ public class ColorNode {
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
             .argument("color", ColorArgumentType.hex())
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                int old = EditHelper.getColor(stack);
+                int old = ItemUtil.getColor(stack);
                 int color = ColorArgumentType.getColor(context, "color");
-                EditHelper.setColor(stack, color);
+                ItemUtil.setColor(stack, color);
 
-                Util.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Util.formatColor(color)));
+                EditorUtil.setStack(context.getSource(), stack);
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, EditorUtil.formatColor(color)));
                 return old;
             })
             .build();

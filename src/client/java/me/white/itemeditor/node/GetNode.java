@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -20,7 +20,7 @@ public class GetNode {
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 
 	private static boolean canEdit(FabricClientCommandSource source) {
-		ItemStack item = Util.getStack(source);
+		ItemStack item = EditorUtil.getStack(source);
 		return item == null || item.isEmpty();
 	}
 
@@ -32,11 +32,11 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
 			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
 			.executes(context -> {
-				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, stack.getName()));
 				return 1;
 			})
@@ -45,12 +45,12 @@ public class GetNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
 			.argument("count", IntegerArgumentType.integer(0, 127))
 			.executes(context -> {
-				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
+				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
 				int count = IntegerArgumentType.getInteger(context, "count");
 				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, stack.getName()));
 				return 1;
 			})

@@ -6,8 +6,8 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.TextArgumentType;
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
@@ -27,10 +27,10 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasName(stack)) throw NO_NAME_EXCEPTION;
-				Text name = EditHelper.getName(stack);
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasName(stack)) throw NO_NAME_EXCEPTION;
+				Text name = ItemUtil.getName(stack);
 				
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, name));
 				return 1;
@@ -40,12 +40,12 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				EditHelper.setName(stack, Text.empty());
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				ItemUtil.setName(stack, Text.empty());
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, ""));
 				return 1;
 			})
@@ -54,14 +54,14 @@ public class NameNode {
 		ArgumentCommandNode<FabricClientCommandSource, Text> setNameNode = ClientCommandManager
 			.argument("name", TextArgumentType.visual())
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				// Text name = Colored.of(StringArgumentType.getString(context, "name"));
 				Text name = TextArgumentType.getText(context, "name");
-				EditHelper.setName(stack, name);
+				ItemUtil.setName(stack, name);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, name));
 				return 1;
 			})
@@ -70,13 +70,13 @@ public class NameNode {
 		LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager
 			.literal("reset")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasName(stack)) throw NO_NAME_EXCEPTION;
-				EditHelper.setName(stack, null);
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasName(stack)) throw NO_NAME_EXCEPTION;
+				ItemUtil.setName(stack, null);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
 				return 1;
 			})

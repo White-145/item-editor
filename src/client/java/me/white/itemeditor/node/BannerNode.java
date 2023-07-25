@@ -12,8 +12,8 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.argument.ColorArgumentType;
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.entity.BannerPattern;
@@ -68,11 +68,11 @@ public class BannerNode {
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
 			.literal("get")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
-				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
+				if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
 				for (int i = 0; i < patterns.size(); ++i) {
@@ -89,13 +89,13 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				Pair<BannerPattern, Integer> pattern = patterns.get(index);
 
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_PATTERN, translation(pattern)));
@@ -118,20 +118,20 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
+				BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
-				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.set(index, Pair.of(pattern, color));
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -144,18 +144,18 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.remove(index);
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
 				return patterns.size();
 			})
@@ -172,16 +172,16 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> addPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
-				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
+				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
 				patterns.add(Pair.of(pattern, color));
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -202,19 +202,19 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexPatternColorNode = ClientCommandManager
 			.argument("color", ColorArgumentType.named())
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				BannerPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
+				BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
-				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(EditHelper.getBannerPatterns(stack));
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns.add(index, Pair.of(pattern, color));
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, index, translation(Pair.of(pattern, color))));
 				return patterns.size();
 			})
@@ -223,14 +223,14 @@ public class BannerNode {
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
 			.literal("clear")
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
-				int oldSize = EditHelper.getBannerPatterns(stack).size();
-				EditHelper.setBannerPatterns(stack, null);
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
+				int oldSize = ItemUtil.getBannerPatterns(stack).size();
+				ItemUtil.setBannerPatterns(stack, null);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
 				return oldSize;
 			})
@@ -243,18 +243,18 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(1))
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				int off = patterns.size() - index;
 				patterns = patterns.subList(index, patterns.size());
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, index));
 				return off;
 			})
@@ -267,17 +267,17 @@ public class BannerNode {
 		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
 			.argument("index", IntegerArgumentType.integer(0))
 			.executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				if (!ItemUtil.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
-				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
+				List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
+				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 				patterns = patterns.subList(0, index + 1);
-				EditHelper.setBannerPatterns(stack, patterns);
+				ItemUtil.setBannerPatterns(stack, patterns);
 
-				Util.setStack(context.getSource(), stack);
+				EditorUtil.setStack(context.getSource(), stack);
 				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, index));
 				return patterns.size();
 			})

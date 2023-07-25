@@ -3,8 +3,8 @@ package me.white.itemeditor.node;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.argument.EnumArgumentType;
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
@@ -98,11 +98,11 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                List<Boolean> flags = EditHelper.getFlags(stack);
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                List<Boolean> flags = ItemUtil.getFlags(stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
-                for (int i = 0; i < EditHelper.FLAGS_AMOUNT; ++i) {
+                for (int i = 0; i < ItemUtil.FLAGS_AMOUNT; ++i) {
                     Flag flag = Flag.byPosition(i);
                     if (flag == null) continue;
                     context.getSource().sendFeedback(Text.translatable(flags.get(i) ? flag.getDisabledTranslationKey : flag.getEnabledTranslationKey));
@@ -114,10 +114,10 @@ public class FlagsNode {
         ArgumentCommandNode<FabricClientCommandSource, Flag> getFlagNode = ClientCommandManager
             .argument("flag", EnumArgumentType.enumArgument(Flag.class))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 Flag flag = EnumArgumentType.getEnum(context, "flag", Flag.class);
-                List<Boolean> flags = EditHelper.getFlags(stack);
+                List<Boolean> flags = ItemUtil.getFlags(stack);
 
                 context.getSource().sendFeedback(Text.translatable(flags.get(flag.position) ? flag.getDisabledTranslationKey : flag.getEnabledTranslationKey));
                 return flags.get(flag.position) ? 0 : 1;
@@ -127,21 +127,21 @@ public class FlagsNode {
         LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
             .literal("toggle")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                boolean toggle = EditHelper.getFlags(stack).contains(true);
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                boolean toggle = ItemUtil.getFlags(stack).contains(true);
                 if (toggle) {
-                    EditHelper.setFlags(stack, null);
+                    ItemUtil.setFlags(stack, null);
                 } else {
                     List<Boolean> flags = new ArrayList<>();
-                    for (int i = 0; i < EditHelper.FLAGS_AMOUNT; ++i) {
+                    for (int i = 0; i < ItemUtil.FLAGS_AMOUNT; ++i) {
                         flags.add(true);
                     }
-                    EditHelper.setFlags(stack, flags);
+                    ItemUtil.setFlags(stack, flags);
                 }
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(toggle ? OUTPUT_ALL_ENABLE : OUTPUT_ALL_DISABLE));
                 return toggle ? 0 : 1;
             })
@@ -150,16 +150,16 @@ public class FlagsNode {
         ArgumentCommandNode<FabricClientCommandSource, Flag> toggleFlagNode = ClientCommandManager
             .argument("flag", EnumArgumentType.enumArgument(Flag.class))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 Flag flag = EnumArgumentType.getEnum(context, "flag", Flag.class);
-                List<Boolean> flags = EditHelper.getFlags(stack);
+                List<Boolean> flags = ItemUtil.getFlags(stack);
                 boolean toggle = flags.get(flag.position);
                 flags.set(flag.position, !toggle);
-                EditHelper.setFlags(stack, flags);
+                ItemUtil.setFlags(stack, flags);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(toggle ? flag.enableTranslationKey : flag.disableTranslationKey));
                 return toggle ? 0 : 1;
             })

@@ -39,7 +39,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import oshi.util.tuples.Quintet;
 
-public class EditHelper {
+public class ItemUtil {
     private static final String ATTRIBUTE_MODIFIERS_KEY = "AttributeModifiers";
     private static final String ATTRIBUTE_MODIFIERS_AMOUNT_KEY = "Amount";
     private static final String ATTRIBUTE_MODIFIERS_ATTRIBUTE_NAME_KEY = "AttributeName";

@@ -5,8 +5,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.util.EditHelper;
-import me.white.itemeditor.util.Util;
+import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -39,11 +39,11 @@ public class TrimNode {
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource());
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource());
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
-                ArmorTrim trim = EditHelper.getTrim(stack, context.getSource().getRegistryManager());
+                if (!ItemUtil.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
+                ArmorTrim trim = ItemUtil.getTrim(stack, context.getSource().getRegistryManager());
                 ArmorTrimPattern pattern = trim.getPattern().value();
                 ArmorTrimMaterial material = trim.getMaterial().value();
 
@@ -55,14 +55,14 @@ public class TrimNode {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
             .literal("set")
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasTrim(stack, false, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
-                EditHelper.setTrim(stack, null);
+                if (!ItemUtil.hasTrim(stack, false, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
+                ItemUtil.setTrim(stack, null);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
                 return 1;
             })
@@ -75,15 +75,15 @@ public class TrimNode {
         ArgumentCommandNode<FabricClientCommandSource, Reference<ArmorTrimMaterial>> setPatternMaterialNode = ClientCommandManager
             .argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.TRIM_MATERIAL))
             .executes(context -> {
-                ItemStack stack = Util.getStack(context.getSource()).copy();
-                if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-                if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                ArmorTrimPattern pattern = Util.getRegistryEntryArgument(context, "pattern", RegistryKeys.TRIM_PATTERN);
-                ArmorTrimMaterial material = Util.getRegistryEntryArgument(context, "material", RegistryKeys.TRIM_MATERIAL);
-                EditHelper.setTrim(stack, pattern, material);
+                ArmorTrimPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.TRIM_PATTERN);
+                ArmorTrimMaterial material = EditorUtil.getRegistryEntryArgument(context, "material", RegistryKeys.TRIM_MATERIAL);
+                ItemUtil.setTrim(stack, pattern, material);
 
-                Util.setStack(context.getSource(), stack);
+                EditorUtil.setStack(context.getSource(), stack);
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, pattern.description(), material.description()));
                 return 1;
             })
