@@ -496,15 +496,14 @@ public class EditHelper {
      * Checks if stack has armor trim
      *
      * @param stack Item stack to check
-     * @param validate Check for validity of armor trim. False to only check for tag
-     * @param registryManager Dynamic registry manager to check in
+     * @param registryManager Dynamic registry manager to check in. Doesn't check for validity if null
      * @return Does item stack have armor trim
      */
-    public static boolean hasTrim(@NotNull ItemStack stack, boolean validate, @Nullable DynamicRegistryManager registryManager) {
+    public static boolean hasTrim(@NotNull ItemStack stack, @Nullable DynamicRegistryManager registryManager) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(TRIM_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        if (!validate || registryManager == null) return true;
+        if (registryManager == null) return true;
         NbtCompound trim = nbt.getCompound(TRIM_KEY);
         return isValidTrim(trim, registryManager);
     }
@@ -600,6 +599,12 @@ public class EditHelper {
         return hasPotionEffects(stack, false);
     }
 
+    /**
+     * Gets attribute modifiers from stack
+     *
+     * @param stack Item stack to get from
+     * @return Attribute modifiers from item stack
+     */
     public static @NotNull List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> getAttributes(@NotNull ItemStack stack) {
         if (!hasAttributes(stack, true)) return List.of();
         NbtList nbtAttributeModifiers = stack.getNbt().getList(ATTRIBUTE_MODIFIERS_KEY, NbtElement.COMPOUND_TYPE);
@@ -623,6 +628,12 @@ public class EditHelper {
         return attributes;
     }
 
+    /**
+     * Gets banner patterns from stack
+     *
+     * @param stack Item stack to get from
+     * @return Banner patterns from item stack
+     */
     public static @NotNull List<Pair<BannerPattern, Integer>> getBannerPatterns(@NotNull ItemStack stack) {
         if (!hasBannerPatterns(stack, true)) return List.of();
         NbtList nbtPatterns = stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
@@ -637,22 +648,46 @@ public class EditHelper {
         return patterns;
     }
 
+    /**
+     * Gets book author from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book author from item stack, or null if none is present
+     */
     public static @Nullable String getBookAuthor(@NotNull ItemStack stack) {
         if (!hasBookAuthor(stack)) return null;
         return stack.getNbt().getString(AUTHOR_KEY);
     }
 
+    /**
+     * Gets book title from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book title from item stack, or null if none is present
+     */
     public static @Nullable String getBookTitle(@NotNull ItemStack stack) {
         if (!hasBookTitle(stack)) return null;
         return stack.getNbt().getString(TITLE_KEY);
     }
 
+    /**
+     * Gets book generation from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book generation id from item stack
+     */
     public static int getBookGeneration(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return 0;
         int generation = stack.getNbt().getInt(GENERATION_KEY);
         return generation >= 0 && generation < 3 ? generation : 0;
     }
 
+    /**
+     * Gets book pages from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book pages from item stack
+     */
     public static @NotNull List<Text> getBookPages(@NotNull ItemStack stack) {
         if (!hasBookPages(stack)) return List.of();
         List<Text> pages = new ArrayList<>();
@@ -662,11 +697,23 @@ public class EditHelper {
         return pages;
     }
 
+    /**
+     * Gets custom color from stack
+     *
+     * @param stack Item stack to get from
+     * @return Custom color from item stack
+     */
     public static int getColor(@NotNull ItemStack stack) {
         if (!hasColor(stack)) return 0;
         return stack.getNbt().getCompound(DISPLAY_KEY).getInt(getColorKey(stack.getItem()));
     }
 
+    /**
+     * Gets enchantments from stack
+     *
+     * @param stack Item stack to get from
+     * @return Enchantments from item stack
+     */
     public static @NotNull HashMap<Enchantment, Integer> getEnchantments(@NotNull ItemStack stack) {
         if (!hasEnchantments(stack, true)) return new HashMap<>();
         NbtList nbtEnchantments = stack.getNbt().getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
@@ -681,6 +728,12 @@ public class EditHelper {
         return enchantments;
     }
 
+    /**
+     * Gets firework explosions from stack
+     *
+     * @param stack Item stack to get from
+     * @return Firework explosions from item stack
+     */
     public static @NotNull List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> getFireworkExplosions(@NotNull ItemStack stack) {
         if (!hasFireworkExplosions(stack)) return List.of();
         NbtList nbtExplosions = stack.getNbt().getCompound(FIREWORKS_KEY).getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
@@ -697,6 +750,12 @@ public class EditHelper {
         return result;
     }
 
+    /**
+     * Gets firework flight from stack
+     *
+     * @param stack Item stack to get from
+     * @return Firework flight from item stack
+     */
     public static int getFireworkFlight(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return 0;
         NbtCompound nbt = stack.getNbt();
@@ -705,11 +764,22 @@ public class EditHelper {
         return fireworks.getInt(FIREWORKS_FLIGHT_KEY);
     }
 
+    /**
+     * Gets head owner name from stack
+     *
+     * @param stack Item stack to get from
+     * @return Head owner name from item stack
+     */
     public static @Nullable String getHeadOwner(@NotNull ItemStack stack) {
         if (!hasHeadOwner(stack)) return null;
         return stack.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
     }
-
+    /**
+     * Gets head texture from stack
+     *
+     * @param stack Item stack to get from
+     * @return Head texture from item stack
+     */
     public static @Nullable String getHeadTexture(@NotNull ItemStack stack) {
         if (!hasHeadTexture(stack, true)) return null;
         String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
@@ -717,13 +787,25 @@ public class EditHelper {
         return textureObj.substring(28, textureObj.length() - 4);
     }
 
-    public static @Nullable SoundEvent getHeadSound(@NotNull ItemStack stack) {
+    /**
+     * Gets note block sound from stack
+     *
+     * @param stack Item stack to get from
+     * @return Note block sound from item stack
+     */
+    public static @Nullable SoundEvent getNoteBlockSound(@NotNull ItemStack stack) {
         if (!hasNoteBlockSound(stack)) return null;
         Identifier id = Identifier.tryParse(stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND));
         if (id == null) return null;
         return Registries.SOUND_EVENT.get(id);
     }
 
+    /**
+     * Gets lore from stack
+     *
+     * @param stack Item stack to get from
+     * @return Lore from item stack
+     */
     public static @NotNull List<Text> getLore(@NotNull ItemStack stack) {
         if (!hasLore(stack)) return List.of();
         NbtList nbtLore = stack.getNbt().getCompound(DISPLAY_KEY).getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
@@ -735,18 +817,37 @@ public class EditHelper {
         return lore;
     }
 
+    /**
+     * Gets custom model from stack
+     *
+     * @param stack Item stack to get from
+     * @return Custom model from item stack
+     */
     public static int getModel(@NotNull ItemStack stack) {
         if (!hasModel(stack)) return 0;
         return stack.getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
     }
 
+    /**
+     * Gets custom name from stack
+     *
+     * @param stack Item stack to get from
+     * @return Custom name from item stack
+     */
     public static @Nullable Text getName(@NotNull ItemStack stack) {
         if (!hasName(stack)) return null;
         return Text.Serializer.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
     }
 
+    /**
+     * Gets armor trim from stack
+     *
+     * @param stack Item stack to get from
+     * @param registryManager Dynamic registry manager to get from
+     * @return Armor trim from item stack, or null if none is present
+     */
     public static @Nullable ArmorTrim getTrim(@NotNull ItemStack stack, @NotNull DynamicRegistryManager registryManager) {
-        if (!hasTrim(stack, true, registryManager)) return null;
+        if (!hasTrim(stack, registryManager)) return null;
         NbtCompound nbtTrim = stack.getNbt().getCompound(TRIM_KEY);
         Identifier patternId = Identifier.tryParse(nbtTrim.getString(TRIM_PATTERN_KEY));
         Identifier materialId = Identifier.tryParse(nbtTrim.getString(TRIM_MATERIAL_KEY));
@@ -757,6 +858,12 @@ public class EditHelper {
         return new ArmorTrim(materialRegistry.getEntry(material), patternRegistry.getEntry(pattern));
     }
 
+    /**
+     * Gets placing whitelist from stack
+     *
+     * @param stack Item stack to get from
+     * @return Placing whitelist from item stack
+     */
     public static @NotNull List<Block> getWhitelistPlace(@NotNull ItemStack stack) {
         if (!hasWhitelistPlace(stack, true)) return List.of();
         NbtList nbtPlace = stack.getNbt().getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
@@ -770,6 +877,12 @@ public class EditHelper {
         return result;
     }
 
+    /**
+     * Gets destroying whitelist from stack
+     *
+     * @param stack Item stack to get from
+     * @return Destroying whitelist from item stack
+     */
     public static @NotNull List<Block> getWhitelistDestroy(@NotNull ItemStack stack) {
         if (!hasWhitelistDestroy(stack, true)) return List.of();
         NbtList nbtDestroy = stack.getNbt().getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
@@ -783,11 +896,23 @@ public class EditHelper {
         return result;
     }
 
+    /**
+     * Gets stack unbreakability
+     *
+     * @param stack Item stack to get from
+     * @return Is stack unbreakable
+     */
     public static boolean getUnbreakable(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         return stack.getNbt().getBoolean(UNBREAKABLE_KEY);
     }
 
+    /**
+     * Gets display flags from stack
+     *
+     * @param stack Item stack to get from
+     * @return Display flags from item stack
+     */
     public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
         List<Boolean> result = new ArrayList<>();
         if (!stack.hasNbt()) return result;
@@ -799,6 +924,12 @@ public class EditHelper {
         return result;
     }
 
+    /**
+     * Gets potion effects from stack
+     *
+     * @param stack Item stack to get from
+     * @return Potion effects from item stack
+     */
     public static @NotNull HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(@NotNull ItemStack stack) {
         if (!hasPotionEffects(stack, true)) return new HashMap<>();
         HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> result = new HashMap<>();
@@ -817,7 +948,7 @@ public class EditHelper {
         }
         return result;
     }
-    
+
     public static void setAttributes(@NotNull ItemStack stack, @Nullable List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes) {
         if (attributes == null || attributes.isEmpty()) {
             if (!hasAttributes(stack)) return;
@@ -1173,7 +1304,7 @@ public class EditHelper {
 
     public static void setTrim(@NotNull ItemStack stack, @Nullable ArmorTrim trim) {
         if (trim == null) {
-            if (!hasTrim(stack, false, null)) return;
+            if (!hasTrim(stack, null)) return;
 
             NbtCompound nbt = stack.getNbt();
             nbt.remove(TRIM_KEY);
