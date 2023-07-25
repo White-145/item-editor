@@ -214,7 +214,7 @@ public class WhitelistNode {
                 ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-                if (!EditHelper.hasWhitelistPlace(stack) && !EditHelper.hasWhitelistDestroy(stack)) throw NO_WHITELIST_EXCEPTION;
+                if (!EditHelper.hasWhitelistPlace(stack, false) && !EditHelper.hasWhitelistDestroy(stack, false)) throw NO_WHITELIST_EXCEPTION;
                 EditHelper.setWhitelistPlace(stack, null);
                 EditHelper.setWhitelistDestroy(stack, null);
 

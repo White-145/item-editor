@@ -113,7 +113,7 @@ public class AttributeNode {
 		if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 		if (!Util.hasCreative(source)) throw Util.NOT_CREATIVE_EXCEPTION;
 		if (attribute == null) {
-			boolean hasPlaceholder = EditHelper.hasAttributes(stack);
+			boolean hasPlaceholder = EditHelper.hasAttributes(stack, false);
 			EditHelper.setAttributePlaceholder(stack, !hasPlaceholder);
 
 			source.sendFeedback(Text.translatable(hasPlaceholder ? OUTPUT_SET_PLACEHOLDER_DISABLE : OUTPUT_SET_PLACEHOLDER_ENABLE));
@@ -255,7 +255,7 @@ public class AttributeNode {
 				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-				if (!EditHelper.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
+				if (!EditHelper.hasAttributes(stack, false)) throw NO_ATTRIBUTES_EXCEPTION;
 				EditHelper.setAttributes(stack, null);
 
 				Util.setStack(context.getSource(), stack);

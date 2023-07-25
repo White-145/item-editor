@@ -149,7 +149,7 @@ public class EnchantmentNode {
 				ItemStack stack = Util.getStack(context.getSource()).copy();
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
-				if (!EditHelper.hasEnchantments(stack)) throw NO_ENCHANTMENTS_EXCEPTION;
+				if (!EditHelper.hasEnchantments(stack, false)) throw NO_ENCHANTMENTS_EXCEPTION;
 				int old = EditHelper.getEnchantments(stack).size();
 				EditHelper.setEnchantments(stack, null);
 
@@ -166,7 +166,7 @@ public class EnchantmentNode {
 				if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
 				if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
 				if (EditHelper.hasEnchantments(stack, true)) throw HAS_GLINT_EXCEPTION;
-				boolean hasGlint = EditHelper.hasEnchantments(stack);
+				boolean hasGlint = EditHelper.hasEnchantments(stack, false);
 				EditHelper.setEnchantmentGlint(stack, !hasGlint);
 
 				Util.setStack(context.getSource(), stack);

@@ -158,7 +158,7 @@ public class HeadNode {
                 ItemStack stack = Util.getStack(context.getSource());
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasHeadSound(stack, true)) throw NO_SOUND_EXCEPTION;
+                if (!EditHelper.hasNoteBlockSound(stack, true)) throw NO_SOUND_EXCEPTION;
                 SoundEvent sound = EditHelper.getHeadSound(stack);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_GET, sound.toString()));
@@ -173,7 +173,7 @@ public class HeadNode {
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasHeadSound(stack)) throw NO_SOUND_EXCEPTION;
+                if (!EditHelper.hasNoteBlockSound(stack)) throw NO_SOUND_EXCEPTION;
                 EditHelper.setHeadSound(stack, null);
 
                 Util.setStack(context.getSource(), stack);

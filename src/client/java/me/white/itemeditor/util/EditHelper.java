@@ -100,6 +100,12 @@ public class EditHelper {
         return DISPLAY_COLOR_KEY;
     }
 
+    /**
+     * Checks if compound have all valid tags to be parsed to enchantment
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for enchantment
+     */
     public static boolean isValidEnchantment(@NotNull NbtCompound nbt) {
         if (nbt.isEmpty()) return false;
         if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) return false;
@@ -109,6 +115,12 @@ public class EditHelper {
         return Registries.ENCHANTMENT.containsId(id);
     }
 
+    /**
+     * Checks if compound have all valid tags to be parsed to attribute
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for attribute
+     */
     public static boolean isValidAttribute(@NotNull NbtCompound nbt) {
         if (!nbt.contains(ATTRIBUTE_MODIFIERS_AMOUNT_KEY, NbtElement.DOUBLE_TYPE)) return false;
         if (!nbt.contains(ATTRIBUTE_MODIFIERS_UUID_KEY, NbtElement.INT_ARRAY_TYPE)) return false;
@@ -121,6 +133,12 @@ public class EditHelper {
         return operation >= 0 && operation < EntityAttributeModifier.Operation.values().length;
     }
 
+    /**
+     * Checks if compound have all valid tags to be parsed to banner pattern
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for banner pattern
+     */
     public static boolean isValidPattern(@NotNull NbtCompound nbt) {
         if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY, NbtElement.INT_TYPE)) return false;
         int color = nbt.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
@@ -130,6 +148,13 @@ public class EditHelper {
         return BannerPattern.byId(pattern) != null;
     }
 
+    /**
+     * Checks if compound have all valid tags to be parsed to armor trim
+     *
+     * @param nbt NBT compound to check
+     * @param registryManager Dynamic registry manager to check in
+     * @return Is compound valid for armor trim
+     */
     public static boolean isValidTrim(@NotNull NbtCompound nbt, @NotNull DynamicRegistryManager registryManager) {
         if (!nbt.contains(TRIM_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
         if (!nbt.contains(TRIM_MATERIAL_KEY, NbtElement.STRING_TYPE)) return false;
@@ -139,6 +164,12 @@ public class EditHelper {
         return material != null && registryManager.get(RegistryKeys.TRIM_MATERIAL).containsId(material);
     }
 
+    /**
+     * Checks if object is valid for head texture
+     *
+     * @param texture Base64 encoded texture object
+     * @return Is object valid for head texture
+     */
     public static boolean isValidHeadTexture(@NotNull String texture) {
         String value = new String(Base64.getDecoder().decode(texture));
         System.out.println(value);
@@ -147,16 +178,34 @@ public class EditHelper {
         return value.matches(HEAD_TEXTURE_REGEX);
     }
 
+    /**
+     * Checks if url is valid for head texture
+     *
+     * @param url Texture url
+     * @return Is url valid for head texture
+     */
     public static boolean isValidHeadTextureUrl(@NotNull String url) {
         return url.matches(HEAD_TEXTURE_URL_REGEX);
     }
 
+    /**
+     * Checks if sound id is valid
+     *
+     * @param sound Sound id
+     * @return Is sound valid
+     */
     public static boolean isValidSound(@NotNull String sound) {
         Identifier id = Identifier.tryParse(sound);
         if (id == null) return false;
         return Registries.SOUND_EVENT.containsId(id);
     }
 
+    /**
+     * Checks if compound have all valid tags to be parsed to potion effect
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for potion effect
+     */
     public static boolean isValidPotionEffect(@NotNull NbtCompound nbt) {
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
@@ -164,7 +213,14 @@ public class EditHelper {
         StatusEffect effect = StatusEffect.byRawId(nbt.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
         return effect != null;
     }
-    
+
+    /**
+     * Checks if stack has attribute modifiers
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of attributes. False to only check for tag
+     * @return Does item stack have attribute modifiers
+     */
     public static boolean hasAttributes(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -177,10 +233,23 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasAttributes(ItemStack, boolean) hasAttributes} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid attribute modifiers
+     */
     public static boolean hasAttributes(@NotNull ItemStack stack) {
-        return hasAttributes(stack, false);
+        return hasAttributes(stack, true);
     }
 
+    /**
+     * Checks if stack has banner patterns
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of banner patterns. False to only check for tag
+     * @return Does item stack have banner patterns
+     */
     public static boolean hasBannerPatterns(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -195,22 +264,46 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasBannerPatterns(ItemStack, boolean) hasBannerPatterns} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid banner patterns
+     */
     public static boolean hasBannerPatterns(@NotNull ItemStack stack) {
-        return hasBannerPatterns(stack, false);
+        return hasBannerPatterns(stack, true);
     }
 
+    /**
+     * Checks if stack has book author
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book author
+     */
     public static boolean hasBookAuthor(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         return nbt.contains(AUTHOR_KEY, NbtElement.STRING_TYPE);
     }
 
+    /**
+     * Checks if stack has book title
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book title
+     */
     public static boolean hasBookTitle(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         return nbt.contains(TITLE_KEY, NbtElement.STRING_TYPE);
     }
 
+    /**
+     * Checks if stack has book pages
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book pages
+     */
     public static boolean hasBookPages(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -219,6 +312,12 @@ public class EditHelper {
         return !pages.isEmpty();
     }
 
+    /**
+     * Checks if stack has custom color
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom color
+     */
     public static boolean hasColor(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -227,6 +326,13 @@ public class EditHelper {
         return display.contains(getColorKey(stack.getItem()), NbtElement.INT_TYPE);
     }
 
+    /**
+     * Checks if stack has enchantments
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of enchantments. False to only check for tag
+     * @return Does item stack have enchantments
+     */
     public static boolean hasEnchantments(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -239,10 +345,22 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasEnchantments(ItemStack, boolean) hasEnchantments} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid enchantments
+     */
     public static boolean hasEnchantments(@NotNull ItemStack stack) {
         return hasEnchantments(stack, false);
     }
 
+    /**
+     * Checks if stack has firework explosions
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have firework explosions
+     */
     public static boolean hasFireworkExplosions(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -254,6 +372,12 @@ public class EditHelper {
         return !explosions.isEmpty();
     }
 
+    /**
+     * Checks if stack has head owner name
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have head owner name
+     */
     public static boolean hasHeadOwner(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -262,6 +386,13 @@ public class EditHelper {
         return skullOwner.contains(SKULL_OWNER_NAME_KEY, NbtElement.STRING_TYPE);
     }
 
+    /**
+     * Checks if stack has head texture (not name)
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of texture. False to only check for tag
+     * @return Does item stack have head texture
+     */
     public static boolean hasHeadTexture(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -279,11 +410,24 @@ public class EditHelper {
         return isValidHeadTexture(value);
     }
 
+    /**
+     * Redirects to {@link #hasHeadTexture(ItemStack, boolean) hasHeadTexture} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid head texture
+     */
     public static boolean hasHeadTexture(@NotNull ItemStack stack) {
-        return hasHeadTexture(stack, false);
+        return hasHeadTexture(stack, true);
     }
 
-    public static boolean hasHeadSound(@NotNull ItemStack stack, boolean validate) {
+    /**
+     * Checks if stack has note block sound
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of sound. False to only check for tag
+     * @return Does item stack have note block sound
+     */
+    public static boolean hasNoteBlockSound(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
@@ -294,10 +438,22 @@ public class EditHelper {
         return isValidSound(sound);
     }
 
-    public static boolean hasHeadSound(@NotNull ItemStack stack) {
-        return hasHeadSound(stack, false);
+    /**
+     * Redirects to {@link #hasNoteBlockSound(ItemStack, boolean) hasNoteBlockSound} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid note block sound
+     */
+    public static boolean hasNoteBlockSound(@NotNull ItemStack stack) {
+        return hasNoteBlockSound(stack, false);
     }
 
+    /**
+     * Checks if stack has lore
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have lore
+     */
     public static boolean hasLore(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -308,6 +464,12 @@ public class EditHelper {
         return !lore.isEmpty();
     }
 
+    /**
+     * Checks if stack has custom model
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom model
+     */
     public static boolean hasModel(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -316,6 +478,12 @@ public class EditHelper {
         return model > 0;
     }
 
+    /**
+     * Checks if stack has custom name
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom name
+     */
     public static boolean hasName(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -324,6 +492,14 @@ public class EditHelper {
         return display.contains(DISPLAY_NAME_KEY, NbtElement.STRING_TYPE);
     }
 
+    /**
+     * Checks if stack has armor trim
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of armor trim. False to only check for tag
+     * @param registryManager Dynamic registry manager to check in
+     * @return Does item stack have armor trim
+     */
     public static boolean hasTrim(@NotNull ItemStack stack, boolean validate, @Nullable DynamicRegistryManager registryManager) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -333,11 +509,13 @@ public class EditHelper {
         return isValidTrim(trim, registryManager);
     }
 
-    public static boolean hasTrim(@NotNull ItemStack stack) {
-        // registry manager is required only for validation
-        return hasTrim(stack, false, null);
-    }
-
+    /**
+     * Checks if stack has placing whitelist
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of whitelist. False to only check for tag
+     * @return Does item stack have placing whitelist
+     */
     public static boolean hasWhitelistPlace(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -352,10 +530,23 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasWhitelistPlace(ItemStack, boolean) hasWhitelistPlace} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid placing whitelist
+     */
     public static boolean hasWhitelistPlace(@NotNull ItemStack stack) {
-        return hasWhitelistPlace(stack, false);
+        return hasWhitelistPlace(stack, true);
     }
 
+    /**
+     * Checks if stack has destroying whitelist
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of whitelist. False to only check for tag
+     * @return Does item stack have destroying whitelist
+     */
     public static boolean hasWhitelistDestroy(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -370,10 +561,23 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasWhitelistDestroy(ItemStack, boolean) hasWhitelistDestroy} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid destroying whitelist
+     */
     public static boolean hasWhitelistDestroy(@NotNull ItemStack stack) {
         return hasWhitelistDestroy(stack, false);
     }
 
+    /**
+     * Checks if stack has potion effects
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of potion effects. False to only check for tag
+     * @return Does item stack have potion effects
+     */
     public static boolean hasPotionEffects(@NotNull ItemStack stack, boolean validate) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
@@ -386,6 +590,12 @@ public class EditHelper {
         return false;
     }
 
+    /**
+     * Redirects to {@link #hasPotionEffects(ItemStack, boolean) hasPotionEffects} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid potion effects
+     */
     public static boolean hasPotionEffects(@NotNull ItemStack stack) {
         return hasPotionEffects(stack, false);
     }
@@ -508,7 +718,7 @@ public class EditHelper {
     }
 
     public static @Nullable SoundEvent getHeadSound(@NotNull ItemStack stack) {
-        if (!hasHeadSound(stack)) return null;
+        if (!hasNoteBlockSound(stack)) return null;
         Identifier id = Identifier.tryParse(stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND));
         if (id == null) return null;
         return Registries.SOUND_EVENT.get(id);
@@ -652,7 +862,7 @@ public class EditHelper {
         }
     }
 
-    public static void setBannerPatterns(ItemStack stack, List<Pair<BannerPattern, Integer>> patterns) {
+    public static void setBannerPatterns(@NotNull ItemStack stack, @Nullable List<Pair<BannerPattern, Integer>> patterns) {
         if (patterns == null || patterns.isEmpty()) {
             if (!hasBannerPatterns(stack)) return;
 
@@ -680,7 +890,7 @@ public class EditHelper {
         }
     }
 
-    public static void setBookAuthor(ItemStack stack, String author) {
+    public static void setBookAuthor(@NotNull ItemStack stack, @Nullable String author) {
         if (author == null) {
             if (!hasBookAuthor(stack)) return;
 
@@ -694,7 +904,7 @@ public class EditHelper {
         }
     }
 
-    public static void setBookTitle(ItemStack stack, String title) {
+    public static void setBookTitle(@NotNull ItemStack stack, @Nullable String title) {
         if (title == null) {
             if (!hasBookTitle(stack)) return;
 
@@ -708,7 +918,7 @@ public class EditHelper {
         }
     }
 
-    public static void setBookGeneration(ItemStack stack, Integer generation) {
+    public static void setBookGeneration(@NotNull ItemStack stack, @Nullable Integer generation) {
         if (generation == null || generation < 0 || generation >= GENERATIONS_AMOUNT) {
             if (!stack.hasNbt()) return;
 
@@ -722,7 +932,7 @@ public class EditHelper {
         }
     }
 
-    public static void setBookPages(ItemStack stack, List<Text> pages) {
+    public static void setBookPages(@NotNull ItemStack stack, @Nullable List<Text> pages) {
         if (pages == null || pages.isEmpty()) {
             if (!hasBookPages(stack)) return;
 
@@ -741,7 +951,7 @@ public class EditHelper {
         }
     }
 
-    public static void setColor(ItemStack stack, Integer color) {
+    public static void setColor(@NotNull ItemStack stack, @Nullable Integer color) {
         // TODO: support for more items such as firework stars and potions
         if (color == null) {
             if (!hasColor(stack)) return;
@@ -760,7 +970,7 @@ public class EditHelper {
         }
     }
 
-    public static void setEnchantments(ItemStack stack, HashMap<Enchantment, Integer> enchantments) {
+    public static void setEnchantments(@NotNull ItemStack stack, @Nullable HashMap<Enchantment, Integer> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             if (!hasEnchantments(stack)) return;
 
@@ -782,7 +992,7 @@ public class EditHelper {
         }
     }
 
-    public static void setEnchantmentGlint(ItemStack stack, boolean glint) {
+    public static void setEnchantmentGlint(@NotNull ItemStack stack, boolean glint) {
         if (hasEnchantments(stack) == glint) return;
         if (!glint) {
             NbtCompound nbt = stack.getNbt();
@@ -799,7 +1009,7 @@ public class EditHelper {
         }
     }
 
-    public static void setFireworkExplosions(ItemStack stack, List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions) {
+    public static void setFireworkExplosions(@NotNull ItemStack stack, @Nullable List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions) {
         if (explosions == null || explosions.isEmpty()) {
             if (!hasFireworkExplosions(stack)) return;
 
@@ -828,7 +1038,7 @@ public class EditHelper {
         }
     }
 
-    public static void setFireworkFlight(ItemStack stack, Integer flight) {
+    public static void setFireworkFlight(@NotNull ItemStack stack, @Nullable Integer flight) {
         if (flight == null) {
             if (!stack.hasNbt()) return;
             NbtCompound nbt = stack.getNbt();
@@ -846,7 +1056,7 @@ public class EditHelper {
         }
     }
 
-    public static void setHeadOwner(ItemStack stack, String owner) {
+    public static void setHeadOwner(@NotNull ItemStack stack, @Nullable String owner) {
         if (owner == null) {
             if (!hasHeadOwner(stack)) return;
 
@@ -862,7 +1072,7 @@ public class EditHelper {
         }
     }
 
-    public static void setHeadTexture(ItemStack stack, String texture) {
+    public static void setHeadTexture(@NotNull ItemStack stack, @Nullable String texture) {
         if (texture == null) {
             if (!hasHeadTexture(stack)) return;
 
@@ -886,9 +1096,9 @@ public class EditHelper {
         }
     }
 
-    public static void setHeadSound(ItemStack stack, SoundEvent sound) {
+    public static void setHeadSound(@NotNull ItemStack stack, @Nullable SoundEvent sound) {
         if (sound == null) {
-            if (!hasHeadSound(stack)) return;
+            if (!hasNoteBlockSound(stack)) return;
 
             NbtCompound nbt = stack.getNbt();
             NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
@@ -906,7 +1116,7 @@ public class EditHelper {
         }
     }
 
-    public static void setLore(ItemStack stack, List<Text> lore) {
+    public static void setLore(@NotNull ItemStack stack, @Nullable List<Text> lore) {
         if (lore == null || lore.isEmpty()) {
             if (!hasLore(stack)) return;
 
@@ -929,7 +1139,7 @@ public class EditHelper {
         }
     }
 
-    public static void setModel(ItemStack stack, Integer model) {
+    public static void setModel(@NotNull ItemStack stack, @Nullable Integer model) {
         if (model == null || model <= 0) {
             if (!hasModel(stack)) return;
 
@@ -943,7 +1153,7 @@ public class EditHelper {
         }
     }
 
-    public static void setName(ItemStack stack, Text name) {
+    public static void setName(@NotNull ItemStack stack, @Nullable Text name) {
         if (name == null) {
             if (!hasName(stack)) return;
 
@@ -961,9 +1171,9 @@ public class EditHelper {
         }
     }
 
-    public static void setTrim(ItemStack stack, ArmorTrim trim) {
+    public static void setTrim(@NotNull ItemStack stack, @Nullable ArmorTrim trim) {
         if (trim == null) {
-            if (!hasTrim(stack)) return;
+            if (!hasTrim(stack, false, null)) return;
 
             NbtCompound nbt = stack.getNbt();
             nbt.remove(TRIM_KEY);
@@ -979,7 +1189,7 @@ public class EditHelper {
         }
     }
 
-    public static void setTrim(ItemStack stack, ArmorTrimPattern pattern, ArmorTrimMaterial material) {
+    public static void setTrim(@NotNull ItemStack stack, @NotNull ArmorTrimPattern pattern, @NotNull ArmorTrimMaterial material) {
         NbtCompound nbtTrim = new NbtCompound();
         nbtTrim.putString(TRIM_PATTERN_KEY, pattern.assetId().toString());
         nbtTrim.putString(TRIM_MATERIAL_KEY, material.assetName());
@@ -989,7 +1199,7 @@ public class EditHelper {
         stack.setNbt(nbt);
     }
 
-    public static void setWhitelistPlace(ItemStack stack, List<Block> place) {
+    public static void setWhitelistPlace(@NotNull ItemStack stack, @Nullable List<Block> place) {
         if (place == null || place.isEmpty()) {
             if (!hasWhitelistPlace(stack)) return;
 
@@ -1008,7 +1218,7 @@ public class EditHelper {
         }
     }
 
-    public static void setWhitelistDestroy(ItemStack stack, List<Block> destroy) {
+    public static void setWhitelistDestroy(@NotNull ItemStack stack, @Nullable List<Block> destroy) {
         if (destroy == null || destroy.isEmpty()) {
             if (!hasWhitelistDestroy(stack)) return;
 
@@ -1027,7 +1237,7 @@ public class EditHelper {
         }
     }
 
-    public static void setUnbreakable(ItemStack stack, Boolean unbreakable) {
+    public static void setUnbreakable(@NotNull ItemStack stack, @Nullable Boolean unbreakable) {
         if (unbreakable == null) {
             if (!stack.hasNbt()) return;
 
@@ -1041,7 +1251,7 @@ public class EditHelper {
         }
     }
 
-    public static void setFlags(ItemStack stack, List<Boolean> flags) {
+    public static void setFlags(@NotNull ItemStack stack, @Nullable List<Boolean> flags) {
         if (flags == null) {
             if (!stack.hasNbt()) return;
 
@@ -1060,7 +1270,7 @@ public class EditHelper {
         }
     }
 
-    public static void setPotionEffects(ItemStack stack, HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> effects) {
+    public static void setPotionEffects(@NotNull ItemStack stack, @Nullable HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> effects) {
         if (effects == null || effects.isEmpty()) {
             if (!hasPotionEffects(stack)) return;
 

@@ -276,7 +276,7 @@ public class PotionNode {
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasPotionEffects(stack)) throw NO_POTION_EFFECTS_EXCEPTION;
+                if (!EditHelper.hasPotionEffects(stack, false)) throw NO_POTION_EFFECTS_EXCEPTION;
                 int old = EditHelper.getPotionEffects(stack).size();
                 EditHelper.setPotionEffects(stack, null);
 

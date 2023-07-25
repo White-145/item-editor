@@ -226,7 +226,7 @@ public class BannerNode {
                 ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
 				int oldSize = EditHelper.getBannerPatterns(stack).size();
 				EditHelper.setBannerPatterns(stack, null);
 
@@ -246,7 +246,7 @@ public class BannerNode {
                 ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
 				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
@@ -270,7 +270,7 @@ public class BannerNode {
                 ItemStack stack = Util.getStack(context.getSource()).copy();
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
-				if (!EditHelper.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
+				if (!EditHelper.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Pair<BannerPattern, Integer>> patterns = EditHelper.getBannerPatterns(stack);
 				if (patterns.size() <= index) throw Util.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());

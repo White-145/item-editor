@@ -59,7 +59,7 @@ public class TrimNode {
                 if (!Util.hasCreative(context.getSource())) throw Util.NOT_CREATIVE_EXCEPTION;
                 if (!Util.hasItem(stack)) throw Util.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!EditHelper.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
+                if (!EditHelper.hasTrim(stack, false, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
                 EditHelper.setTrim(stack, null);
 
                 Util.setStack(context.getSource(), stack);
