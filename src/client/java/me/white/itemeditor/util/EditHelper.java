@@ -196,7 +196,7 @@ public class EditHelper {
     }
 
     public static boolean hasBannerPatterns(@NotNull ItemStack stack) {
-        return hasBannerPatterns(stack, true);
+        return hasBannerPatterns(stack, false);
     }
 
     public static boolean hasBookAuthor(@NotNull ItemStack stack) {
