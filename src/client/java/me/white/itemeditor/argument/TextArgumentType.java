@@ -19,7 +19,7 @@ public class TextArgumentType implements ArgumentType<Text> {
     public static DynamicCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidhex", ch));
     public static DynamicCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidunicode", ch));
     public static DynamicCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidescape", ch));
-    public static DynamicCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidcolor", ch));
+    public static DynamicCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidplaceholder", ch));
 	public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     boolean colors;

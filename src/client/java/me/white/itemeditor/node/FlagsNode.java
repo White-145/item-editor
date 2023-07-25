@@ -21,9 +21,9 @@ public class FlagsNode {
     private enum Flag {
         ENCHANTMENT(0,
             "commands.edit.flags.enchantmentgetenabled",
-            "commands.edit.flags.enchantmentsgetdisabled",
-            "commands.edit.flags.enchantmentsenable",
-            "commands.edit.flags.enchantmentsdisable"
+            "commands.edit.flags.enchantmentgetdisabled",
+            "commands.edit.flags.enchantmentenable",
+            "commands.edit.flags.enchantmentdisable"
         ),
         ATTRIBUTE(1,
             "commands.edit.flags.attributegetenabled",

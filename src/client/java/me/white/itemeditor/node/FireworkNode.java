@@ -25,13 +25,13 @@ import net.minecraft.util.Formatting;
 import oshi.util.tuples.Quintet;
 
 public class FireworkNode {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannoteddit")).create();
+    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannotedit")).create();
     public static final CommandSyntaxException NO_STARS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.nostars")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
     private static final String OUTPUT_FLIGHT_GET = "commands.edit.firework.flightget";
     private static final String OUTPUT_FLIGHT_SET = "commands.edit.firework.flightset";
-    private static final String OUTPUT_STAR = "commands.edit.firework.stargetstar";
-    private static final String OUTPUT_STAR_FADE = "commands.edit.firework.stargetstarfade";
+    private static final String OUTPUT_STAR = "commands.edit.firework.star";
+    private static final String OUTPUT_STAR_FADE = "commands.edit.firework.starfade";
     private static final String OUTPUT_STAR_GET = "commands.edit.firework.starget";
     private static final String OUTPUT_STAR_ADD = "commands.edit.firework.staradd";
     private static final String OUTPUT_STAR_REMOVE = "commands.edit.firework.remove";

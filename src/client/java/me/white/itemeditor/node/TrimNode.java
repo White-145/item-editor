@@ -42,7 +42,7 @@ public class TrimNode {
                 ItemStack stack = EditorUtil.getStack(context.getSource());
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!ItemUtil.hasTrim(stack)) throw NO_TRIM_EXCEPTION;
+                if (!ItemUtil.hasTrim(stack, null)) throw NO_TRIM_EXCEPTION;
                 ArmorTrim trim = ItemUtil.getTrim(stack, context.getSource().getRegistryManager());
                 ArmorTrimPattern pattern = trim.getPattern().value();
                 ArmorTrimMaterial material = trim.getMaterial().value();
@@ -59,7 +59,7 @@ public class TrimNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!ItemUtil.hasTrim(stack, false, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
+                if (!ItemUtil.hasTrim(stack, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
                 ItemUtil.setTrim(stack, null);
 
                 EditorUtil.setStack(context.getSource(), stack);

@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
 public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
-    public static final CommandSyntaxException INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.enum.invalidenum")).create();
+    public static final CommandSyntaxException INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.invalidenum")).create();
 
     private HashMap<String, T> suggestions;
 

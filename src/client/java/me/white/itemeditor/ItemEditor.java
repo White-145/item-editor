@@ -9,12 +9,5 @@ public class ItemEditor implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(EditCommand::register);
-        // TODO /char command
-        // TODO /color command
-        // TODO /craft command
-        
-        // TODO make translations
-        // TODO test everything
-        // TODO text argument type
     }
 }
