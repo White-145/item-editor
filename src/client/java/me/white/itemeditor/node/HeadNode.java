@@ -69,7 +69,12 @@ public class HeadNode {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    if (ItemUtil.hasHeadTexture(stack, true)) {
+                    if (ItemUtil.hasHeadOwner(stack)) {
+                        String owner = ItemUtil.getHeadOwner(stack);
+
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
+                    } else {
+                        if (!ItemUtil.hasHeadTexture(stack)) throw NO_TEXTURE_EXCEPTION;
                         String texture = ItemUtil.getHeadTexture(stack);
 
                         try {
@@ -77,11 +82,6 @@ public class HeadNode {
                         } catch (MalformedURLException e) {
                             throw INVALID_URL_EXCEPTION;
                         }
-                    } else {
-                        if (!ItemUtil.hasHeadOwner(stack)) throw NO_TEXTURE_EXCEPTION;
-                        String owner = ItemUtil.getHeadOwner(stack);
-
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
                     }
                     return 1;
                 })
@@ -114,7 +114,9 @@ public class HeadNode {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    String oldOwner = ItemUtil.getHeadOwner(stack);
                     String owner = StringArgumentType.getString(context, "owner");
+                    if (oldOwner != null && oldOwner.equals(owner)) throw OWNER_ALREADY_IS_EXCEPTION;
                     ItemUtil.setHeadOwner(stack, owner);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -134,8 +136,10 @@ public class HeadNode {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    String oldTexture = ItemUtil.getHeadTexture(stack);
                     String texture = StringArgumentType.getString(context, "texture");
                     if (!ItemUtil.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION;
+                    if (oldTexture != null && oldTexture.equals(texture)) throw TEXTURE_ALREADY_IS_EXCEPTION;
                     ItemUtil.setHeadTexture(stack, texture);
 
                     EditorUtil.setStack(context.getSource(), stack);

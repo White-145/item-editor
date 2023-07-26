@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import net.minecraft.item.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -90,7 +93,6 @@ public class ItemUtil {
     private static final String TRIM_PATTERN_KEY = "pattern";
     private static final String UNBREAKABLE_KEY = "Unbreakable";
     private static final String HIDE_FLAGS_KEY = "HideFlags";
-    private static final String HEAD_TEXTURE_REGEX = "\\{\"textures\":\\{\"SKIN\":\\{\"url\":\"https?://textures\\.minecraft\\.net/texture/[0-9a-fA-F]+\"}}}";
     private static final String HEAD_TEXTURE_URL_REGEX = "https?://textures\\.minecraft\\.net/texture/[0-9a-fA-F]+";
     private static final String HEAD_TEXTURE_OBJECT = "{\"textures\":{\"SKIN\":{\"url\":\"%s\"}}}";
     public static final int FLAGS_AMOUNT = 8;
@@ -167,11 +169,19 @@ public class ItemUtil {
      * @return Is object valid for head texture
      */
     public static boolean isValidHeadTexture(@NotNull String texture) {
-        String value = new String(Base64.getDecoder().decode(texture));
-        System.out.println(value);
-        System.out.println(HEAD_TEXTURE_REGEX);
-        System.out.println(value.matches(HEAD_TEXTURE_REGEX));
-        return value.matches(HEAD_TEXTURE_REGEX);
+        try {
+            String value = new String(Base64.getDecoder().decode(texture));
+            JsonObject textureObj = JsonParser.parseString(value).getAsJsonObject();
+            if (!textureObj.has("textures")) return false;
+            JsonObject textures = textureObj.getAsJsonObject("textures");
+            if (!textures.has("SKIN")) return false;
+            JsonObject skin = textures.getAsJsonObject("SKIN");
+            if (!skin.has("url")) return false;
+            String url = skin.get("url").getAsString();
+            return url.matches(HEAD_TEXTURE_URL_REGEX);
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /**
@@ -417,6 +427,7 @@ public class ItemUtil {
         if (!texture.contains(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtElement.STRING_TYPE)) return false;
         if (!validate) return true;
         String value = texture.getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
+        System.out.println("validatin");
         return isValidHeadTexture(value);
     }
 
@@ -711,7 +722,7 @@ public class ItemUtil {
      * Gets custom color from stack
      *
      * @param stack Item stack to get from
-     * @return Custom color from item stack, or null if none
+     * @return Custom color from item stack, or null if none is present
      */
     public static @Nullable Integer getColor(@NotNull ItemStack stack) {
         if (!hasColor(stack)) return null;
@@ -799,7 +810,7 @@ public class ItemUtil {
      * Gets head owner name from stack
      *
      * @param stack Item stack to get from
-     * @return Head owner name from item stack
+     * @return Head owner name from item stack, or null if none is present
      */
     public static @Nullable String getHeadOwner(@NotNull ItemStack stack) {
         if (!hasHeadOwner(stack)) return null;
@@ -809,20 +820,25 @@ public class ItemUtil {
      * Gets head texture from stack
      *
      * @param stack Item stack to get from
-     * @return Head texture from item stack
+     * @return Head texture from item stack, or null if none is present
      */
     public static @Nullable String getHeadTexture(@NotNull ItemStack stack) {
         if (!hasHeadTexture(stack, true)) return null;
         String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
-        String textureObj = new String(Base64.getDecoder().decode(texture));
-        return textureObj.substring(28, textureObj.length() - 4);
+        try {
+            String value = new String(Base64.getDecoder().decode(texture));
+            JsonObject textures = JsonParser.parseString(value).getAsJsonObject().getAsJsonObject("textures");
+            return textures.getAsJsonObject("SKIN").get("url").getAsString();
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
      * Gets note block sound from stack
      *
      * @param stack Item stack to get from
-     * @return Note block sound from item stack
+     * @return Note block sound from item stack, or null if none is present
      */
     public static @Nullable SoundEvent getNoteBlockSound(@NotNull ItemStack stack) {
         if (!hasNoteBlockSound(stack)) return null;
