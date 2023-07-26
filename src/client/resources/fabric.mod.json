@@ -8,7 +8,9 @@
     "White_145Gaming"
   ],
   "contact": {
-    "sources": "https://github.com/White-145/item-editor"
+    "sources": "https://github.com/White-145/item-editor",
+    "homepage": "https://modrinth.com/mod/simple-item-editor",
+    "issues": "https://github.com/White-145/item-editor/issues"
   },
   "license": "MIT",
   "icon": "assets/item-editor/icon.png",
