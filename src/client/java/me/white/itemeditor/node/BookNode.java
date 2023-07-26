@@ -252,7 +252,7 @@ public class BookNode {
 				if (pages.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 				Text page = pages.get(index);
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, page));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, index, page));
 				return pages.size();
 			})
 			.build();
@@ -386,7 +386,7 @@ public class BookNode {
 				ItemUtil.setBookPages(stack, pages);
 
 				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, index, ""));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, "", index));
 				return pages.size();
 			})
 			.build();
@@ -410,7 +410,7 @@ public class BookNode {
 				ItemUtil.setBookPages(stack, pages);
 
 				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, index, page));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, page, index));
 				return pages.size();
 			})
 			.build();

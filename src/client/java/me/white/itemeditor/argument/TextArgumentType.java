@@ -7,8 +7,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -16,10 +16,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class TextArgumentType implements ArgumentType<Text> {
-    public static DynamicCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidhex", ch));
-    public static DynamicCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidunicode", ch));
-    public static DynamicCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidescape", ch));
-    public static DynamicCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new DynamicCommandExceptionType(ch -> Text.translatable("argument.text.invalidplaceholder", ch));
+    public static CommandSyntaxException INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidhex")).create();
+    public static CommandSyntaxException INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidunicode")).create();
+    public static CommandSyntaxException INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidescape")).create();
+    public static CommandSyntaxException INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidplaceholder")).create();
 	public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     boolean colors;
@@ -66,7 +66,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                     if (isHex(ch)) {
                         result += Math.pow(16, 1 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
                     } else {
-                        throw INVALID_HEX_CHARACTER_EXCEPTION.create(ch);
+                        throw INVALID_HEX_CHARACTER_EXCEPTION;
                     }
                 }
                 return String.valueOf(result);
@@ -79,7 +79,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                     if (isHex(ch)) {
                         result += Math.pow(16, 3 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
                     } else {
-                        throw INVALID_UNICODE_CHARACTER_EXCEPTION.create(ch);
+                        throw INVALID_UNICODE_CHARACTER_EXCEPTION;
                     }
                 }
                 return String.valueOf(result);
@@ -87,7 +87,7 @@ public class TextArgumentType implements ArgumentType<Text> {
             case '\\', '&' -> {
                 return String.valueOf(reader.read());
             }
-            default -> throw INVALID_ESCAPE_SEQUENCE_EXCEPTION.create(reader.read());
+            default -> throw INVALID_ESCAPE_SEQUENCE_EXCEPTION;
         }
     }
 
@@ -142,7 +142,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                 switch (reader.peek()) {
                     case '#' -> {  // hex color
                         int color = ColorArgumentType.hex().parse(reader);
-                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = EMPTY_STYLE.withColor(color);
                     }
@@ -152,22 +152,22 @@ public class TextArgumentType implements ArgumentType<Text> {
                     }
                     case '<' -> {  // keybind
                         reader.skip();
-                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         String keybind = reader.readStringUntil('>');
                         texts.add(Text.keybind(keybind).setStyle(style));
                     }
                     case '[' -> {  // translation
                         reader.skip();
-                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         String translation = reader.readStringUntil(']');
                         texts.add(Text.translatable(translation).setStyle(style));
                     }
                     default -> {  // color code
                         char ch = reader.read();
-                        if (!isHex(ch) && !isModifier(ch)) throw INVALID_PLACEHOLDER_EXCEPTION.create(ch);
-                        texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!isHex(ch) && !isModifier(ch)) throw INVALID_PLACEHOLDER_EXCEPTION;
+                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = modifyStyleWith(style, Character.toLowerCase(ch));
                     }
@@ -176,7 +176,7 @@ public class TextArgumentType implements ArgumentType<Text> {
 				builder.append(reader.read());
 			}
 		}
-		texts.add(Text.literal(builder.toString()).setStyle(style));
+		if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
 		MutableText result = Text.empty();
 		for (Text part : texts) {
 			result.append(part);

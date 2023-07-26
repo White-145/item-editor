@@ -9,7 +9,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
@@ -17,8 +17,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
 public class ColorArgumentType implements ArgumentType<Integer> {
-    private static final DynamicCommandExceptionType INVALID_HEX_COLOR_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("argument.color.invalidhex", arg));
-    private static final DynamicCommandExceptionType INVALID_NAMED_COLOR_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("argument.color.invalidnamed", arg));
+    private static final CommandSyntaxException INVALID_HEX_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidhex")).create();
+    private static final CommandSyntaxException INVALID_NAMED_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidnamed")).create();
 
     public static final String[] NAMED_COLORS = new String[] {
         "white",
@@ -78,15 +78,15 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     public Integer parse(StringReader reader) throws CommandSyntaxException {
         if (type == Type.HEX) {
             if (!reader.canRead() || reader.peek() != '#') {
-                throw INVALID_HEX_COLOR_EXCEPTION.create(reader.getRemaining());
+                throw INVALID_HEX_COLOR_EXCEPTION;
             }
             reader.skip();
             int rgb = 0;
-            if (!reader.canRead(6)) throw INVALID_HEX_COLOR_EXCEPTION.create(reader.getRemaining());
+            if (!reader.canRead(6)) throw INVALID_HEX_COLOR_EXCEPTION;
             for (int i = 0; i < 6; ++i) {
                 char ch = Character.toLowerCase(reader.read());
                 if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))) {
-                    throw INVALID_HEX_COLOR_EXCEPTION.create(reader.getRemaining());
+                    throw INVALID_HEX_COLOR_EXCEPTION;
                 } else {
                     rgb *= 16;
                     rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
@@ -99,7 +99,7 @@ public class ColorArgumentType implements ArgumentType<Integer> {
                 String namedColor = NAMED_COLORS[i];
                 if (namedColor.equals(remaining)) return i;
             }
-            throw INVALID_NAMED_COLOR_EXCEPTION.create(remaining);
+            throw INVALID_NAMED_COLOR_EXCEPTION;
         }
     }
 

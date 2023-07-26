@@ -37,7 +37,7 @@ public class DurabilityNode {
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int damage = stack.getDamage();
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, damage, stack.getMaxDamage(), (1 - (double)damage / stack.getMaxDamage()) * 100));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), (1 - (double)damage / stack.getMaxDamage()) * 100));
                 return damage;
             })
             .build();

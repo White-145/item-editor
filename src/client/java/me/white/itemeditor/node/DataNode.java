@@ -25,6 +25,7 @@ public class DataNode {
 	public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
     private static final String OUTPUT_GET = "commands.edit.data.getpath";
     private static final String OUTPUT_SET = "commands.edit.data.setpath";
+    private static final String OUTPUT_MERGE = "commands.edit.data.merge";
     
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -83,7 +84,7 @@ public class DataNode {
                 stack.setNbt(nbt);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, NbtHelper.toFormattedString(element)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET));
                 return 1;
             })
             .build();
@@ -104,6 +105,7 @@ public class DataNode {
                 if (nbt.equals(merged)) throw MERGE_ALREADY_HAS_EXCEPTION;
                 stack.setNbt(merged);
 
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_MERGE));
                 EditorUtil.setStack(context.getSource(), stack);
                 return 1;
             })

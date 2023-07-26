@@ -5,7 +5,6 @@ import java.net.URL;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -31,8 +30,9 @@ public class HeadNode {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
 	public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
 	public static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
-	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.alreadyis")).create();
-    private static final DynamicCommandExceptionType INVALID_URL_EXCEPTION = new DynamicCommandExceptionType((arg) -> Text.translatable("commands.edit.head.error.invalidtexture", arg));
+    public static final CommandSyntaxException TEXTURE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturealreadyis")).create();
+    public static final CommandSyntaxException OWNER_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.owneralreadyis")).create();
+    private static final CommandSyntaxException INVALID_URL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.invalidtexture")).create();
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
@@ -75,7 +75,7 @@ public class HeadNode {
                     try {
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, stylizeUrl(new URL(texture))));
                     } catch (MalformedURLException e) {
-                        throw INVALID_URL_EXCEPTION.create(texture);
+                        throw INVALID_URL_EXCEPTION;
                     }
                 } else {
                     if (!ItemUtil.hasHeadOwner(stack)) throw NO_TEXTURE_EXCEPTION;
@@ -135,14 +135,14 @@ public class HeadNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 String texture = StringArgumentType.getString(context, "texture");
-                if (!ItemUtil.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION.create(texture);
+                if (!ItemUtil.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION;
                 ItemUtil.setHeadTexture(stack, texture);
 
                 EditorUtil.setStack(context.getSource(), stack);
                 try {
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, stylizeUrl(new URL(texture))));
                 } catch (MalformedURLException e) {
-                    throw INVALID_URL_EXCEPTION.create(texture);
+                    throw INVALID_URL_EXCEPTION;
                 }
                 return 1;
             })

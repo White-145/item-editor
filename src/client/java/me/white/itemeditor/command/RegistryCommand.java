@@ -13,22 +13,38 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+
+import java.util.stream.Collectors;
 
 public class RegistryCommand {
-    private static final String OUTPUT_REGISTRY = "commands.testing.registry";
+    private static final String OUTPUT_REGISTRY = "commands.registry.registry";
+    private static final String OUTPUT_REGISTRY_ENTRY = "commands.registry.entry";
 
     private static <T> void registerRegistry(LiteralCommandNode<FabricClientCommandSource> node, CommandRegistryAccess registryAccess, RegistryKey<Registry<T>> key) {
         try {
             LiteralCommandNode<FabricClientCommandSource> registryNameNode = ClientCommandManager
                     .literal(key.getValue().toString())
+                    .executes(context -> {
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_REGISTRY));
+                        for (Identifier keyId : registryAccess.createWrapper(key).streamKeys().map(RegistryKey::getValue).toList()) {
+                                context.getSource().sendFeedback(Text.empty()
+                                        .append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
+                                        .append(keyId.toString())
+                                );
+                        }
+                        return 1;
+                    })
                     .build();
 
             ArgumentCommandNode<FabricClientCommandSource, RegistryEntry.Reference<T>> registryNameRegistryNode = ClientCommandManager
                     .argument("registry", RegistryEntryArgumentType.registryEntry(registryAccess, key))
                     .executes(context -> {
                         T value = EditorUtil.getRegistryEntryArgument(context, "registry", key);
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_REGISTRY, value.toString()));
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_REGISTRY_ENTRY, value.toString()));
                         return 1;
                     })
                     .build();

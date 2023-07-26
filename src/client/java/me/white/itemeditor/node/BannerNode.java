@@ -215,7 +215,7 @@ public class BannerNode {
 				ItemUtil.setBannerPatterns(stack, patterns);
 
 				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, index, translation(Pair.of(pattern, color))));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, translation(Pair.of(pattern, color)), index));
 				return patterns.size();
 			})
 			.build();

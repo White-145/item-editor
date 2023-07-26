@@ -66,7 +66,7 @@ public class LoreNode {
 				if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 				Text line = lore.get(index);
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, line));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, line));
 				return lore.size();
 			})
 			.build();
@@ -200,7 +200,7 @@ public class LoreNode {
 				ItemUtil.setLore(stack, lore);
 
 				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, index, ""));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, "", index));
 				return lore.size();
 			})
 			.build();

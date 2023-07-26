@@ -41,7 +41,7 @@ public class PotionNode {
     private static final String OUTPUT_EFFECT = "commands.edit.potion.effect";
 
     private static Text getTranslation(StatusEffect effect, Triple<Integer, Integer, Boolean> potionEffect) {
-        return Text.translatable(OUTPUT_EFFECT, effect.getName(), potionEffect.getLeft(), potionEffect.getMiddle() < 0 ? "Infinity" : potionEffect.getMiddle());
+        return Text.translatable(OUTPUT_EFFECT, effect.getName(), potionEffect.getLeft() + 1, potionEffect.getMiddle() < 0 ? "Infinity" : potionEffect.getMiddle());
     }
 
     private static boolean canEdit(ItemStack stack) {
@@ -107,7 +107,7 @@ public class PotionNode {
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(1, -1, true);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(0, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -129,9 +129,9 @@ public class PotionNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                int level = IntegerArgumentType.getInteger(context, "level") - 1;
+                int level = IntegerArgumentType.getInteger(context, "level");
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, true);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(level - 1, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -153,10 +153,10 @@ public class PotionNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                int level = IntegerArgumentType.getInteger(context, "level") - 1;
+                int level = IntegerArgumentType.getInteger(context, "level");
                 int duration = IntegerArgumentType.getInteger(context, "duration");
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(level, duration, true);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(level - 1, duration, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -178,11 +178,11 @@ public class PotionNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                int level = IntegerArgumentType.getInteger(context, "level") - 1;
+                int level = IntegerArgumentType.getInteger(context, "level");
                 int duration = IntegerArgumentType.getInteger(context, "duration");
                 boolean particles = BoolArgumentType.getBool(context, "particles");
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(level, duration, particles);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(level - 1, duration, particles);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -204,9 +204,9 @@ public class PotionNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                int level = IntegerArgumentType.getInteger(context, "level") - 1;
+                int level = IntegerArgumentType.getInteger(context, "level");
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, true);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(level - 1, -1, true);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -228,10 +228,10 @@ public class PotionNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 StatusEffect effect = EditorUtil.getRegistryEntryArgument(context, "effect", RegistryKeys.STATUS_EFFECT);
-                int level = IntegerArgumentType.getInteger(context, "level") - 1;
+                int level = IntegerArgumentType.getInteger(context, "level");
                 boolean particles = BoolArgumentType.getBool(context, "particles");
                 HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> potionEffects = ItemUtil.getPotionEffects(stack);
-                Triple<Integer, Integer, Boolean> potion = Triple.of(level, -1, particles);
+                Triple<Integer, Integer, Boolean> potion = Triple.of(level - 1, -1, particles);
                 if (potionEffects.containsKey(effect)) {
                     Triple<Integer, Integer, Boolean> potionEffect = potionEffects.get(effect);
                     if (potionEffect.equals(potion)) throw ALREADY_EXISTS_EXCEPTION;
@@ -288,7 +288,7 @@ public class PotionNode {
         
         rootNode.addChild(node);
         
-        // ... get [<index>]
+        // ... get [<effect>]
         node.addChild(getNode);
         getNode.addChild(getIndexNode);
 
