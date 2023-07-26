@@ -2,7 +2,7 @@
   "commands.edit.attribute.error.noattributes": "Item doesn't have attribute modifiers",
   "commands.edit.attribute.error.nosuchattributes": "Item doesn't have given attribute modifiers",
   "commands.edit.attribute.get": "Item has the following attribute modifiers:",
-  "commands.edit.attribute.add": "Added %s attribute modifier to the item",
+  "commands.edit.attribute.add": "Added attribute modifier %s to the item",
   "commands.edit.attribute.placeholderenable": "Item attribute placeholder was enabled",
   "commands.edit.attribute.placeholderdisable": "Item attribute placeholder was disable",
   "commands.edit.attribute.remove": "Removed %s attribute modifiers from the item",

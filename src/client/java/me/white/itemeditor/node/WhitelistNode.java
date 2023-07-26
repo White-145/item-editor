@@ -258,26 +258,34 @@ public class WhitelistNode {
 
         // ... get ...
         node.addChild(getNode);
+        // ... place
         getNode.addChild(getPlaceNode);
+        // ... destroy
         getNode.addChild(getDestroyNode);
 
         // ... add ...
         node.addChild(addNode);
+        // ... place <block>
         addNode.addChild(addPlaceNode);
         addPlaceNode.addChild(addPlaceBlockNode);
+        // ... destroy <block>
         addNode.addChild(addDestroyNode);
         addDestroyNode.addChild(addDestroyBlockNode);
 
         // ... remove ...
         node.addChild(removeNode);
+        // ... place <block>
         removeNode.addChild(removePlaceNode);
         removePlaceNode.addChild(removePlaceBlockNode);
+        // ... destroy <block>
         removeNode.addChild(removeDestroyNode);
         removeDestroyNode.addChild(removeDestroyBlockNode);
 
         // ... clear ...
         node.addChild(clearNode);
+        // ... place
         clearNode.addChild(clearPlaceNode);
+        // ... destroy
         clearNode.addChild(clearDestroyNode);
     }
 }

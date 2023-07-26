@@ -33,7 +33,7 @@ public class AttributeNode {
 	public static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
 	public static final CommandSyntaxException NO_SUCH_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattributes")).create();
 	private static final String OUTPUT_GET = "commands.edit.attribute.get";
-	private static final String OUTPUT_SET = "commands.edit.attribute.set";
+	private static final String OUTPUT_SET = "commands.edit.attribute.add";
 	private static final String OUTPUT_SET_PLACEHOLDER_ENABLE = "commands.edit.attribute.placeholderenable";
 	private static final String OUTPUT_SET_PLACEHOLDER_DISABLE = "commands.edit.attribute.placeholderdisable";
 	private static final String OUTPUT_REMOVE = "commands.edit.attribute.remove";
@@ -178,7 +178,7 @@ public class AttributeNode {
 				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
-				.literal("set")
+				.literal("add")
 				.executes(context -> set(context.getSource(), null, null, null))
 				.build();
 

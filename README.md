@@ -137,6 +137,7 @@ All commands are also available as `/itemeditor:<command>`
 - - `&<X>` for [keybinds](https://minecraft.fandom.com/wiki/Controls#Configurable_controls)
 - - `&[X]` for [translation codes](https://minecraft.fandom.com/wiki/Raw_JSON_text_format#Translated_Text)
 - - `&_` for space (" ")
+- Also in text arguments you can remove post formatting (like italic in custom name and lore) with `&r`
 
 ## Planned Features:
 

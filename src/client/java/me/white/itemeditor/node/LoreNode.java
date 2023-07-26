@@ -324,12 +324,10 @@ public class LoreNode {
 
 		// ... clear
 		node.addChild(clearNode);
-
-		// ... clear before <index>
+		// ... before <index>
 		clearNode.addChild(clearBeforeNode);
 		clearBeforeNode.addChild(clearBeforeIndexNode);
-
-		// ... clear after <index>
+		// ... after <index>
 		clearNode.addChild(clearAfterNode);
 		clearAfterNode.addChild(clearAfterIndexNode);
 	}

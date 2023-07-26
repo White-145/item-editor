@@ -207,7 +207,7 @@ public class HeadNode {
         // ... get
         node.addChild(getNode);
 
-        // ... set [...]
+        // ... set
         node.addChild(setNode);
         // ... owner <owner>
         setNode.addChild(setOwnerNode);

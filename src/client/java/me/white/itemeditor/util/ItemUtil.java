@@ -427,7 +427,6 @@ public class ItemUtil {
         if (!texture.contains(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtElement.STRING_TYPE)) return false;
         if (!validate) return true;
         String value = texture.getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
-        System.out.println("validatin");
         return isValidHeadTexture(value);
     }
 

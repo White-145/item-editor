@@ -497,39 +497,53 @@ public class BookNode {
 
 		// ... author ...
 		node.addChild(authorNode);
+		// ... get
 		authorNode.addChild(authorGetNode);
+		// ... set [<author>]
 		authorNode.addChild(authorSetNode);
 		authorSetNode.addChild(authorSetAuthorNode);
 
 		// ... title ...
 		node.addChild(titleNode);
+		// ... get
 		titleNode.addChild(titleGetNode);
+		// ... set [<title>]
 		titleNode.addChild(titleSetNode);
 		titleSetNode.addChild(titleSetTitleNode);
 
 		// ... generation ...
 		node.addChild(generationNode);
+		// ... get
 		generationNode.addChild(generationGetNode);
+		// ... set <generation>
 		generationNode.addChild(generationSetNode);
 		generationSetNode.addChild(generationSetGenerationNode);
 
 		// ... page ...
 		node.addChild(pageNode);
+		// ... get [<index>]
 		pageNode.addChild(pageGetNode);
 		pageGetNode.addChild(pageGetIndexNode);
+		// ... set <index> [<page>]
 		pageNode.addChild(pageSetNode);
 		pageSetNode.addChild(pageSetIndexNode);
 		pageSetIndexNode.addChild(pageSetIndexPageNode);
+		// ... remove <index>
 		pageNode.addChild(pageRemoveNode);
 		pageRemoveNode.addChild(pageRemoveIndexNode);
+		// ... add [<page>]
 		pageNode.addChild(pageAddNode);
 		pageAddNode.addChild(pageAddPageNode);
+		// ... insert <index> [<page>]
 		pageNode.addChild(pageInsertNode);
 		pageInsertNode.addChild(pageInsertIndexNode);
 		pageInsertIndexNode.addChild(pageInsertIndexPageNode);
+		// ... clear
 		pageNode.addChild(pageClearNode);
+		// ... before <index>
 		pageClearNode.addChild(pageClearBeforeNode);
 		pageClearBeforeNode.addChild(pageClearBeforeIndexNode);
+		// ... after <index>
 		pageClearNode.addChild(pageClearAfterNode);
 		pageClearAfterNode.addChild(pageClearAfterIndexNode);
 	}
