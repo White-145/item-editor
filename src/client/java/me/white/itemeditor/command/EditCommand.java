@@ -39,7 +39,7 @@ public class EditCommand {
 		// ... color ...
 		ColorNode.register(node);
 		// ... hideflags ...
-		FlagsNode.register(node);
+		FlagNode.register(node);
 		// ... equip
 		EquipNode.register(node);
 		// ... unbreakable

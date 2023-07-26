@@ -177,16 +177,16 @@ public class AttributeNode {
 			})
 			.build();
 
-		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
+		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
 			.literal("set")
 			.executes(context -> set(context.getSource(), null, null, null))
 			.build();
 		
-		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> setAttributeNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> addAttributeNode = ClientCommandManager
 			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
 			.build();
 	
-		ArgumentCommandNode<FabricClientCommandSource, Float> setAttributeAmountNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, Float> addAttributeAmountNode = ClientCommandManager
 			.argument("amount", FloatArgumentType.floatArg())
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -196,7 +196,7 @@ public class AttributeNode {
 			})
 			.build();
 			
-		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setAttributeAmountOperationNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeAmountOperationNode = ClientCommandManager
 			.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -207,7 +207,7 @@ public class AttributeNode {
 			})
 			.build();
 			
-		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeAmountOperationSlotNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeAmountOperationSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -219,7 +219,7 @@ public class AttributeNode {
 			})
 			.build();
 		
-		LiteralCommandNode<FabricClientCommandSource> setAttributeInfinityNode = ClientCommandManager
+		LiteralCommandNode<FabricClientCommandSource> addAttributeInfinityNode = ClientCommandManager
 			.literal("infinity")
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -228,7 +228,7 @@ public class AttributeNode {
 			})
 			.build();
 			
-		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setAttributeInfinityOperationNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeInfinityOperationNode = ClientCommandManager
 			.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -238,7 +238,7 @@ public class AttributeNode {
 			})
 			.build();
 			
-		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> setAttributeInfinityOperationSlotNode = ClientCommandManager
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeInfinityOperationSlotNode = ClientCommandManager
 			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
 			.executes(context -> {
 				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
@@ -279,15 +279,15 @@ public class AttributeNode {
 		getNode.addChild(getSlotNode);
 		getSlotNode.addChild(getSlotAttributeNode);
 
-		// ... attribute set [<attribute> <amount>|infinity] [<operation>] [<slot>]
-		node.addChild(setNode);
-		setNode.addChild(setAttributeNode);
-		setAttributeNode.addChild(setAttributeAmountNode);
-		setAttributeAmountNode.addChild(setAttributeAmountOperationNode);
-		setAttributeAmountOperationNode.addChild(setAttributeAmountOperationSlotNode);
-		setAttributeNode.addChild(setAttributeInfinityNode);
-		setAttributeInfinityNode.addChild(setAttributeInfinityOperationNode);
-		setAttributeInfinityOperationNode.addChild(setAttributeInfinityOperationSlotNode);
+		// ... attribute add [<attribute> <amount>|infinity] [<operation>] [<slot>]
+		node.addChild(addNode);
+		addNode.addChild(addAttributeNode);
+		addAttributeNode.addChild(addAttributeAmountNode);
+		addAttributeAmountNode.addChild(addAttributeAmountOperationNode);
+		addAttributeAmountOperationNode.addChild(addAttributeAmountOperationSlotNode);
+		addAttributeNode.addChild(addAttributeInfinityNode);
+		addAttributeInfinityNode.addChild(addAttributeInfinityOperationNode);
+		addAttributeInfinityOperationNode.addChild(addAttributeInfinityOperationSlotNode);
 
 		// ... attribute remove <attribute> [<slot>]
 		node.addChild(removeNode);

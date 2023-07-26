@@ -21,6 +21,7 @@ import net.minecraft.util.Formatting;
 
 public class LoreNode {
 	public static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.nolore")).create();
+	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.lore.get";
 	private static final String OUTPUT_GET_LINE = "commands.edit.lore.getline";
 	private static final String OUTPUT_SET = "commands.edit.lore.set";
@@ -84,10 +85,13 @@ public class LoreNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
 				if (lore.size() <= index) {
-					int off = lore.size() - index + 1;
+					int off = index - lore.size() + 1;
 					for (int i = 0; i < off; ++i) {
 						lore.add(Text.empty());
 					}
+				} else {
+					Text oldLine = lore.get(index);
+					if (oldLine.equals(Text.empty())) throw ALREADY_IS_EXCEPTION;
 				}
 				lore.set(index, Text.empty());
 				ItemUtil.setLore(stack, lore);
@@ -108,10 +112,13 @@ public class LoreNode {
 				Text line = TextArgumentType.getText(context, "line");
 				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
 				if (lore.size() <= index) {
-					int off = lore.size() - index + 1;
+					int off = index - lore.size() + 1;
 					for (int i = 0; i < off; ++i) {
 						lore.add(Text.empty());
 					}
+				} else {
+					Text oldLine = lore.get(index);
+					if (oldLine.equals(line)) throw ALREADY_IS_EXCEPTION;
 				}
 				lore.set(index, line);
 				ItemUtil.setLore(stack, lore);
@@ -224,7 +231,7 @@ public class LoreNode {
 				ItemUtil.setLore(stack, lore);
 
 				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, index, line));
+				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, line, index));
 				return lore.size();
 			})
 			.build();

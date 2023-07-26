@@ -26,8 +26,12 @@ import net.minecraft.util.Formatting;
 public class BookNode {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.cannotedit")).create();
 	public static final CommandSyntaxException NO_AUTHOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.noauthor")).create();
+	public static final CommandSyntaxException AUTHOR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.authoralreadyis")).create();
 	public static final CommandSyntaxException NO_TITLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.notitle")).create();
+	public static final CommandSyntaxException TITLE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.titlealreadyis")).create();
+	public static final CommandSyntaxException GENERATION_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.generationalreadyis")).create();
 	public static final CommandSyntaxException NO_PAGES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.nopages")).create();
+	public static final CommandSyntaxException PAGE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.pagealreadyis")).create();
     private static final String OUTPUT_AUTHOR_GET = "commands.edit.book.authorget";
     private static final String OUTPUT_AUTHOR_SET = "commands.edit.book.authorset";
     private static final String OUTPUT_AUTHOR_RESET = "commands.edit.book.authorreset";
@@ -122,7 +126,9 @@ public class BookNode {
 				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+				String oldAuthor = ItemUtil.getBookAuthor(stack);
                 String author = StringArgumentType.getString(context, "author");
+				if (oldAuthor != null && oldAuthor.equals(author)) throw AUTHOR_ALREADY_IS_EXCEPTION;
 				ItemUtil.setBookAuthor(stack, author);
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -172,7 +178,9 @@ public class BookNode {
 				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+				String oldTitle = ItemUtil.getBookTitle(stack);
                 String title = StringArgumentType.getString(context, "title");
+				if (oldTitle != null && oldTitle.equals(title)) throw TITLE_ALREADY_IS_EXCEPTION;
 				ItemUtil.setBookTitle(stack, title);
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -209,7 +217,9 @@ public class BookNode {
 				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+				int oldGeneration = ItemUtil.getBookGeneration(stack);
 				Generation generation = EnumArgumentType.getEnum(context, "generation", Generation.class);
+				if (oldGeneration == generation.id) throw GENERATION_ALREADY_IS_EXCEPTION;
 				ItemUtil.setBookGeneration(stack, generation.id);
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -270,10 +280,13 @@ public class BookNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				List<Text> pages = new ArrayList<>(ItemUtil.getBookPages(stack));
 				if (pages.size() <= index) {
-					int off = pages.size() - index + 1;
+					int off = index - pages.size() + 1;
 					for (int i = 0; i < off; ++i) {
 						pages.add(Text.empty());
 					}
+				} else {
+					Text oldPage = pages.get(index);
+					if (oldPage.equals(Text.empty())) throw PAGE_ALREADY_IS_EXCEPTION;
 				}
 				pages.set(index, Text.empty());
 				ItemUtil.setBookPages(stack, pages);
@@ -294,10 +307,13 @@ public class BookNode {
 				Text page = TextArgumentType.getText(context, "page");
 				List<Text> pages = new ArrayList<>(ItemUtil.getBookPages(stack));
 				if (pages.size() <= index) {
-					int off = pages.size() - index + 1;
+					int off = index - pages.size() + 1;
 					for (int i = 0; i < off; ++i) {
 						pages.add(Text.empty());
 					}
+				} else {
+					Text oldPage = pages.get(index);
+					if (oldPage.equals(page)) throw PAGE_ALREADY_IS_EXCEPTION;
 				}
 				pages.set(index, page);
 				ItemUtil.setBookPages(stack, pages);

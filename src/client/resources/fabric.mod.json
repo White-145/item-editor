@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "item-editor",
 	"version": "${version}",
-	"name": "Item Editor",
-	"description": "Simple item editor using custom commands",
+	"name": "Simple Item Editor",
+	"description": "Simple item editor using client-side commands",
 	"authors": [
 		"White_145Gaming"
 	],

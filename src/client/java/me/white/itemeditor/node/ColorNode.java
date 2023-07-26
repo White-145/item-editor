@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
 public class ColorNode {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.cannotedit")).create();
     public static final CommandSyntaxException NO_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.nocolor")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.color.get";
     private static final String OUTPUT_SET = "commands.edit.color.set";
     private static final String OUTPUT_RESET = "commands.edit.color.reset";
@@ -78,6 +79,7 @@ public class ColorNode {
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int old = ItemUtil.getColor(stack);
                 int color = ColorArgumentType.getColor(context, "color");
+                if (old == color) throw ALREADY_IS_EXCEPTION;
                 ItemUtil.setColor(stack, color);
 
                 EditorUtil.setStack(context.getSource(), stack);

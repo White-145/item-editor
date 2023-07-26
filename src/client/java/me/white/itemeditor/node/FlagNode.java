@@ -13,7 +13,7 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlagsNode {
+public class FlagNode {
     private static final String OUTPUT_GET = "commands.edit.flags.get";
     private static final String OUTPUT_ALL_ENABLE = "commands.edit.flags.allenable";
     private static final String OUTPUT_ALL_DISABLE = "commands.edit.flags.alldisable";
@@ -92,7 +92,7 @@ public class FlagsNode {
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-            .literal("flags")
+            .literal("flag")
             .build();
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager

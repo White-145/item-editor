@@ -679,7 +679,7 @@ public class ItemUtil {
     public static int getBookGeneration(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return 0;
         int generation = stack.getNbt().getInt(GENERATION_KEY);
-        return generation >= 0 && generation < 3 ? generation : 0;
+        return generation >= 0 && generation < GENERATIONS_AMOUNT ? generation : 0;
     }
 
     /**

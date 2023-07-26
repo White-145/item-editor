@@ -14,6 +14,7 @@ import net.minecraft.text.Text;
 
 public class CountNode {
 	public static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.overflow")).create();
+	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.count.get";
 	private static final String OUTPUT_SET = "commands.edit.count.set";
 
@@ -41,6 +42,7 @@ public class CountNode {
 				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				int old = stack.getCount();
+				if (old == 1) throw ALREADY_IS_EXCEPTION;
 				stack.setCount(1);
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -57,6 +59,7 @@ public class CountNode {
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 				int old = stack.getCount();
 				int count = IntegerArgumentType.getInteger(context, "count");
+				if (old == count) throw ALREADY_IS_EXCEPTION;
 				stack.setCount(count);
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -137,6 +140,7 @@ public class CountNode {
 				ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+				if (stack.getCount() == stack.getMaxCount()) throw ALREADY_IS_EXCEPTION;
 				stack.setCount(stack.getMaxCount());
 
 				EditorUtil.setStack(context.getSource(), stack);

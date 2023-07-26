@@ -26,16 +26,16 @@ import oshi.util.tuples.Quintet;
 
 public class FireworkNode {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannotedit")).create();
-    public static final CommandSyntaxException NO_STARS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.nostars")).create();
+    public static final CommandSyntaxException NO_EXPLOSIONS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.noexplosions")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
     private static final String OUTPUT_FLIGHT_GET = "commands.edit.firework.flightget";
     private static final String OUTPUT_FLIGHT_SET = "commands.edit.firework.flightset";
-    private static final String OUTPUT_STAR = "commands.edit.firework.star";
-    private static final String OUTPUT_STAR_FADE = "commands.edit.firework.starfade";
-    private static final String OUTPUT_STAR_GET = "commands.edit.firework.starget";
-    private static final String OUTPUT_STAR_ADD = "commands.edit.firework.staradd";
-    private static final String OUTPUT_STAR_REMOVE = "commands.edit.firework.remove";
-    private static final String OUTPUT_STAR_CLEAR = "commands.edit.firework.clear";
+    private static final String OUTPUT_EXPLOSION = "commands.edit.firework.explosion";
+    private static final String OUTPUT_EXPLOSION_FADE = "commands.edit.firework.explosionfade";
+    private static final String OUTPUT_EXPLOSION_GET = "commands.edit.firework.explosionget";
+    private static final String OUTPUT_EXPLOSION_ADD = "commands.edit.firework.explosionadd";
+    private static final String OUTPUT_EXPLOSION_REMOVE = "commands.edit.firework.explosionremove";
+    private static final String OUTPUT_EXPLOSION_CLEAR = "commands.edit.firework.explosionclear";
 
     private enum Type {
         SMALL(0, "commands.edit.firework.typesmall"),
@@ -70,7 +70,7 @@ public class FireworkNode {
     private static Text starTranslation(Type type, List<Integer> colors) {
         String[] colorFormatted = new String[colors.size()];
         for (int i = 0; i < colors.size(); ++i) colorFormatted[i] = EditorUtil.formatColor(colors.get(i));
-        return Text.translatable(OUTPUT_STAR, Text.translatable(type.translationKey), String.join(", ", colorFormatted));
+        return Text.translatable(OUTPUT_EXPLOSION, Text.translatable(type.translationKey), String.join(", ", colorFormatted));
     }
 
     private static Text starTranslation(Type type, List<Integer> colors, List<Integer> fadeColors) {
@@ -78,7 +78,7 @@ public class FireworkNode {
         for (int i = 0; i < colors.size(); ++i) colorsFormatted[i] = EditorUtil.formatColor(colors.get(i));
         String[] fadeColorsFormatted = new String[fadeColors.size()];
         for (int i = 0; i < fadeColors.size(); ++i) fadeColorsFormatted[i] = EditorUtil.formatColor(fadeColors.get(i));
-        return Text.translatable(OUTPUT_STAR_FADE, Text.translatable(type.translationKey), String.join(", ", colorsFormatted), String.join(", ", fadeColorsFormatted));
+        return Text.translatable(OUTPUT_EXPLOSION_FADE, Text.translatable(type.translationKey), String.join(", ", colorsFormatted), String.join(", ", fadeColorsFormatted));
     }
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
@@ -138,20 +138,20 @@ public class FireworkNode {
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> starNode = ClientCommandManager
-            .literal("star")
+        LiteralCommandNode<FabricClientCommandSource> explosionNode = ClientCommandManager
+            .literal("explosion")
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> starGetNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> explosionGetNode = ClientCommandManager
             .literal("get")
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource());
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
+                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                 List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = ItemUtil.getFireworkExplosions(stack);
                 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_GET));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_GET));
                 for (int i = 0; i < explosions.size(); ++i) {
                     Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>> explosion = explosions.get(i);
                     Type type = Type.byId(explosion.getA());
@@ -166,15 +166,15 @@ public class FireworkNode {
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> starAddNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> explosionAddNode = ClientCommandManager
             .literal("add")
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, Type> starAddTypeNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, Type> explosionAddTypeNode = ClientCommandManager
             .argument("type", EnumArgumentType.enumArgument(Type.class))
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, List<Integer>> starAddTypeColorsNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, List<Integer>> explosionAddTypeColorsNode = ClientCommandManager
             .argument("colors", ListArgumentType.listArgument(ColorArgumentType.hex()))
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
@@ -188,12 +188,12 @@ public class FireworkNode {
                 ItemUtil.setFireworkExplosions(stack, explosions);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> starAddTypeColorsFlickerNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, Boolean> explosionAddTypeColorsFlickerNode = ClientCommandManager
             .argument("flicker", BoolArgumentType.bool())
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
@@ -208,12 +208,12 @@ public class FireworkNode {
                 ItemUtil.setFireworkExplosions(stack, explosions);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> starAddTypeColorsFlickerTrailNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, Boolean> explosionAddTypeColorsFlickerTrailNode = ClientCommandManager
             .argument("trail", BoolArgumentType.bool())
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
@@ -229,12 +229,12 @@ public class FireworkNode {
                 ItemUtil.setFireworkExplosions(stack, explosions);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_ADD, starTranslation(type, colors)));
                 return explosions.size() - 1;
             })
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, List<Integer>> starAddTypeColorsFlickerTrailFadecolorsNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, List<Integer>> explosionAddTypeColorsFlickerTrailFadecolorsNode = ClientCommandManager
             .argument("fadeColors", ListArgumentType.listArgument(ColorArgumentType.hex()))
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy().copy();
@@ -251,23 +251,23 @@ public class FireworkNode {
                 ItemUtil.setFireworkExplosions(stack, explosions);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_ADD, starTranslation(type, colors, fadeColors)));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_ADD, starTranslation(type, colors, fadeColors)));
                 return explosions.size() - 1;
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> starRemoveNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> explosionRemoveNode = ClientCommandManager
             .literal("remove")
             .build();
         
-        ArgumentCommandNode<FabricClientCommandSource, Integer> starRemoveIndexNode = ClientCommandManager
+        ArgumentCommandNode<FabricClientCommandSource, Integer> explosionRemoveIndexNode = ClientCommandManager
             .argument("index", IntegerArgumentType.integer(0))
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
+                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                 int index = IntegerArgumentType.getInteger(context, "index");
                 List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
                 if (explosions.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, explosions.size());
@@ -275,23 +275,23 @@ public class FireworkNode {
                 ItemUtil.setFireworkExplosions(stack, explosions);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_REMOVE, index));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_REMOVE, index));
                 return 1;
             })
             .build();
         
-        LiteralCommandNode<FabricClientCommandSource> starClearNode = ClientCommandManager
+        LiteralCommandNode<FabricClientCommandSource> explosionClearNode = ClientCommandManager
             .literal("clear")
             .executes(context -> {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_STARS_EXCEPTION;
+                if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                 ItemUtil.setFireworkExplosions(stack, null);
 
                 EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_STAR_CLEAR));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_CLEAR));
                 return 1;
             })
             .build();
@@ -306,21 +306,21 @@ public class FireworkNode {
         flightNode.addChild(flightSetNode);
         flightSetNode.addChild(flightSetFlightNode);
 
-        // ... star ...
-        node.addChild(starNode);
+        // ... explosion ...
+        node.addChild(explosionNode);
         // ... get
-        starNode.addChild(starGetNode);
+        explosionNode.addChild(explosionGetNode);
         // ... add <type> <colors> [<flicker>] [<trail>] [<fadecolors>]
-        starNode.addChild(starAddNode);
-        starAddNode.addChild(starAddTypeNode);
-        starAddTypeNode.addChild(starAddTypeColorsNode);
-        starAddTypeColorsNode.addChild(starAddTypeColorsFlickerNode);
-        starAddTypeColorsFlickerNode.addChild(starAddTypeColorsFlickerTrailNode);
-        starAddTypeColorsFlickerTrailNode.addChild(starAddTypeColorsFlickerTrailFadecolorsNode);
+        explosionNode.addChild(explosionAddNode);
+        explosionAddNode.addChild(explosionAddTypeNode);
+        explosionAddTypeNode.addChild(explosionAddTypeColorsNode);
+        explosionAddTypeColorsNode.addChild(explosionAddTypeColorsFlickerNode);
+        explosionAddTypeColorsFlickerNode.addChild(explosionAddTypeColorsFlickerTrailNode);
+        explosionAddTypeColorsFlickerTrailNode.addChild(explosionAddTypeColorsFlickerTrailFadecolorsNode);
         // ... remove <index>
-        starNode.addChild(starRemoveNode);
-        starRemoveNode.addChild(starRemoveIndexNode);
+        explosionNode.addChild(explosionRemoveNode);
+        explosionRemoveNode.addChild(explosionRemoveIndexNode);
         // ... clear
-        starNode.addChild(starClearNode);
+        explosionNode.addChild(explosionClearNode);
     }
 }

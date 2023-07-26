@@ -23,9 +23,10 @@ public class DataNode {
 	public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
 	public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
 	public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
-    private static final String OUTPUT_GET = "commands.edit.data.getpath";
-    private static final String OUTPUT_SET = "commands.edit.data.setpath";
+    private static final String OUTPUT_GET = "commands.edit.data.get";
+    private static final String OUTPUT_SET = "commands.edit.data.set";
     private static final String OUTPUT_MERGE = "commands.edit.data.merge";
+    private static final String OUTPUT_REMOVE = "commands.edit.data.remove";
     
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
@@ -113,6 +114,17 @@ public class DataNode {
             
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
             .literal("remove")
+            .executes(context -> {
+                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                stack.setNbt(null);
+
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                EditorUtil.setStack(context.getSource(), stack);
+                return 1;
+            })
             .build();
         
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> removePathNode = ClientCommandManager
@@ -128,6 +140,7 @@ public class DataNode {
                 path.remove(nbt);
                 stack.setNbt(nbt);
 
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
                 EditorUtil.setStack(context.getSource(), stack);
                 return 1;
             })

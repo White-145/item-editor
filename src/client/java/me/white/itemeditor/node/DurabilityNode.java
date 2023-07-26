@@ -14,7 +14,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class DurabilityNode {
-	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.cannotedit")).create();
+    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.cannotedit")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.durability.get";
     private static final String OUTPUT_SET = "commands.edit.durability.set";
     private static final String OUTPUT_RESET = "commands.edit.durability.reset";
@@ -37,7 +38,7 @@ public class DurabilityNode {
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int damage = stack.getDamage();
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), (1 - (double)damage / stack.getMaxDamage()) * 100));
+                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), String.format("%.1f", (1 - (double)damage / stack.getMaxDamage()) * 100)));
                 return damage;
             })
             .build();
@@ -49,6 +50,7 @@ public class DurabilityNode {
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (stack.getDamage() == 0) throw ALREADY_IS_EXCEPTION;
                 stack.setDamage(0);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
@@ -65,6 +67,7 @@ public class DurabilityNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 int damage = IntegerArgumentType.getInteger(context, "durability");
+                if (stack.getDamage() == stack.getMaxDamage() - damage) throw ALREADY_IS_EXCEPTION;
                 stack.setDamage(stack.getMaxDamage() - damage);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, damage));
@@ -85,9 +88,10 @@ public class DurabilityNode {
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                 double percentage = DoubleArgumentType.getDouble(context, "percentage");
-
                 int old = (int)((double)stack.getDamage() / stack.getMaxDamage() * 100);
-                stack.setDamage((int)(stack.getMaxDamage() * (1 - percentage / 100)));
+                int actual = (int)(stack.getMaxDamage() * (1 - percentage / 100));
+                if (stack.getDamage() == actual) throw ALREADY_IS_EXCEPTION;
+                stack.setDamage(actual);
 
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
                 EditorUtil.setStack(context.getSource(), stack);

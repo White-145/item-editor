@@ -1,8 +1,8 @@
 # Simple Item Editor
 
-Simple item editor is minecraft mod (fabric 1.20.1) for item editing, that uses client commands.
+Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using client commands.
 
-Not done yet, but feel free to build, use, and suggest new features to add (especially translations, if someone is good at it please message me/pull request/create an issue with translations)
+Not done yet, but feel free to build, use, and suggest new features to add!
 
 ## Features:
 
@@ -24,7 +24,9 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... set <material>`
 - `... count ...`
 - - `... get`
-- - `... set|add|remove [<count>]`
+- - `... set [<count>]`
+- - `... add [<count>]`
+- - `... remove [<count>]`
 - - `... stack`
 - `... model ...`
 - - `... get`
@@ -64,6 +66,7 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... get <path>`
 - - `... set <path> <value>`
 - - `... merge <value>`
+- - `... remove [<path>]`
 - `... book ...`
 - - `... author ...`
 - - - `... get`
@@ -112,13 +115,31 @@ Not done yet, but feel free to build, use, and suggest new features to add (espe
 - - `... clear after <index>`
 - `... potion ...`
 - - `... get [<effect>]`
+- - `... set <effect> [<level>] [<duration>|infinity] [<particle>]`
+- - `... remove [<effect>]`
+- - `... clear`
+
+### `/registry` command:
+- `... <registry> [<entry>]`
 
 All commands are also available as `/itemeditor:<command>`
 
-#### /!\ NOT DONE SECTION /!\
-- `... items ...`
-- `... entity ...`
-- `... script ...`
+## Useful Information
 
-### `/color` command
-### `/char` command
+- Written book displays "\*Invalid book tag\*" if any of the `title`, `author` and `pages` tags is not present 
+- Item durability can be set below *0*
+- Item durability [is not displayed if `Unbreakable` tag is enabled](https://minecraft.fandom.com/wiki/Durability#Interface), and thus you cannot change it with `/edit`
+- Item head texture should be starting with `https://textures.minecraft.net/texture/` to be applied by minecraft
+- Item count can be set to [more than *64*, but less than *128*](https://minecraft.fandom.com/wiki/Item#Behavior)
+- In some text arguments (like `name` or `line`) you can use following placeholders:
+- - `&X` for [vanilla formatting codes](https://minecraft.fandom.com/wiki/Formatting_codes)
+- - `&#XXXXXX` for hex color
+- - `&<X>` for [keybinds](https://minecraft.fandom.com/wiki/Controls#Configurable_controls)
+- - `&[X]` for [translation codes](https://minecraft.fandom.com/wiki/Raw_JSON_text_format#Translated_Text)
+- - `&_` for space (" ")
+
+## Planned Features:
+
+- `/color` command
+- `/char` command
+

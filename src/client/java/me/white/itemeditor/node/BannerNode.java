@@ -32,7 +32,8 @@ import net.minecraft.util.Identifier;
 
 public class BannerNode {
     private static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.cannotedit")).create();
-    private static final CommandSyntaxException NO_PATTERNS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nopatterns")).create();
+	private static final CommandSyntaxException NO_PATTERNS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nopatterns")).create();
+	private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.banner.get";
     private static final String OUTPUT_GET_PATTERN = "commands.edit.banner.getpattern";
     private static final String OUTPUT_SET = "commands.edit.banner.set";
@@ -108,7 +109,7 @@ public class BannerNode {
 			.build();
 		
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0, 255))
+			.argument("index", IntegerArgumentType.integer(0))
 			.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Reference<BannerPattern>> setIndexPatternNode = ClientCommandManager
@@ -126,9 +127,12 @@ public class BannerNode {
 				int index = IntegerArgumentType.getInteger(context, "index");
 				BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
 				int color = ColorArgumentType.getColor(context, "color");
+				Pair<BannerPattern, Integer> bannerPattern = Pair.of(pattern, color);
 				List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
 				if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
-				patterns.set(index, Pair.of(pattern, color));
+				Pair<BannerPattern, Integer> oldBannerPattern = patterns.get(index);
+				if (oldBannerPattern.equals(bannerPattern)) throw ALREADY_IS_EXCEPTION;
+				patterns.set(index, bannerPattern);
 				ItemUtil.setBannerPatterns(stack, patterns);
 
 				EditorUtil.setStack(context.getSource(), stack);

@@ -15,6 +15,7 @@ import net.minecraft.text.Text;
 
 public class NameNode {
 	public static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
+	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.name.get";
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
@@ -43,6 +44,9 @@ public class NameNode {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+				Text oldName = ItemUtil.getName(stack);
+				// for some reason "foo" == "&rfoo"
+				if (oldName != null && oldName.equals(Text.empty())) throw ALREADY_IS_EXCEPTION;
 				ItemUtil.setName(stack, Text.empty());
 
 				EditorUtil.setStack(context.getSource(), stack);
@@ -57,8 +61,8 @@ public class NameNode {
                 ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                 if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				// Text name = Colored.of(StringArgumentType.getString(context, "name"));
 				Text name = TextArgumentType.getText(context, "name");
+				if (ItemUtil.getName(stack).equals(name)) throw ALREADY_IS_EXCEPTION;
 				ItemUtil.setName(stack, name);
 
 				EditorUtil.setStack(context.getSource(), stack);
