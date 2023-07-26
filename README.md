@@ -2,8 +2,6 @@
 
 Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using client commands.
 
-Not done yet, but feel free to build, use, and suggest new features to add!
-
 ## Features:
 
 ### `/edit` command:
