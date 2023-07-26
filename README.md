@@ -40,7 +40,7 @@ Not done yet, but feel free to build, use, and suggest new features to add!
 - `... get <item> [<count>]`
 - `... attribute ...`
 - - `... get [<slot>] [<attribute>]`
-- - `... set [<attribute> <amount>|infinity] [<operation>] [<slot>]`
+- - `... add [<attribute> <amount>|infinity] [<operation>] [<slot>]`
 - - `... remove <attribute> [<slot>]`
 - - `... clear [<slot>]`
 - `... equip`
