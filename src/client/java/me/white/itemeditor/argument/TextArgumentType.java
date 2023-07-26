@@ -20,7 +20,7 @@ public class TextArgumentType implements ArgumentType<Text> {
     public static CommandSyntaxException INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidunicode")).create();
     public static CommandSyntaxException INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidescape")).create();
     public static CommandSyntaxException INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidplaceholder")).create();
-	public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
+    public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     boolean colors;
     boolean keybinds;
@@ -125,19 +125,19 @@ public class TextArgumentType implements ArgumentType<Text> {
             case 'r' -> EMPTY_STYLE;
             default -> style;
         };
-	}
+    }
 
     @Override
     public Text parse(StringReader reader) throws CommandSyntaxException {
         List<Text> texts = new ArrayList<>();
-		StringBuilder builder = new StringBuilder();
-		Style style = Style.EMPTY;
+        StringBuilder builder = new StringBuilder();
+        Style style = Style.EMPTY;
 
-		while (reader.canRead()) {
-			if (reader.peek() == '\\') {
-				builder.append(readEscaped(reader));
-			} else if (reader.peek() == '&') {
-				reader.skip();
+        while (reader.canRead()) {
+            if (reader.peek() == '\\') {
+                builder.append(readEscaped(reader));
+            } else if (reader.peek() == '&') {
+                reader.skip();
 
                 switch (reader.peek()) {
                     case '#' -> {  // hex color
@@ -172,15 +172,15 @@ public class TextArgumentType implements ArgumentType<Text> {
                         style = modifyStyleWith(style, Character.toLowerCase(ch));
                     }
                 }
-			} else {
-				builder.append(reader.read());
-			}
-		}
-		if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
-		MutableText result = Text.empty();
-		for (Text part : texts) {
-			result.append(part);
-		}
-		return result;
+            } else {
+                builder.append(reader.read());
+            }
+        }
+        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
+        MutableText result = Text.empty();
+        for (Text part : texts) {
+            result.append(part);
+        }
+        return result;
     }
 }

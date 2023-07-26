@@ -50,7 +50,7 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
         }
         throw INVALID_ENUM_EXCEPTION;
     }
-    
+
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         String remaining = builder.getRemainingLowerCase();

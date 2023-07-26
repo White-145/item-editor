@@ -34,272 +34,272 @@ public class LoreNode {
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-			.literal("lore")
-			.build();
+				.literal("lore")
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-			.literal("get")
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				List<Text> lore = ItemUtil.getLore(stack);
+				.literal("get")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource());
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					List<Text> lore = ItemUtil.getLore(stack);
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
-				for (int i = 0; i < lore.size(); ++i) {
-					context.getSource().sendFeedback(Text.empty()
-						.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-						.append(lore.get(i))
-					);
-				}
-				return lore.size();
-			})
-			.build();
-	
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+					for (int i = 0; i < lore.size(); ++i) {
+						context.getSource().sendFeedback(Text.empty()
+								.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+								.append(lore.get(i))
+						);
+					}
+					return lore.size();
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				List<Text> lore = ItemUtil.getLore(stack);
-				if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
-				Text line = lore.get(index);
+				.argument("index", IntegerArgumentType.integer(0))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource());
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					List<Text> lore = ItemUtil.getLore(stack);
+					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+					Text line = lore.get(index);
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, line));
-				return lore.size();
-			})
-			.build();
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, line));
+					return lore.size();
+				})
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-			.literal("set")
-			.build();
-		
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0, 255))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				if (lore.size() <= index) {
-					int off = index - lore.size() + 1;
-					for (int i = 0; i < off; ++i) {
-						lore.add(Text.empty());
-					}
-				} else {
-					Text oldLine = lore.get(index);
-					if (oldLine.equals(Text.empty())) throw ALREADY_IS_EXCEPTION;
-				}
-				lore.set(index, Text.empty());
-				ItemUtil.setLore(stack, lore);
+				.literal("set")
+				.build();
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, ""));
-				return lore.size();
-			})
-			.build();
+		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager
+				.argument("index", IntegerArgumentType.integer(0, 255))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					if (lore.size() <= index) {
+						int off = index - lore.size() + 1;
+						for (int i = 0; i < off; ++i) {
+							lore.add(Text.empty());
+						}
+					} else {
+						Text oldLine = lore.get(index);
+						if (oldLine.equals(Text.empty())) throw ALREADY_IS_EXCEPTION;
+					}
+					lore.set(index, Text.empty());
+					ItemUtil.setLore(stack, lore);
+
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, ""));
+					return lore.size();
+				})
+				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> setIndexLineNode = ClientCommandManager
-			.argument("line", TextArgumentType.visual())
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				Text line = TextArgumentType.getText(context, "line");
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				if (lore.size() <= index) {
-					int off = index - lore.size() + 1;
-					for (int i = 0; i < off; ++i) {
-						lore.add(Text.empty());
+				.argument("line", TextArgumentType.visual())
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					Text line = TextArgumentType.getText(context, "line");
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					if (lore.size() <= index) {
+						int off = index - lore.size() + 1;
+						for (int i = 0; i < off; ++i) {
+							lore.add(Text.empty());
+						}
+					} else {
+						Text oldLine = lore.get(index);
+						if (oldLine.equals(line)) throw ALREADY_IS_EXCEPTION;
 					}
-				} else {
-					Text oldLine = lore.get(index);
-					if (oldLine.equals(line)) throw ALREADY_IS_EXCEPTION;
-				}
-				lore.set(index, line);
-				ItemUtil.setLore(stack, lore);
+					lore.set(index, line);
+					ItemUtil.setLore(stack, lore);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, line));
-				return lore.size();
-			})
-			.build();
-			
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, line));
+					return lore.size();
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
-			.literal("remove")
-			.build();
-		
+				.literal("remove")
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
-				lore.remove(index);
-				ItemUtil.setLore(stack, lore);
+				.argument("index", IntegerArgumentType.integer(0))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+					lore.remove(index);
+					ItemUtil.setLore(stack, lore);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
-				return lore.size();
-			})
-			.build();
-			
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
+					return lore.size();
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
-			.literal("add")
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				lore.add(Text.empty());
-				ItemUtil.setLore(stack, lore);
+				.literal("add")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					lore.add(Text.empty());
+					ItemUtil.setLore(stack, lore);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, ""));
-				return lore.size() - 1;
-			})
-			.build();
-		
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, ""));
+					return lore.size() - 1;
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Text> addLineNode = ClientCommandManager
-			.argument("line", TextArgumentType.visual())
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				Text line = TextArgumentType.getText(context, "line");
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				lore.add(line);
-				ItemUtil.setLore(stack, lore);
+				.argument("line", TextArgumentType.visual())
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					Text line = TextArgumentType.getText(context, "line");
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					lore.add(line);
+					ItemUtil.setLore(stack, lore);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, line));
-				return lore.size() - 1;
-			})
-			.build();
-			
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, line));
+					return lore.size() - 1;
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> insertNode = ClientCommandManager
-			.literal("insert")
-			.build();
-		
-		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0, 255))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				if (lore.size() <= index) {
-					int off = index - lore.size();
-					for (int i = 0; i < off; ++i) {
-						lore.add(Text.empty());
-					}
-				}
-				lore.add(index, Text.empty());
-				ItemUtil.setLore(stack, lore);
+				.literal("insert")
+				.build();
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, "", index));
-				return lore.size();
-			})
-			.build();
+		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexNode = ClientCommandManager
+				.argument("index", IntegerArgumentType.integer(0, 255))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					if (lore.size() <= index) {
+						int off = index - lore.size();
+						for (int i = 0; i < off; ++i) {
+							lore.add(Text.empty());
+						}
+					}
+					lore.add(index, Text.empty());
+					ItemUtil.setLore(stack, lore);
+
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, "", index));
+					return lore.size();
+				})
+				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> insertIndexLineNode = ClientCommandManager
-			.argument("line", TextArgumentType.visual())
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				Text line = TextArgumentType.getText(context, "line");
-				List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
-				if (lore.size() <= index) {
-					int off = index - lore.size();
-					for (int i = 0; i < off; ++i) {
-						lore.add(Text.empty());
+				.argument("line", TextArgumentType.visual())
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					Text line = TextArgumentType.getText(context, "line");
+					List<Text> lore = new ArrayList<>(ItemUtil.getLore(stack));
+					if (lore.size() <= index) {
+						int off = index - lore.size();
+						for (int i = 0; i < off; ++i) {
+							lore.add(Text.empty());
+						}
 					}
-				}
-				lore.add(index, line);
-				ItemUtil.setLore(stack, lore);
+					lore.add(index, line);
+					ItemUtil.setLore(stack, lore);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, line, index));
-				return lore.size();
-			})
-			.build();
-		
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, line, index));
+					return lore.size();
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
-			.literal("clear")
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				int old = ItemUtil.getLore(stack).size();
-				ItemUtil.setLore(stack, null);
+				.literal("clear")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					int old = ItemUtil.getLore(stack).size();
+					ItemUtil.setLore(stack, null);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
-				return old;
-			})
-			.build();
-	
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+					return old;
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> clearBeforeNode = ClientCommandManager
-			.literal("before")
-			.build();
-		
-		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				List<Text> lore = ItemUtil.getLore(stack);
-				if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
-				lore = lore.subList(index, lore.size());
-				ItemUtil.setLore(stack, lore);
+				.literal("before")
+				.build();
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, index));
-				return lore.size();
-			})
-			.build();
+		ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager
+				.argument("index", IntegerArgumentType.integer(0))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					List<Text> lore = ItemUtil.getLore(stack);
+					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+					lore = lore.subList(index, lore.size());
+					ItemUtil.setLore(stack, lore);
+
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, index));
+					return lore.size();
+				})
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> clearAfterNode = ClientCommandManager
-			.literal("after")
-			.build();
-	
-		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
-			.argument("index", IntegerArgumentType.integer(0))
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				int index = IntegerArgumentType.getInteger(context, "index");
-				if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
-				List<Text> lore = ItemUtil.getLore(stack);
-				if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
-				lore = lore.subList(0, index + 1);
-				ItemUtil.setLore(stack, lore);
+				.literal("after")
+				.build();
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, index));
-				return lore.size();
-			})
-			.build();
-		
+		ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager
+				.argument("index", IntegerArgumentType.integer(0))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
+					if (!ItemUtil.hasLore(stack)) throw NO_LORE_EXCEPTION;
+					List<Text> lore = ItemUtil.getLore(stack);
+					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
+					lore = lore.subList(0, index + 1);
+					ItemUtil.setLore(stack, lore);
+
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, index));
+					return lore.size();
+				})
+				.build();
+
 		rootNode.addChild(node);
-		
+
 		// ... get [<index>]
 		node.addChild(getNode);
 		getNode.addChild(getIndexNode);
@@ -328,7 +328,7 @@ public class LoreNode {
 		// ... clear before <index>
 		clearNode.addChild(clearBeforeNode);
 		clearBeforeNode.addChild(clearBeforeIndexNode);
-		
+
 		// ... clear after <index>
 		clearNode.addChild(clearAfterNode);
 		clearAfterNode.addChild(clearAfterIndexNode);

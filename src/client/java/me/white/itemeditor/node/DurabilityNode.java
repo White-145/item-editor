@@ -27,78 +27,78 @@ public class DurabilityNode {
 
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-            .literal("durability")
-            .build();
-        
+                .literal("durability")
+                .build();
+
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-            .literal("get")
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                int damage = stack.getDamage();
+                .literal("get")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource());
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    int damage = stack.getDamage();
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), String.format("%.1f", (1 - (double)damage / stack.getMaxDamage()) * 100)));
-                return damage;
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), String.format("%.1f", (1 - (double)damage / stack.getMaxDamage()) * 100)));
+                    return damage;
+                })
+                .build();
+
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-            .literal("set")
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                if (stack.getDamage() == 0) throw ALREADY_IS_EXCEPTION;
-                stack.setDamage(0);
+                .literal("set")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (stack.getDamage() == 0) throw ALREADY_IS_EXCEPTION;
+                    stack.setDamage(0);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-                EditorUtil.setStack(context.getSource(), stack);
-                return stack.getMaxDamage();
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return stack.getMaxDamage();
+                })
+                .build();
+
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager
-            .argument("durability", IntegerArgumentType.integer())
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                int damage = IntegerArgumentType.getInteger(context, "durability");
-                if (stack.getDamage() == stack.getMaxDamage() - damage) throw ALREADY_IS_EXCEPTION;
-                stack.setDamage(stack.getMaxDamage() - damage);
+                .argument("durability", IntegerArgumentType.integer())
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    int damage = IntegerArgumentType.getInteger(context, "durability");
+                    if (stack.getDamage() == stack.getMaxDamage() - damage) throw ALREADY_IS_EXCEPTION;
+                    stack.setDamage(stack.getMaxDamage() - damage);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, damage));
-                EditorUtil.setStack(context.getSource(), stack);
-                return stack.getMaxDamage() - damage;
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, damage));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return stack.getMaxDamage() - damage;
+                })
+                .build();
+
         LiteralCommandNode<FabricClientCommandSource> percentNode = ClientCommandManager
-            .literal("percent")
-            .build();
-        
-        ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
-            .argument("percentage", DoubleArgumentType.doubleArg(0, 100))
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                double percentage = DoubleArgumentType.getDouble(context, "percentage");
-                int old = (int)((double)stack.getDamage() / stack.getMaxDamage() * 100);
-                int actual = (int)(stack.getMaxDamage() * (1 - percentage / 100));
-                if (stack.getDamage() == actual) throw ALREADY_IS_EXCEPTION;
-                stack.setDamage(actual);
+                .literal("percent")
+                .build();
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
-                EditorUtil.setStack(context.getSource(), stack);
-                return old;
-            })
-            .build();
-        
+        ArgumentCommandNode<FabricClientCommandSource, Double> percentDurabilityNode = ClientCommandManager
+                .argument("percentage", DoubleArgumentType.doubleArg(0, 100))
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    double percentage = DoubleArgumentType.getDouble(context, "percentage");
+                    int old = (int)((double)stack.getDamage() / stack.getMaxDamage() * 100);
+                    int actual = (int)(stack.getMaxDamage() * (1 - percentage / 100));
+                    if (stack.getDamage() == actual) throw ALREADY_IS_EXCEPTION;
+                    stack.setDamage(actual);
+
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return old;
+                })
+                .build();
+
         rootNode.addChild(node);
 
         // ... get

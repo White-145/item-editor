@@ -19,11 +19,11 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
         this.argumentType = argumentType;
         this.delimeter = delimeter;
     }
-    
+
     public static <T, U extends ArgumentType<T>> ListArgumentType<T, U> listArgument(U argumentType) {
         return new ListArgumentType<>(argumentType, ',');
     }
-    
+
     public static <T, U extends ArgumentType<T>> ListArgumentType<T, U> listArgument(U argumentType, char delimeter) {
         return new ListArgumentType<>(argumentType, delimeter);
     }
@@ -43,7 +43,7 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
         }
         return result;
     }
-    
+
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         // i can feel that this is not the best approach, but idk how to implement it differently

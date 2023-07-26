@@ -19,133 +19,133 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
 
 public class DataNode {
-	public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
-	public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
-	public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
-	public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
+    public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
+    public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
+    public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
+    public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
     private static final String OUTPUT_GET = "commands.edit.data.get";
     private static final String OUTPUT_SET = "commands.edit.data.set";
     private static final String OUTPUT_MERGE = "commands.edit.data.merge";
     private static final String OUTPUT_REMOVE = "commands.edit.data.remove";
-    
+
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-            .literal("data")
-            .build();
-            
+                .literal("data")
+                .build();
+
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-            .literal("get")
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                .literal("get")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource());
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(stack.getNbt())));
-                return 1;
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(stack.getNbt())));
+                    return 1;
+                })
+                .build();
+
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> getPathNode = ClientCommandManager
-            .argument("path", NbtPathArgumentType.nbtPath())
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
-                NbtPath path = context.getArgument("path", NbtPath.class);
-                NbtElement element = path.get(stack.getNbt()).get(0);
+                .argument("path", NbtPathArgumentType.nbtPath())
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource());
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                    NbtPath path = context.getArgument("path", NbtPath.class);
+                    NbtElement element = path.get(stack.getNbt()).get(0);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(element)));
-                return 1;
-            })
-            .build();
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(element)));
+                    return 1;
+                })
+                .build();
 
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-            .literal("set")
-            .build();
+                .literal("set")
+                .build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> setPathNode = ClientCommandManager
-            .argument("path", NbtPathArgumentType.nbtPath())
-            .build();
+                .argument("path", NbtPathArgumentType.nbtPath())
+                .build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> setPathValueNode = ClientCommandManager
-            .argument("value", NbtElementArgumentType.nbtElement())
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                NbtPath path = context.getArgument("path", NbtPath.class);
-                NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
-                NbtCompound nbt = stack.getOrCreateNbt();
-                NbtElement previous = null;
-                try {
-                    previous = path.get(nbt).get(0);
-                } catch (Exception ignored) { }
-                if (element.equals(previous)) throw SET_ALREADY_HAS_EXCEPTION;
-                path.put(nbt, element);
-                stack.setNbt(nbt);
+                .argument("value", NbtElementArgumentType.nbtElement())
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    NbtPath path = context.getArgument("path", NbtPath.class);
+                    NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
+                    NbtCompound nbt = stack.getOrCreateNbt();
+                    NbtElement previous = null;
+                    try {
+                        previous = path.get(nbt).get(0);
+                    } catch (Exception ignored) { }
+                    if (element.equals(previous)) throw SET_ALREADY_HAS_EXCEPTION;
+                    path.put(nbt, element);
+                    stack.setNbt(nbt);
 
-                EditorUtil.setStack(context.getSource(), stack);
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_SET));
-                return 1;
-            })
-            .build();
+                    EditorUtil.setStack(context.getSource(), stack);
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET));
+                    return 1;
+                })
+                .build();
 
         LiteralCommandNode<FabricClientCommandSource> mergeNode = ClientCommandManager
-            .literal("merge")
-            .build();
+                .literal("merge")
+                .build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtCompound> mergeValueNode = ClientCommandManager
-            .argument("value", NbtCompoundArgumentType.nbtCompound())
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                NbtCompound compound = NbtCompoundArgumentType.getNbtCompound(context, "value");
-                NbtCompound nbt = stack.getOrCreateNbt();
-                NbtCompound merged = nbt.copy().copyFrom(compound);
-                if (nbt.equals(merged)) throw MERGE_ALREADY_HAS_EXCEPTION;
-                stack.setNbt(merged);
+                .argument("value", NbtCompoundArgumentType.nbtCompound())
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    NbtCompound compound = NbtCompoundArgumentType.getNbtCompound(context, "value");
+                    NbtCompound nbt = stack.getOrCreateNbt();
+                    NbtCompound merged = nbt.copy().copyFrom(compound);
+                    if (nbt.equals(merged)) throw MERGE_ALREADY_HAS_EXCEPTION;
+                    stack.setNbt(merged);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_MERGE));
-                EditorUtil.setStack(context.getSource(), stack);
-                return 1;
-            })
-            .build();
-            
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_MERGE));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return 1;
+                })
+                .build();
+
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
-            .literal("remove")
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
-                stack.setNbt(null);
+                .literal("remove")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                    stack.setNbt(null);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
-                EditorUtil.setStack(context.getSource(), stack);
-                return 1;
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return 1;
+                })
+                .build();
+
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> removePathNode = ClientCommandManager
-            .argument("path", NbtPathArgumentType.nbtPath())
-            .executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                NbtPath path = context.getArgument("path", NbtPath.class);
-                if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
-                NbtCompound nbt = stack.getNbt();
-                if (path.count(nbt) == 0) throw NO_SUCH_NBT_EXCEPTION;
-                path.remove(nbt);
-                stack.setNbt(nbt);
+                .argument("path", NbtPathArgumentType.nbtPath())
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    NbtPath path = context.getArgument("path", NbtPath.class);
+                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                    NbtCompound nbt = stack.getNbt();
+                    if (path.count(nbt) == 0) throw NO_SUCH_NBT_EXCEPTION;
+                    path.remove(nbt);
+                    stack.setNbt(nbt);
 
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
-                EditorUtil.setStack(context.getSource(), stack);
-                return 1;
-            })
-            .build();
-        
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return 1;
+                })
+                .build();
+
         rootNode.addChild(node);
 
         // ... get [<path>]

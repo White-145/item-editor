@@ -22,46 +22,46 @@ public class UnbreakableNode {
 		return stack.getMaxDamage() != 0;
 	}
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-            .literal("unbreakable")
-            .build();
-		
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+				.literal("unbreakable")
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-			.literal("get")
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource());
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
+				.literal("get")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource());
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+					boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
 
-				context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
-				return isUnbreakable ? 1 : 0;
-			})
-			.build();
-		
+					context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
+					return isUnbreakable ? 1 : 0;
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager
-			.literal("toggle")
-			.executes(context -> {
-                ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-				boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
-				ItemUtil.setUnbreakable(stack, !isUnbreakable);
+				.literal("toggle")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+					boolean isUnbreakable = ItemUtil.getUnbreakable(stack);
+					ItemUtil.setUnbreakable(stack, !isUnbreakable);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
-				return isUnbreakable ? 1 : 0;
-			})
-			.build();
-        
-        rootNode.addChild(node);
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
+					return isUnbreakable ? 1 : 0;
+				})
+				.build();
+
+		rootNode.addChild(node);
 
 		// ... get
 		node.addChild(getNode);
 
 		// ... toggle
 		node.addChild(toggleNode);
-    }
+	}
 }

@@ -31,10 +31,10 @@ public class RegistryCommand {
                     .executes(context -> {
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_REGISTRY));
                         for (Identifier keyId : registryAccess.createWrapper(key).streamKeys().map(RegistryKey::getValue).toList()) {
-                                context.getSource().sendFeedback(Text.empty()
-                                        .append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
-                                        .append(keyId.toString())
-                                );
+                            context.getSource().sendFeedback(Text.empty()
+                                    .append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
+                                    .append(keyId.toString())
+                            );
                         }
                         return 1;
                     })

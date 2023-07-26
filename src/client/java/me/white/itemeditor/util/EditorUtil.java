@@ -29,7 +29,7 @@ public class EditorUtil {
 		MinecraftClient client = source.getClient();
 		return client.interactionManager.getCurrentGameMode().isCreative();
 	}
-	
+
 	public static ItemStack getStack(FabricClientCommandSource source) {
 		return source.getPlayer().getInventory().getMainHandStack();
 	}
@@ -42,15 +42,27 @@ public class EditorUtil {
 		source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));
 	}
 
-    public static String formatColor(int color) {
-        return String.format("#%06X", (0xFFFFFF & color));
-    }
+	public static String formatColor(int color) {
+		return String.format("#%06X", (0xFFFFFF & color));
+	}
+
+	public static int meanColor(int[] colors) {
+		int r = 0;
+		int g = 0;
+		int b = 0;
+		for (int color : colors) {
+			r += (color & 0xFF0000) >> 16;
+			g += (color & 0x00FF00) >> 8;
+			b += color & 0x0000FF;
+		}
+		return ((r / colors.length) << 16) + ((g / colors.length) << 8) + b / colors.length;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> T getRegistryEntryArgument(CommandContext<FabricClientCommandSource> context, String key, RegistryKey<Registry<T>> registryEntryKey) throws CommandSyntaxException {
 		RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
-	    RegistryKey<?> registryKey = reference.registryKey();
-	    if (!registryKey.isOf(registryEntryKey)) throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryEntryKey.getValue());
+		RegistryKey<?> registryKey = reference.registryKey();
+		if (!registryKey.isOf(registryEntryKey)) throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryEntryKey.getValue());
 		return (T)reference.value();
 	}
 }

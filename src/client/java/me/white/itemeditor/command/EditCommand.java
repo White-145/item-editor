@@ -12,13 +12,13 @@ import net.minecraft.command.CommandRegistryAccess;
 public class EditCommand {
 	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-			.literal("edit")
-			.build();
-		
+				.literal("edit")
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> nodeNamespaced = ClientCommandManager
-			.literal("itemeditor:edit")
-			.redirect(node)
-			.build();
+				.literal("itemeditor:edit")
+				.redirect(node)
+				.build();
 
 		// ... material ...
 		MaterialNode.register(node, registryAccess);
@@ -73,7 +73,7 @@ public class EditCommand {
 		// ... items ...
 		// ... entity ...
 		// ... optimize ...
-		
+
 		dispatcher.getRoot().addChild(node);
 		dispatcher.getRoot().addChild(nodeNamespaced);
 	}

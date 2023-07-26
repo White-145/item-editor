@@ -21,22 +21,22 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     private static final CommandSyntaxException INVALID_NAMED_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidnamed")).create();
 
     public static final String[] NAMED_COLORS = new String[] {
-        "white",
-        "orange",
-        "magenta",
-        "light_blue",
-        "yellow",
-        "lime",
-        "pink",
-        "gray",
-        "light_gray",
-        "cyan",
-        "purple",
-        "blue",
-        "brown",
-        "green",
-        "red",
-        "black"
+            "white",
+            "orange",
+            "magenta",
+            "light_blue",
+            "yellow",
+            "lime",
+            "pink",
+            "gray",
+            "light_gray",
+            "cyan",
+            "purple",
+            "blue",
+            "brown",
+            "green",
+            "red",
+            "black"
     };
 
     private enum Type {
@@ -45,15 +45,15 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     }
 
     private static final Collection<String> HEX_EXAMPLES = List.of(
-        "#FF0000",
-        "#00bb88",
-        "#b8b8b8"
+            "#FF0000",
+            "#00bb88",
+            "#b8b8b8"
     );
 
     private static final Collection<String> NAMED_EXAMPLES = List.of(
-        "red",
-        "blue",
-        "white"
+            "red",
+            "blue",
+            "white"
     );
 
     private Type type;

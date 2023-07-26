@@ -21,63 +21,63 @@ public class ModelNode {
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-			.literal("model")
-			.build();
+				.literal("model")
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-			.literal("get")
-			.executes(context -> {
-				ItemStack stack = EditorUtil.getStack(context.getSource());
-				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
-				int model = ItemUtil.getModel(stack);
+				.literal("get")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource());
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+					int model = ItemUtil.getModel(stack);
 
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
-				return model;
-			})
-			.build();
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
+					return model;
+				})
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-			.literal("set")
-			.executes(context -> {
-				ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
-				int old = ItemUtil.getModel(stack);
-				ItemUtil.setModel(stack, null);
-
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-				return old;
-			})
-			.build();
-
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
-			.argument("model", IntegerArgumentType.integer(0))
-			.executes(context -> {
-				ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				int model = IntegerArgumentType.getInteger(context, "model");
-				int old = ItemUtil.getModel(stack);
-				if (model == 0) {
+				.literal("set")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+					int old = ItemUtil.getModel(stack);
 					ItemUtil.setModel(stack, null);
 
+					EditorUtil.setStack(context.getSource(), stack);
 					context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
-				} else {
-					ItemUtil.setModel(stack, model);
+					return old;
+				})
+				.build();
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
-				}
+		ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
+				.argument("model", IntegerArgumentType.integer(0))
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					int model = IntegerArgumentType.getInteger(context, "model");
+					int old = ItemUtil.getModel(stack);
+					if (model == 0) {
+						if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
+						ItemUtil.setModel(stack, null);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				return old;
-			})
-			.build();
-		
+						context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+					} else {
+						ItemUtil.setModel(stack, model);
+
+						context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
+					}
+
+					EditorUtil.setStack(context.getSource(), stack);
+					return old;
+				})
+				.build();
+
 		rootNode.addChild(node);
 
 		// ... get

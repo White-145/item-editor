@@ -48,21 +48,21 @@ public class AttributeNode {
 			case MULTIPLY_TOTAL -> "total";
 		};
 	}
-	
+
 	private static Text translate(Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> attribute) {
 		Text name = Text.translatable(attribute.getLeft().getTranslationKey());
 		Text value = Text.empty()
-			.append(attribute.getMiddle().getValue() > 0 ? "+" : "")
-			.append(attribute.getMiddle().getOperation() == EntityAttributeModifier.Operation.ADDITION
-				? Text.empty()
-					.append(String.valueOf(attribute.getMiddle().getValue()))
-				: Text.empty()
-					.append(String.valueOf(attribute.getMiddle().getValue() * 100))
-					.append("%")
-			);
+				.append(attribute.getMiddle().getValue() > 0 ? "+" : "")
+				.append(attribute.getMiddle().getOperation() == EntityAttributeModifier.Operation.ADDITION
+						? Text.empty()
+						.append(String.valueOf(attribute.getMiddle().getValue()))
+						: Text.empty()
+						.append(String.valueOf(attribute.getMiddle().getValue() * 100))
+						.append("%")
+				);
 		return attribute.getRight() == null
-			? Text.translatable(OUTPUT_ATTRIBUTE, name, value)
-			: Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.getRight().getName());
+				? Text.translatable(OUTPUT_ATTRIBUTE, name, value)
+				: Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.getRight().getName());
 	}
 
 	private static int get(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
@@ -80,8 +80,8 @@ public class AttributeNode {
 		source.sendFeedback(Text.translatable(OUTPUT_GET));
 		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> triple : attributes) {
 			source.sendFeedback(Text.empty()
-				.append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
-				.append(translate(triple))
+					.append(Text.literal("- ").setStyle(Style.EMPTY.withFormatting(Formatting.GRAY)))
+					.append(translate(triple))
 			);
 		}
 		return attributes.size();
@@ -131,147 +131,147 @@ public class AttributeNode {
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-			.literal("attribute")
-			.build();
-		
+				.literal("attribute")
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-			.literal("get")
-			.executes(context -> get(context.getSource(), null, null))
-			.build();
-		
+				.literal("get")
+				.executes(context -> get(context.getSource(), null, null))
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> getSlotNode = ClientCommandManager
-			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
-			.executes(context -> {
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				return get(context.getSource(), null, slot);
-			})
-			.build();
-		
+				.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
+				.executes(context -> {
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					return get(context.getSource(), null, slot);
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> getSlotAttributeNode = ClientCommandManager
-			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
-			.executes(context -> {
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				return get(context.getSource(), attribute, slot);
-			})
-			.build();
-		
+				.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+				.executes(context -> {
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					return get(context.getSource(), attribute, slot);
+				})
+				.build();
+
 		LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
-			.literal("remove")
-			.build();
-		
+				.literal("remove")
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> removeAttributeNode = ClientCommandManager
-			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				return remove(context.getSource(), attribute, null);
-			})
-			.build();
-		
+				.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					return remove(context.getSource(), attribute, null);
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> removeAttributeSlotNode = ClientCommandManager
-			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
-			.executes(context -> {
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				return remove(context.getSource(), attribute, slot);
-			})
-			.build();
+				.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+				.executes(context -> {
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					return remove(context.getSource(), attribute, slot);
+				})
+				.build();
 
 		LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
-			.literal("set")
-			.executes(context -> set(context.getSource(), null, null, null))
-			.build();
-		
-		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> addAttributeNode = ClientCommandManager
-			.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
-			.build();
-	
-		ArgumentCommandNode<FabricClientCommandSource, Float> addAttributeAmountNode = ClientCommandManager
-			.argument("amount", FloatArgumentType.floatArg())
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				float amount = FloatArgumentType.getFloat(context, "amount");
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, EntityAttributeModifier.Operation.ADDITION);
-				return set(context.getSource(), attribute, modifier, null);
-			})
-			.build();
-			
-		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeAmountOperationNode = ClientCommandManager
-			.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				float amount = FloatArgumentType.getFloat(context, "amount");
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
-				return set(context.getSource(), attribute, modifier, null);
-			})
-			.build();
-			
-		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeAmountOperationSlotNode = ClientCommandManager
-			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				float amount = FloatArgumentType.getFloat(context, "amount");
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
-				return set(context.getSource(), attribute, modifier, slot);
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> addAttributeInfinityNode = ClientCommandManager
-			.literal("infinity")
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION);
-				return set(context.getSource(), attribute, modifier, null);
-			})
-			.build();
-			
-		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeInfinityOperationNode = ClientCommandManager
-			.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
-				return set(context.getSource(), attribute, modifier, null);
-			})
-			.build();
-			
-		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeInfinityOperationSlotNode = ClientCommandManager
-			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
-			.executes(context -> {
-				EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
-				EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-				EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				return set(context.getSource(), attribute, modifier, slot);
-			})
-			.build();
-		
-		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
-			.literal("clear")
-			.executes(context -> {
-				ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				if (!ItemUtil.hasAttributes(stack, false)) throw NO_ATTRIBUTES_EXCEPTION;
-				ItemUtil.setAttributes(stack, null);
+				.literal("set")
+				.executes(context -> set(context.getSource(), null, null, null))
+				.build();
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
-				return 1;
-			})
-			.build();
-		
+		ArgumentCommandNode<FabricClientCommandSource, Reference<EntityAttribute>> addAttributeNode = ClientCommandManager
+				.argument("attribute", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ATTRIBUTE))
+				.build();
+
+		ArgumentCommandNode<FabricClientCommandSource, Float> addAttributeAmountNode = ClientCommandManager
+				.argument("amount", FloatArgumentType.floatArg())
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					float amount = FloatArgumentType.getFloat(context, "amount");
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, EntityAttributeModifier.Operation.ADDITION);
+					return set(context.getSource(), attribute, modifier, null);
+				})
+				.build();
+
+		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeAmountOperationNode = ClientCommandManager
+				.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					float amount = FloatArgumentType.getFloat(context, "amount");
+					EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
+					return set(context.getSource(), attribute, modifier, null);
+				})
+				.build();
+
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeAmountOperationSlotNode = ClientCommandManager
+				.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					float amount = FloatArgumentType.getFloat(context, "amount");
+					EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), amount, operation);
+					return set(context.getSource(), attribute, modifier, slot);
+				})
+				.build();
+
+		LiteralCommandNode<FabricClientCommandSource> addAttributeInfinityNode = ClientCommandManager
+				.literal("infinity")
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, EntityAttributeModifier.Operation.ADDITION);
+					return set(context.getSource(), attribute, modifier, null);
+				})
+				.build();
+
+		ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> addAttributeInfinityOperationNode = ClientCommandManager
+				.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter))
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
+					return set(context.getSource(), attribute, modifier, null);
+				})
+				.build();
+
+		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> addAttributeInfinityOperationSlotNode = ClientCommandManager
+				.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
+				.executes(context -> {
+					EntityAttribute attribute = EditorUtil.getRegistryEntryArgument(context, "attribute", RegistryKeys.ATTRIBUTE);
+					EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+					EntityAttributeModifier modifier = new EntityAttributeModifier(Registries.ATTRIBUTE.getId(attribute).toString(), Double.POSITIVE_INFINITY, operation);
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					return set(context.getSource(), attribute, modifier, slot);
+				})
+				.build();
+
+		LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
+				.literal("clear")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!ItemUtil.hasAttributes(stack, false)) throw NO_ATTRIBUTES_EXCEPTION;
+					ItemUtil.setAttributes(stack, null);
+
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+					return 1;
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, EquipmentSlot> clearSlotNode = ClientCommandManager
-			.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
-			.executes(context -> {
-				EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
-				return remove(context.getSource(), null, slot);
-			})
-			.build();
-		
+				.argument("slot", EnumArgumentType.enumArgument(EquipmentSlot.class))
+				.executes(context -> {
+					EquipmentSlot slot = EnumArgumentType.getEnum(context, "slot", EquipmentSlot.class);
+					return remove(context.getSource(), null, slot);
+				})
+				.build();
+
 		rootNode.addChild(node);
 
 		// ... attribute get [<slot>] [<attribute>]

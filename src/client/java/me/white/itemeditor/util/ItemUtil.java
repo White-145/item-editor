@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.item.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
@@ -20,9 +21,6 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.item.trim.ArmorTrimMaterial;
 import net.minecraft.item.trim.ArmorTrimPattern;
@@ -55,6 +53,7 @@ public class ItemUtil {
     private static final String CAN_DESTROY_KEY = "CanDestroy";
     private static final String CAN_PLACE_ON_KEY = "CanPlaceOn";
     private static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
+    private static final String CUSTOM_POTION_COLOR_KEY = "CustomPotionColor";
     private static final String CUSTOM_POTION_EFFECTS_KEY = "CustomPotionEffects";
     private static final String CUSTOM_POTION_EFFECTS_ID_KEY = "Id";
     private static final String CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY = "Amplifier";
@@ -68,6 +67,8 @@ public class ItemUtil {
     private static final String ENCHANTMENTS_KEY = "Enchantments";
     private static final String ENCHANTMENTS_ID_KEY = "id";
     private static final String ENCHANTMENTS_LVL_KEY = "lvl";
+    private static final String EXPLOSION_KEY = "Explosion";
+    private static final String EXPLOSION_COLORS_KEY = "Colors";
     private static final String FIREWORKS_KEY = "Fireworks";
     private static final String FIREWORKS_EXPLOSIONS_KEY = "Explosions";
     private static final String FIREWORKS_EXPLOSIONS_COLORS_KEY = "Colors";
@@ -94,11 +95,6 @@ public class ItemUtil {
     private static final String HEAD_TEXTURE_OBJECT = "{\"textures\":{\"SKIN\":{\"url\":\"%s\"}}}";
     public static final int FLAGS_AMOUNT = 8;
     public static final int GENERATIONS_AMOUNT = 4;
-
-    private static String getColorKey(Item item) {
-        if (item instanceof FilledMapItem) return DISPLAY_MAP_COLOR_KEY;
-        return DISPLAY_COLOR_KEY;
-    }
 
     /**
      * Checks if compound have all valid tags to be parsed to enchantment
@@ -321,9 +317,23 @@ public class ItemUtil {
     public static boolean hasColor(@NotNull ItemStack stack) {
         if (!stack.hasNbt()) return false;
         NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-        return display.contains(getColorKey(stack.getItem()), NbtElement.INT_TYPE);
+        Item item = stack.getItem();
+        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            return display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof FilledMapItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            return display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+            return nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof FireworkStarItem) {
+            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+            return explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE);
+        }
+        return false;
     }
 
     /**
@@ -701,11 +711,32 @@ public class ItemUtil {
      * Gets custom color from stack
      *
      * @param stack Item stack to get from
-     * @return Custom color from item stack
+     * @return Custom color from item stack, or null if none
      */
-    public static int getColor(@NotNull ItemStack stack) {
-        if (!hasColor(stack)) return 0;
-        return stack.getNbt().getCompound(DISPLAY_KEY).getInt(getColorKey(stack.getItem()));
+    public static @Nullable Integer getColor(@NotNull ItemStack stack) {
+        if (!hasColor(stack)) return null;
+        NbtCompound nbt = stack.getNbt();
+        Item item = stack.getItem();
+        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            if (!display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return display.getInt(DISPLAY_COLOR_KEY);
+        } else if (item instanceof FilledMapItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            if (!display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return display.getInt(DISPLAY_MAP_COLOR_KEY);
+        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+            if (!nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return nbt.getInt(CUSTOM_POTION_COLOR_KEY);
+        } else if (item instanceof FireworkStarItem) {
+            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+            if (!explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE)) return null;
+            return EditorUtil.meanColor(explosion.getIntArray(EXPLOSION_COLORS_KEY));
+        }
+        return null;
     }
 
     /**
@@ -1131,20 +1162,43 @@ public class ItemUtil {
      * @param color Custom color to set. Removes tag if null
      */
     public static void setColor(@NotNull ItemStack stack, @Nullable Integer color) {
-        // TODO: support for more items such as firework stars and potions
+        Item item = stack.getItem();
         if (color == null) {
             if (!hasColor(stack)) return;
-
             NbtCompound nbt = stack.getNbt();
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            display.remove(getColorKey(stack.getItem()));
-            nbt.put(DISPLAY_KEY, display);
+            if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+                NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+                display.remove(DISPLAY_COLOR_KEY);
+                nbt.put(DISPLAY_KEY, display);
+            } else if (item instanceof FilledMapItem) {
+                NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+                display.remove(DISPLAY_MAP_COLOR_KEY);
+                nbt.put(DISPLAY_KEY, display);
+            } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+                nbt.remove(CUSTOM_POTION_COLOR_KEY);
+            } else if (item instanceof FireworkStarItem) {
+                NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+                explosion.remove(EXPLOSION_COLORS_KEY);
+                nbt.put(EXPLOSION_KEY, explosion);
+            }
             stack.setNbt(nbt);
         } else {
             NbtCompound nbt = stack.getOrCreateNbt();
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            display.putInt(getColorKey(stack.getItem()), color);
-            nbt.put(DISPLAY_KEY, display);
+            if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+                NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+                display.putInt(DISPLAY_COLOR_KEY, color);
+                nbt.put(DISPLAY_KEY, display);
+            } else if (item instanceof FilledMapItem) {
+                NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+                display.putInt(DISPLAY_MAP_COLOR_KEY, color);
+                nbt.put(DISPLAY_KEY, display);
+            } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+                nbt.putInt(CUSTOM_POTION_COLOR_KEY, color);
+            } else if (item instanceof FireworkStarItem) {
+                NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+                explosion.putIntArray(EXPLOSION_COLORS_KEY, new int[] { color });
+                nbt.put(EXPLOSION_KEY, explosion);
+            }
             stack.setNbt(nbt);
         }
     }

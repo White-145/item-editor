@@ -34,35 +34,35 @@ public class GetNode {
 
 	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-			.literal("get")
-			.build();
+				.literal("get")
+				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager
-			.argument("item", ItemStackArgumentType.itemStack(registryAccess))
-			.executes(context -> {
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
-				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
+				.argument("item", ItemStackArgumentType.itemStack(registryAccess))
+				.executes(context -> {
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
+					ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, getComponent(stack)));
-				return 1;
-			})
-			.build();
-		
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, getComponent(stack)));
+					return 1;
+				})
+				.build();
+
 		ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager
-			.argument("count", IntegerArgumentType.integer(0, 127))
-			.executes(context -> {
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
-				int count = IntegerArgumentType.getInteger(context, "count");
-				ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
+				.argument("count", IntegerArgumentType.integer(0, 127))
+				.executes(context -> {
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					if (!canEdit(context.getSource())) throw CANNOT_EDIT_EXCEPTION;
+					int count = IntegerArgumentType.getInteger(context, "count");
+					ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
 
-				EditorUtil.setStack(context.getSource(), stack);
-				context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, getComponent(stack)));
-				return 1;
-			})
-			.build();
+					EditorUtil.setStack(context.getSource(), stack);
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, getComponent(stack)));
+					return 1;
+				})
+				.build();
 
 		rootNode.addChild(node);
 

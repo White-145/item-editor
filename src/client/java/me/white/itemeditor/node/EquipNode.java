@@ -13,24 +13,24 @@ import net.minecraft.text.Text;
 public class EquipNode {
 	private static final String OUTPUT = "commands.edit.equip";
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-            .literal("equip")
-			.executes(context -> {
-				ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-				if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-				if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-				PlayerInventory inventory = context.getSource().getPlayer().getInventory();
-				ItemStack headItem = inventory.getArmorStack(3).copy();
-				
-				EditorUtil.setStack(context.getSource(), headItem);
-				inventory.setStack(39, stack);
-				context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, stack));
-				context.getSource().sendFeedback(Text.translatable(OUTPUT));
-				return headItem.isEmpty() ? 0 : 1;
-			})
-            .build();
-        
-        rootNode.addChild(node);
-    }
+	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
+				.literal("equip")
+				.executes(context -> {
+					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+					PlayerInventory inventory = context.getSource().getPlayer().getInventory();
+					ItemStack headItem = inventory.getArmorStack(3).copy();
+
+					EditorUtil.setStack(context.getSource(), headItem);
+					inventory.setStack(39, stack);
+					context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(5, stack));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT));
+					return headItem.isEmpty() ? 0 : 1;
+				})
+				.build();
+
+		rootNode.addChild(node);
+	}
 }
