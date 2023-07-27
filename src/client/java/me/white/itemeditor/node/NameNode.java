@@ -44,9 +44,7 @@ public class NameNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					Text oldName = ItemUtil.getName(stack);
-					// for some reason "foo" == "&rfoo"
-					if (oldName != null && oldName.equals(Text.empty())) throw ALREADY_IS_EXCEPTION;
+					if (Text.empty().equals(ItemUtil.getName(stack))) throw ALREADY_IS_EXCEPTION;
 					ItemUtil.setName(stack, Text.empty());
 
 					EditorUtil.setStack(context.getSource(), stack);
@@ -62,7 +60,7 @@ public class NameNode {
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 					Text name = TextArgumentType.getText(context, "name");
-					if (ItemUtil.getName(stack).equals(name)) throw ALREADY_IS_EXCEPTION;
+					if (name.equals(ItemUtil.getName(stack))) throw ALREADY_IS_EXCEPTION;
 					ItemUtil.setName(stack, name);
 
 					EditorUtil.setStack(context.getSource(), stack);
