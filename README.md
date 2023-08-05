@@ -35,7 +35,7 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... remove <enchantment>`
 - - `... clear`
 - - `... glint`
-- `... get <item> [<count>]`
+- `... get [<item>] [<count>]`
 - `... attribute ...`
 - - `... get [<slot>] [<attribute>]`
 - - `... add [<attribute> <amount>|infinity] [<operation>] [<slot>]`
