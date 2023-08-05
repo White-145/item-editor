@@ -18,8 +18,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-import java.util.stream.Collectors;
-
 public class RegistryCommand {
     private static final String OUTPUT_REGISTRY = "commands.registry.registry";
     private static final String OUTPUT_REGISTRY_ENTRY = "commands.registry.entry";
