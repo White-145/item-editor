@@ -12,6 +12,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
@@ -49,7 +50,7 @@ public class LoreNode {
 					for (int i = 0; i < lore.size(); ++i) {
 						context.getSource().sendFeedback(Text.empty()
 								.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-								.append(lore.get(i))
+								.append(TextUtil.copyableTextComponent(lore.get(i)))
 						);
 					}
 					return lore.size();
@@ -67,7 +68,7 @@ public class LoreNode {
 					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 					Text line = lore.get(index);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, line));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, TextUtil.copyableTextComponent(line)));
 					return lore.size();
 				})
 				.build();
@@ -124,7 +125,7 @@ public class LoreNode {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, line));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, TextUtil.copyableTextComponent(line)));
 					return lore.size();
 				})
 				.build();
@@ -180,7 +181,7 @@ public class LoreNode {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, line));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, TextUtil.copyableTextComponent(line)));
 					return lore.size() - 1;
 				})
 				.build();
@@ -231,7 +232,7 @@ public class LoreNode {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, line, index));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyableTextComponent(line), index));
 					return lore.size();
 				})
 				.build();

@@ -14,6 +14,7 @@ import me.white.itemeditor.argument.EnumArgumentType;
 import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.Item;
@@ -98,7 +99,7 @@ public class BookNode {
 					if (!ItemUtil.hasBookAuthor(stack)) throw NO_AUTHOR_EXCEPTION;
 					String author = ItemUtil.getBookAuthor(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_GET, author));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_GET, TextUtil.copyableTextComponent(author)));
 					return 1;
 				})
 				.build();
@@ -132,7 +133,7 @@ public class BookNode {
 					ItemUtil.setBookAuthor(stack, author);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, author));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, TextUtil.copyableTextComponent(author)));
 					return 1;
 				})
 				.build();
@@ -150,7 +151,7 @@ public class BookNode {
 					if (!ItemUtil.hasBookTitle(stack)) throw NO_TITLE_EXCEPTION;
 					String title = ItemUtil.getBookTitle(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_GET, title));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_GET, TextUtil.copyableTextComponent(title)));
 					return 1;
 				})
 				.build();
@@ -184,7 +185,7 @@ public class BookNode {
 					ItemUtil.setBookTitle(stack, title);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, title));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, TextUtil.copyableTextComponent(title)));
 					return 1;
 				})
 				.build();
@@ -244,7 +245,7 @@ public class BookNode {
 					for (int i = 0; i < pages.size(); ++i) {
 						context.getSource().sendFeedback(Text.empty()
 								.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-								.append(pages.get(i))
+								.append(TextUtil.copyableTextComponent(pages.get(i)))
 						);
 					}
 					return pages.size();
@@ -262,7 +263,7 @@ public class BookNode {
 					if (pages.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 					Text page = pages.get(index);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, index, page));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, index, TextUtil.copyableTextComponent(page)));
 					return pages.size();
 				})
 				.build();
@@ -319,7 +320,7 @@ public class BookNode {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, page));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, TextUtil.copyableTextComponent(page)));
 					return pages.size();
 				})
 				.build();
@@ -375,7 +376,7 @@ public class BookNode {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, page));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, TextUtil.copyableTextComponent(page)));
 					return pages.size() - 1;
 				})
 				.build();
@@ -426,7 +427,7 @@ public class BookNode {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, page, index));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, TextUtil.copyableTextComponent(page), index));
 					return pages.size();
 				})
 				.build();

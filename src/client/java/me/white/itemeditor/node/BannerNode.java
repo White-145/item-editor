@@ -50,7 +50,7 @@ public class BannerNode {
 	}
 
 	private static Text translation(Identifier id, int color) {
-		return Text.translatable(String.format("block.%s.banner.%s.%s", id.getNamespace(), id.getPath(), ColorArgumentType.NAMED_COLORS[color]));
+		return Text.translatable(String.format("block.%s.banner.%s.%s", id.getNamespace(), id.getPath(), ColorArgumentType.BLOCK_COLORS[color]));
 	}
 
 	private static Text translation(BannerPattern pattern, int color) {
@@ -117,7 +117,7 @@ public class BannerNode {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.named())
+				.argument("color", ColorArgumentType.block())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -174,7 +174,7 @@ public class BannerNode {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> addPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.named())
+				.argument("color", ColorArgumentType.block())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -204,7 +204,7 @@ public class BannerNode {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.named())
+				.argument("color", ColorArgumentType.block())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;

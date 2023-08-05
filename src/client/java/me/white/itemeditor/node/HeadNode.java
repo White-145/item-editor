@@ -11,6 +11,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -21,10 +22,7 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 public class HeadNode {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
@@ -47,17 +45,6 @@ public class HeadNode {
         return item == Items.PLAYER_HEAD;
     }
 
-    private static Text stylizeUrl(URL url) {
-        return Text.empty()
-                .append(url.toString())
-                .setStyle(Style.EMPTY
-                        .withUnderline(true)
-                        .withColor(Formatting.BLUE)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url.toString()))
-                        .withInsertion(url.toString())
-                );
-    }
-
     public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("head")
@@ -78,7 +65,7 @@ public class HeadNode {
                         String texture = ItemUtil.getHeadTexture(stack);
 
                         try {
-                            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, stylizeUrl(new URL(texture))));
+                            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.urlComponent(new URL(texture))));
                         } catch (MalformedURLException e) {
                             throw INVALID_URL_EXCEPTION;
                         }
@@ -144,7 +131,7 @@ public class HeadNode {
 
                     EditorUtil.setStack(context.getSource(), stack);
                     try {
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, stylizeUrl(new URL(texture))));
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.urlComponent(new URL(texture))));
                     } catch (MalformedURLException e) {
                         throw INVALID_URL_EXCEPTION;
                     }

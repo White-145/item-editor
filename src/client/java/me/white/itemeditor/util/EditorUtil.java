@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
+import me.white.itemeditor.argument.TextArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
@@ -14,7 +15,15 @@ import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class EditorUtil {
 	public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
@@ -56,6 +65,47 @@ public class EditorUtil {
 			b += color & 0x0000FF;
 		}
 		return ((r / colors.length) << 16) + ((g / colors.length) << 8) + b / colors.length;
+	}
+
+	public static String textToString(Text text) {
+		List<Text> contents = text.withoutStyle();
+		StringBuilder result = new StringBuilder();
+		AtomicReference<Style> prevStyle = new AtomicReference<>(Style.EMPTY);
+		text.visit((style, literal) -> {
+			if (literal.isEmpty()) return Optional.empty();
+			if (style != null) {
+				Style prev = prevStyle.get();
+				TextColor color = style.getColor();
+
+				if (
+						!Objects.equals(prev.getColor(), color) ||
+						(prev.isObfuscated() && !style.isObfuscated()) ||
+						(prev.isBold() && !style.isBold()) ||
+						(prev.isStrikethrough() && !style.isStrikethrough()) ||
+						(prev.isUnderlined() && !style.isUnderlined()) ||
+						(prev.isItalic() && !style.isItalic())
+				) {
+					result.append("&");
+					if (color == null) {
+						result.append("r");
+					} else if (color.getName().startsWith("#")) {
+						result.append(color.getName());
+					} else {
+						result.append(Formatting.byName(color.getName()).getCode());
+					}
+				}
+				if (style.isObfuscated()) result.append("&k");
+				if (style.isBold()) result.append("&l");
+				if (style.isStrikethrough()) result.append("&m");
+				if (style.isUnderlined()) result.append("&n");
+				if (style.isItalic()) result.append("&o");
+
+				prevStyle.set(style);
+			}
+			result.append(literal);
+			return Optional.empty();
+		}, Style.EMPTY);
+		return result.toString();
 	}
 
 	@SuppressWarnings("unchecked")

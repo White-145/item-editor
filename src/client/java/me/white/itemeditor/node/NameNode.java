@@ -8,6 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.argument.TextArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
@@ -33,7 +34,7 @@ public class NameNode {
 					if (!ItemUtil.hasName(stack)) throw NO_NAME_EXCEPTION;
 					Text name = ItemUtil.getName(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, name));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyableTextComponent(name)));
 					return 1;
 				})
 				.build();
@@ -64,7 +65,7 @@ public class NameNode {
 					ItemUtil.setName(stack, name);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, name));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyableTextComponent(name)));
 					return 1;
 				})
 				.build();

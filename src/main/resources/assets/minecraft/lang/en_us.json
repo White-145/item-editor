@@ -149,7 +149,8 @@
   "commands.edit.flags.trimdisable": "Item trim display flag was disabled",
 
   "commands.edit.get.error.cannotedit": "Can only give item in empty hand",
-  "commands.edit.get.get": "Placed %s %s into main hand",
+  "commands.edit.get.get": "Item: [%s]",
+  "commands.edit.get.getitem": "Placed %s [%s] into main hand",
 
   "commands.edit.head.error.cannotedit": "Can only edit player heads",
   "commands.edit.head.error.notexture": "Item doesn't have head texture",
@@ -231,12 +232,14 @@
   "commands.edit.whitelist.cleardestroy": "Cleared destroying whitelist from the item",
 
   "argument.color.invalidhex": "Invalid hex color",
-  "argument.color.invalidnamed": "Invalid block color",
+  "argument.color.invalidblock": "Invalid block color",
   "argument.enum.invalidenum": "Invalid enum",
   "argument.text.invalidhex": "Invalid hex character sequence",
   "argument.text.invalidunicode": "Invalid unicode character sequence",
   "argument.text.invalidescape": "Invalid escape sequence",
   "argument.text.invalidplaceholder": "Invalid placeholder",
+
+  "chat.copyable.copy": "Click to copy",
 
   "commands.edit.error.notcreative": "Can only edit items in creative game mode",
   "commands.edit.error.noitem": "No item in main hand",

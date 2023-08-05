@@ -18,9 +18,9 @@ import net.minecraft.text.Text;
 
 public class ColorArgumentType implements ArgumentType<Integer> {
     private static final CommandSyntaxException INVALID_HEX_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidhex")).create();
-    private static final CommandSyntaxException INVALID_NAMED_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidnamed")).create();
+    private static final CommandSyntaxException INVALID_BLOCK_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidblock")).create();
 
-    public static final String[] NAMED_COLORS = new String[] {
+    public static final String[] BLOCK_COLORS = new String[] {
             "white",
             "orange",
             "magenta",
@@ -40,7 +40,7 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     };
 
     private enum Type {
-        NAMED,
+        BLOCK,
         HEX
     }
 
@@ -50,10 +50,10 @@ public class ColorArgumentType implements ArgumentType<Integer> {
             "#b8b8b8"
     );
 
-    private static final Collection<String> NAMED_EXAMPLES = List.of(
+    private static final Collection<String> BLOCK_EXAMPLES = List.of(
             "red",
             "blue",
-            "white"
+            "brown"
     );
 
     private Type type;
@@ -66,8 +66,8 @@ public class ColorArgumentType implements ArgumentType<Integer> {
         return new ColorArgumentType(Type.HEX);
     }
 
-    public static ColorArgumentType named() {
-        return new ColorArgumentType(Type.NAMED);
+    public static ColorArgumentType block() {
+        return new ColorArgumentType(Type.BLOCK);
     }
 
     public static Integer getColor(CommandContext<FabricClientCommandSource> context, String name) {
@@ -95,11 +95,11 @@ public class ColorArgumentType implements ArgumentType<Integer> {
             return rgb;
         } else {
             String remaining = reader.readString().toLowerCase(Locale.ROOT);
-            for (int i = 0; i < NAMED_COLORS.length; ++i) {
-                String namedColor = NAMED_COLORS[i];
+            for (int i = 0; i < BLOCK_COLORS.length; ++i) {
+                String namedColor = BLOCK_COLORS[i];
                 if (namedColor.equals(remaining)) return i;
             }
-            throw INVALID_NAMED_COLOR_EXCEPTION;
+            throw INVALID_BLOCK_COLOR_EXCEPTION;
         }
     }
 
@@ -107,15 +107,15 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     public Collection<String> getExamples() {
         return switch(type) {
             case HEX -> HEX_EXAMPLES;
-            default -> NAMED_EXAMPLES;
+            default -> BLOCK_EXAMPLES;
         };
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        if (type == Type.NAMED) {
+        if (type == Type.BLOCK) {
             String remaining = builder.getRemainingLowerCase();
-            for (String namedColor : NAMED_COLORS) if (namedColor.startsWith(remaining)) builder.suggest(namedColor);
+            for (String namedColor : BLOCK_COLORS) if (namedColor.startsWith(remaining)) builder.suggest(namedColor);
         }
         return builder.buildFuture();
     }
