@@ -15,5 +15,9 @@ public class ItemEditor implements ClientModInitializer {
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(EditCommand::register);
         ClientCommandRegistrationCallback.EVENT.register(RegistryCommand::register);
+        // TODO:
+        // color command
+        // character command
+        // craft command
     }
 }
