@@ -16,10 +16,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class TextArgumentType implements ArgumentType<Text> {
-    public static CommandSyntaxException INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidhex")).create();
-    public static CommandSyntaxException INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidunicode")).create();
-    public static CommandSyntaxException INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidescape")).create();
-    public static CommandSyntaxException INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidplaceholder")).create();
+    public static SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidhex"));
+    public static SimpleCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidunicode"));
+    public static SimpleCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidescape"));
+    public static SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidplaceholder"));
     public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     boolean colors;
@@ -53,6 +53,7 @@ public class TextArgumentType implements ArgumentType<Text> {
     public static String readEscaped(StringReader reader) throws CommandSyntaxException {
         char result;
         if (reader.peek() == '\\') reader.skip();
+        int cursor = reader.getCursor();
         switch (reader.peek()) {
             case 'n' -> {
                 reader.skip();
@@ -60,26 +61,36 @@ public class TextArgumentType implements ArgumentType<Text> {
             }
             case 'x' -> {
                 reader.skip();
+                if (!reader.canRead(2)) {
+                    reader.setCursor(cursor + 1);
+                    throw INVALID_HEX_CHARACTER_EXCEPTION.createWithContext(reader);
+                }
                 result = 0;
                 for (int i = 0; i < 2; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
                         result += Math.pow(16, 1 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
                     } else {
-                        throw INVALID_HEX_CHARACTER_EXCEPTION;
+                        reader.setCursor(cursor + 1);
+                        throw INVALID_HEX_CHARACTER_EXCEPTION.createWithContext(reader);
                     }
                 }
                 return String.valueOf(result);
             }
             case 'u' -> {
                 reader.skip();
+                if (!reader.canRead(4)) {
+                    reader.setCursor(cursor + 1);
+                    throw INVALID_UNICODE_CHARACTER_EXCEPTION.createWithContext(reader);
+                }
                 result = 0;
                 for (int i = 0; i < 4; ++i) {
                     char ch = reader.read();
                     if (isHex(ch)) {
                         result += Math.pow(16, 3 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
                     } else {
-                        throw INVALID_UNICODE_CHARACTER_EXCEPTION;
+                        reader.setCursor(cursor + 1);
+                        throw INVALID_UNICODE_CHARACTER_EXCEPTION.createWithContext(reader);
                     }
                 }
                 return String.valueOf(result);
@@ -87,7 +98,10 @@ public class TextArgumentType implements ArgumentType<Text> {
             case '\\', '&' -> {
                 return String.valueOf(reader.read());
             }
-            default -> throw INVALID_ESCAPE_SEQUENCE_EXCEPTION;
+            default -> {
+                reader.setCursor(cursor);
+                throw INVALID_ESCAPE_SEQUENCE_EXCEPTION.createWithContext(reader);
+            }
         }
     }
 
@@ -139,6 +153,9 @@ public class TextArgumentType implements ArgumentType<Text> {
             } else if (reader.peek() == '&') {
                 reader.skip();
 
+                if (!reader.canRead()) {
+                    throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
+                }
                 switch (reader.peek()) {
                     case '#' -> {  // hex color
                         int color = ColorArgumentType.hex().parse(reader);
@@ -165,8 +182,13 @@ public class TextArgumentType implements ArgumentType<Text> {
                         texts.add(Text.translatable(translation).setStyle(style));
                     }
                     default -> {  // color code
+                        if (!reader.canRead()) throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
+                        int cursor = reader.getCursor();
                         char ch = reader.read();
-                        if (!isHex(ch) && !isModifier(ch)) throw INVALID_PLACEHOLDER_EXCEPTION;
+                        if (!isHex(ch) && !isModifier(ch)) {
+                            reader.setCursor(cursor);
+                            throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
+                        }
                         if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = modifyStyleWith(style, Character.toLowerCase(ch));

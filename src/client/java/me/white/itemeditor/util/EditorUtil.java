@@ -5,8 +5,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
+import me.white.itemeditor.ItemEditor;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.argument.DefaultPosArgument;
+import net.minecraft.command.argument.PosArgument;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -14,10 +17,13 @@ import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +49,7 @@ public class EditorUtil {
 	}
 
 	public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
+		if (getStack(source) == stack) ItemEditor.LOGGER.warn("Using setStack without clonning result of getStack (If you see it report to github pls)");
 		if (!hasCreative(source)) throw NOT_CREATIVE_EXCEPTION;
 		PlayerInventory inventory = source.getPlayer().getInventory();
 		int slot = inventory.selectedSlot;

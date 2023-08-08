@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
 public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
-    public static final CommandSyntaxException INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.invalidenum")).create();
+    public static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.invalidenum"));
 
     private HashMap<String, T> suggestions;
 
@@ -44,11 +44,13 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 
     @Override
     public T parse(StringReader reader) throws CommandSyntaxException {
+        int cursor = reader.getCursor();
         String remaining = reader.readString();
         for (String suggestion : suggestions.keySet()) {
             if (suggestion.equals(remaining)) return suggestions.get(suggestion);
         }
-        throw INVALID_ENUM_EXCEPTION;
+        reader.setCursor(cursor);
+        throw INVALID_ENUM_EXCEPTION.createWithContext(reader);
     }
 
     @Override

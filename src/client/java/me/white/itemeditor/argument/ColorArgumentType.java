@@ -17,8 +17,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
 public class ColorArgumentType implements ArgumentType<Integer> {
-    private static final CommandSyntaxException INVALID_HEX_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidhex")).create();
-    private static final CommandSyntaxException INVALID_BLOCK_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidblock")).create();
+    private static final SimpleCommandExceptionType INVALID_HEX_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidhex"));
+    private static final SimpleCommandExceptionType INVALID_BLOCK_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.invalidblock"));
 
     public static final String[] BLOCK_COLORS = new String[] {
             "white",
@@ -78,15 +78,17 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     public Integer parse(StringReader reader) throws CommandSyntaxException {
         if (type == Type.HEX) {
             if (!reader.canRead() || reader.peek() != '#') {
-                throw INVALID_HEX_COLOR_EXCEPTION;
+                throw INVALID_HEX_COLOR_EXCEPTION.createWithContext(reader);
             }
             reader.skip();
             int rgb = 0;
-            if (!reader.canRead(6)) throw INVALID_HEX_COLOR_EXCEPTION;
+            if (!reader.canRead(6)) throw INVALID_HEX_COLOR_EXCEPTION.createWithContext(reader);
+            int cursor = reader.getCursor();
             for (int i = 0; i < 6; ++i) {
                 char ch = Character.toLowerCase(reader.read());
                 if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))) {
-                    throw INVALID_HEX_COLOR_EXCEPTION;
+                    reader.setCursor(cursor);
+                    throw INVALID_HEX_COLOR_EXCEPTION.createWithContext(reader);
                 } else {
                     rgb *= 16;
                     rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
@@ -94,12 +96,14 @@ public class ColorArgumentType implements ArgumentType<Integer> {
             }
             return rgb;
         } else {
+            int cursor = reader.getCursor();
             String remaining = reader.readString().toLowerCase(Locale.ROOT);
             for (int i = 0; i < BLOCK_COLORS.length; ++i) {
                 String namedColor = BLOCK_COLORS[i];
                 if (namedColor.equals(remaining)) return i;
             }
-            throw INVALID_BLOCK_COLOR_EXCEPTION;
+            reader.setCursor(cursor);
+            throw INVALID_BLOCK_COLOR_EXCEPTION.createWithContext(reader);
         }
     }
 
