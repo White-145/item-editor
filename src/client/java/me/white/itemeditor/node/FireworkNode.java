@@ -17,6 +17,7 @@ import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.FireworkRocketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
@@ -24,7 +25,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import oshi.util.tuples.Quintet;
 
-public class FireworkNode {
+public class FireworkNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannotedit")).create();
     public static final CommandSyntaxException NO_EXPLOSIONS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.noexplosions")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
@@ -81,7 +82,7 @@ public class FireworkNode {
         return Text.translatable(OUTPUT_EXPLOSION_FADE, Text.translatable(type.translationKey), String.join(", ", colorsFormatted), String.join(", ", fadeColorsFormatted));
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("firework")
                 .build();

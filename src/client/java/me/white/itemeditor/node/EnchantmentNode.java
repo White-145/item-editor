@@ -22,7 +22,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class EnchantmentNode {
+public class EnchantmentNode implements Node {
 	public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
 	public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
 	public static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
@@ -35,7 +35,7 @@ public class EnchantmentNode {
 	private static final String OUTPUT_GLINT_ENABLE = "commands.edit.enchantment.glintenable";
 	private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("enchantment")
 				.build();
@@ -45,7 +45,7 @@ public class EnchantmentNode {
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource());
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					if (!ItemUtil.hasEnchantments(stack, true)) throw NO_ENCHANTMENTS_EXCEPTION;
+					if (!ItemUtil.hasEnchantments(stack)) throw NO_ENCHANTMENTS_EXCEPTION;
 
 					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
 					HashMap<Enchantment, Integer> enchantments = ItemUtil.getEnchantments(stack);
@@ -165,7 +165,7 @@ public class EnchantmentNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-					if (ItemUtil.hasEnchantments(stack, true)) throw HAS_GLINT_EXCEPTION;
+					if (ItemUtil.hasEnchantments(stack)) throw HAS_GLINT_EXCEPTION;
 					boolean hasGlint = ItemUtil.hasEnchantments(stack, false);
 					ItemUtil.setEnchantmentGlint(stack, !hasGlint);
 

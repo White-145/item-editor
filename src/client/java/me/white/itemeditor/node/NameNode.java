@@ -11,17 +11,20 @@ import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class NameNode {
+public class NameNode implements Node {
 	public static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
 	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.name.get";
 	private static final String OUTPUT_SET = "commands.edit.name.set";
 	private static final String OUTPUT_RESET = "commands.edit.name.reset";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public NameNode() { }
+
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("name")
 				.build();

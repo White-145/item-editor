@@ -29,7 +29,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class AttributeNode {
+public class AttributeNode implements Node {
 	public static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
 	public static final CommandSyntaxException NO_SUCH_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattributes")).create();
 	private static final String OUTPUT_GET = "commands.edit.attribute.get";
@@ -68,7 +68,7 @@ public class AttributeNode {
 	private static int get(FabricClientCommandSource source, EntityAttribute attribute, EquipmentSlot slot) throws CommandSyntaxException {
 		ItemStack stack = EditorUtil.getStack(source);
 		if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-		if (!ItemUtil.hasAttributes(stack, true)) throw NO_ATTRIBUTES_EXCEPTION;
+		if (!ItemUtil.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
 		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : ItemUtil.getAttributes(stack)) {
 			if ((attribute == null || attribute.equals(dirtyAttribute.getLeft())) && (slot == null || slot.equals(dirtyAttribute.getRight()))) {
@@ -91,7 +91,7 @@ public class AttributeNode {
 		ItemStack stack = EditorUtil.getStack(source).copy();
 		if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 		if (!EditorUtil.hasCreative(source)) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-		if (!ItemUtil.hasAttributes(stack, true)) throw NO_ATTRIBUTES_EXCEPTION;
+		if (!ItemUtil.hasAttributes(stack)) throw NO_ATTRIBUTES_EXCEPTION;
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> attributes = new ArrayList<>();
 		List<Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot>> dirtyAttributes = ItemUtil.getAttributes(stack);
 		for (Triple<EntityAttribute, EntityAttributeModifier, EquipmentSlot> dirtyAttribute : dirtyAttributes) {
@@ -129,7 +129,7 @@ public class AttributeNode {
 		return 1;
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("attribute")
 				.build();

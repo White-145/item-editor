@@ -10,16 +10,17 @@ import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class ModelNode {
+public class ModelNode implements Node {
 	public static final CommandSyntaxException NO_MODEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.model.error.nomodel")).create();
 	private static final String OUTPUT_GET = "commands.edit.model.get";
 	private static final String OUTPUT_SET = "commands.edit.model.set";
 	private static final String OUTPUT_RESET = "commands.edit.model.reset";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("model")
 				.build();

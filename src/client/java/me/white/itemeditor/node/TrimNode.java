@@ -20,7 +20,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
-public class TrimNode {
+public class TrimNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.cannotedit")).create();
     public static final CommandSyntaxException NO_TRIM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.notrim")).create();
     private static final String OUTPUT_GET = "commands.edit.trim.get";
@@ -31,7 +31,7 @@ public class TrimNode {
         return stack.getItem() instanceof ArmorItem;
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("trim")
                 .build();

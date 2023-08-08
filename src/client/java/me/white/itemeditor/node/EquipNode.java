@@ -5,15 +5,16 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.text.Text;
 
-public class EquipNode {
+public class EquipNode implements Node {
 	private static final String OUTPUT = "commands.edit.equip";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("equip")
 				.executes(context -> {

@@ -16,7 +16,7 @@ import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class GetNode {
+public class GetNode implements Node {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.cannotedit")).create();
 	private static final String OUTPUT_GET = "commands.edit.get.get";
 	private static final String OUTPUT_GET_ITEM = "commands.edit.get.getitem";
@@ -26,7 +26,7 @@ public class GetNode {
 		return item == null || item.isEmpty();
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("get")
 				.executes(context -> {

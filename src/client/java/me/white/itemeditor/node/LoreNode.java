@@ -15,12 +15,13 @@ import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class LoreNode {
+public class LoreNode implements Node {
 	public static final CommandSyntaxException NO_LORE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.nolore")).create();
 	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.lore.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.lore.get";
@@ -33,7 +34,7 @@ public class LoreNode {
 	private static final String OUTPUT_CLEAR_BEFORE = "commands.edit.lore.clearbefore";
 	private static final String OUTPUT_CLEAR_AFTER = "commands.edit.lore.clearafter";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("lore")
 				.build();

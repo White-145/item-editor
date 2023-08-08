@@ -10,6 +10,31 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 
 public class EditCommand {
+	private static final Node[] NODES = new Node[] {
+			new AttributeNode(),
+			new BannerNode(),
+			new BookNode(),
+			new ColorNode(),
+			new CountNode(),
+			new DataNode(),
+			new DurabilityNode(),
+			new EnchantmentNode(),
+			new EntityNode(),
+			new EquipNode(),
+			new FireworkNode(),
+			new FlagNode(),
+			new GetNode(),
+			new HeadNode(),
+			new LoreNode(),
+			new MaterialNode(),
+			new ModelNode(),
+			new NameNode(),
+			new PotionNode(),
+			new TrimNode(),
+			new UnbreakableNode(),
+			new WhitelistNode()
+	};
+
 	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("edit")
@@ -20,60 +45,13 @@ public class EditCommand {
 				.redirect(node)
 				.build();
 
-		// ... material ...
-		MaterialNode.register(node, registryAccess);
-		// ... name ...
-		NameNode.register(node);
-		// ... lore ...
-		LoreNode.register(node);
-		// ... count ...
-		CountNode.register(node);
-		// ... model ...
-		ModelNode.register(node);
-		// ... enchantment ...
-		EnchantmentNode.register(node, registryAccess);
-		// ... get ...
-		GetNode.register(node, registryAccess);
-		// ... attribute ...
-		AttributeNode.register(node, registryAccess);
-		// ... color ...
-		ColorNode.register(node);
-		// ... hideflags ...
-		FlagNode.register(node);
-		// ... equip
-		EquipNode.register(node);
-		// ... unbreakable
-		UnbreakableNode.register(node);
-		// ... whitelist ...
-		WhitelistNode.register(node, registryAccess);
-		// ... durability ...
-		DurabilityNode.register(node);
-		// ... data ...
-		DataNode.register(node);
-		// ... book ...
-		BookNode.register(node);
-		// ... head ...
-		HeadNode.register(node, registryAccess);
-		// ... trim ...
-		try {
-			TrimNode.register(node, registryAccess);
-		} catch (IllegalStateException e) {
-			ItemEditor.LOGGER.error("Failed to load trim node");
+		for (Node editNode : NODES) {
+			try {
+				editNode.register(node, registryAccess);
+			} catch (IllegalStateException e) {
+				ItemEditor.LOGGER.error("Failed to register " + editNode.getClass().getName() + ": " + e);
+			}
 		}
-		// ... firework ...
-		FireworkNode.register(node);
-		// ... banner ...
-		BannerNode.register(node, registryAccess);
-		// ... potion ...
-		PotionNode.register(node, registryAccess);
-		// ... entity ...
-		EntityNode.register(node, registryAccess);
-
-		// BETA RELEASE
-
-		// ... script ...
-		// ... items ...
-		// ... optimize ...
 
 		dispatcher.getRoot().addChild(node);
 		dispatcher.getRoot().addChild(nodeNamespaced);

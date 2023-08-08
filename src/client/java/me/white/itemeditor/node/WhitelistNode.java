@@ -22,7 +22,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class WhitelistNode {
+public class WhitelistNode implements Node {
     public static final CommandSyntaxException NO_WHITELIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.nowhitelist")).create();
     public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.alreadyexists")).create();
     public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.whitelist.error.doesntexist")).create();
@@ -37,7 +37,7 @@ public class WhitelistNode {
     private static final String OUTPUT_CLEAR_PLACE = "commands.edit.whitelist.clearplace";
     private static final String OUTPUT_CLEAR_DESTROY = "commands.edit.whitelist.cleardestroy";
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("whitelist")
                 .build();

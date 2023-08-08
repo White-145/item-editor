@@ -8,10 +8,11 @@ import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class UnbreakableNode {
+public class UnbreakableNode implements Node {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.cannotedit")).create();
 	private static final String OUTPUT_GET_ENABLED = "commands.edit.unbreakable.getenabled";
 	private static final String OUTPUT_GET_DISABLED = "commands.edit.unbreakable.getdisabled";
@@ -22,7 +23,7 @@ public class UnbreakableNode {
 		return stack.getMaxDamage() != 0;
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("unbreakable")
 				.build();

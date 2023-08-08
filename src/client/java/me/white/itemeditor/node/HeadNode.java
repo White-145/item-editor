@@ -24,7 +24,7 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 
-public class HeadNode {
+public class HeadNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
     public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
     public static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
@@ -45,7 +45,7 @@ public class HeadNode {
         return item == Items.PLAYER_HEAD;
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("head")
                 .build();

@@ -17,6 +17,7 @@ import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -24,7 +25,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class BookNode {
+public class BookNode implements Node {
 	public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.cannotedit")).create();
 	public static final CommandSyntaxException NO_AUTHOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.noauthor")).create();
 	public static final CommandSyntaxException AUTHOR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.authoralreadyis")).create();
@@ -81,7 +82,7 @@ public class BookNode {
 		return item == Items.WRITTEN_BOOK;
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("book")
 				.build();
@@ -458,8 +459,8 @@ public class BookNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					int index = IntegerArgumentType.getInteger(context, "index");
 					if (!ItemUtil.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
 					List<Text> pages = ItemUtil.getBookPages(stack);
 					if (pages.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 					pages = pages.subList(index, pages.size());
@@ -481,8 +482,8 @@ public class BookNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					int index = IntegerArgumentType.getInteger(context, "index");
 					if (!ItemUtil.hasBookPages(stack)) throw NO_PAGES_EXCEPTION;
+					int index = IntegerArgumentType.getInteger(context, "index");
 					List<Text> pages = ItemUtil.getBookPages(stack);
 					if (pages.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 					pages = pages.subList(0, index + 1);

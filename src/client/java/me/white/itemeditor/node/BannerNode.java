@@ -30,7 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public class BannerNode {
+public class BannerNode implements Node {
 	private static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.cannotedit")).create();
 	private static final CommandSyntaxException NO_PATTERNS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nopatterns")).create();
 	private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.alreadyis")).create();
@@ -61,7 +61,7 @@ public class BannerNode {
 		return translation(pattern.getLeft(), pattern.getRight());
 	}
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("banner")
 				.build();
@@ -250,7 +250,7 @@ public class BannerNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					if (!ItemUtil.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
+					if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 					int index = IntegerArgumentType.getInteger(context, "index");
 					List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
 					if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
@@ -274,7 +274,7 @@ public class BannerNode {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-					if (!ItemUtil.hasBannerPatterns(stack, false)) throw NO_PATTERNS_EXCEPTION;
+					if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 					int index = IntegerArgumentType.getInteger(context, "index");
 					List<Pair<BannerPattern, Integer>> patterns = ItemUtil.getBannerPatterns(stack);
 					if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());

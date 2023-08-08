@@ -16,12 +16,12 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
-public class MaterialNode {
+public class MaterialNode implements Node {
 	public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.material.error.alreadyis")).create();
 	private static final String OUTPUT_GET = "commands.edit.material.get";
 	private static final String OUTPUT_SET = "commands.edit.material.set";
 
-	public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+	public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
 				.literal("material")
 				.build();

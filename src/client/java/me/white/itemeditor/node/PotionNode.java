@@ -28,7 +28,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class PotionNode {
+public class PotionNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.cannotedit")).create();
     public static final CommandSyntaxException NO_POTION_EFFECTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nopotioneffects")).create();
     public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.alreadyexists")).create();
@@ -51,7 +51,7 @@ public class PotionNode {
                         item instanceof TippedArrowItem;
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("potion")
                 .build();

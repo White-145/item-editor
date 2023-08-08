@@ -7,13 +7,14 @@ import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlagNode {
+public class FlagNode implements Node {
     private static final String OUTPUT_GET = "commands.edit.flags.get";
     private static final String OUTPUT_ALL_ENABLE = "commands.edit.flags.allenable";
     private static final String OUTPUT_ALL_DISABLE = "commands.edit.flags.alldisable";
@@ -90,7 +91,7 @@ public class FlagNode {
         }
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("flag")
                 .build();

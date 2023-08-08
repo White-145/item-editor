@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.node.EntityNode;
+import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -19,7 +20,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 
-public class TypeNode {
+public class TypeNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.type.error.cannotedit")).create();
     public static final CommandSyntaxException NO_ENTITY_TYPE = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.type.error.noentitytype")).create();
     private static final String OUTPUT_GET = "commands.edit.entity.type.get";
@@ -31,7 +32,7 @@ public class TypeNode {
         return item instanceof SpawnEggItem;
     }
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("type")
                 .build();

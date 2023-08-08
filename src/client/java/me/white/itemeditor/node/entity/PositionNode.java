@@ -7,6 +7,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.argument.PositionArgument;
 import me.white.itemeditor.argument.PositionArgumentType;
 import me.white.itemeditor.node.EntityNode;
+import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -16,13 +17,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
-public class PositionNode {
+public class PositionNode implements Node {
     public static final CommandSyntaxException NO_POSITION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.position.error.noposition")).create();
     private static final String OUTPUT_GET = "commands.edit.entity.position.get";
     private static final String OUTPUT_RESET = "commands.edit.entity.position.reset";
     private static final String OUTPUT_SET = "commands.edit.entity.position.set";
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("position")
                 .build();

@@ -8,6 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.command.argument.NbtElementArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;
@@ -18,7 +19,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
 
-public class DataNode {
+public class DataNode implements Node {
     public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
     public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
     public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
@@ -28,7 +29,7 @@ public class DataNode {
     private static final String OUTPUT_MERGE = "commands.edit.data.merge";
     private static final String OUTPUT_REMOVE = "commands.edit.data.remove";
 
-    public static void register(LiteralCommandNode<FabricClientCommandSource> rootNode) {
+    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
                 .literal("data")
                 .build();
