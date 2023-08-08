@@ -52,6 +52,10 @@ public class EditCommand {
 				ItemEditor.LOGGER.error("Failed to register " + editNode.getClass().getName() + ": " + e);
 			}
 		}
+		// TODO:
+		// ... items ... (or blockentity, smth)
+		// ... script ...
+		// ... optimize ...
 
 		dispatcher.getRoot().addChild(node);
 		dispatcher.getRoot().addChild(nodeNamespaced);
