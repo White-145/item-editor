@@ -33,7 +33,7 @@ public class GetNode implements Node {
 					ItemStack stack = EditorUtil.getStack(context.getSource());
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.itemStackComponent(stack)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(stack)));
 					return 1;
 				})
 				.build();
@@ -46,7 +46,7 @@ public class GetNode implements Node {
 					ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ITEM, 1, TextUtil.itemStackComponent(stack)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ITEM, 1, TextUtil.copyable(stack)));
 					return 1;
 				})
 				.build();
@@ -60,7 +60,7 @@ public class GetNode implements Node {
 					ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, false);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ITEM, count, TextUtil.itemStackComponent(stack)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ITEM, count, TextUtil.copyable(stack)));
 					return 1;
 				})
 				.build();

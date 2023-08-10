@@ -22,28 +22,8 @@ public class TextArgumentType implements ArgumentType<Text> {
     public static SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.invalidplaceholder"));
     public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
-    boolean colors;
-    boolean keybinds;
-    boolean hover;
-    boolean click;
-
-    private TextArgumentType(boolean colors, boolean keybinds, boolean hover, boolean click) {
-        this.colors = colors;
-        this.keybinds = keybinds;
-        this.hover = hover;
-        this.click = click;
-    }
-
-    public static TextArgumentType text(boolean colors, boolean keybinds, boolean hover, boolean click) {
-        return new TextArgumentType(colors, keybinds, hover, click);
-    }
-
-    public static TextArgumentType all() {
-        return new TextArgumentType(true, true, true, true);
-    }
-
-    public static TextArgumentType visual() {
-        return new TextArgumentType(true, true, false, false);
+    public static TextArgumentType text() {
+        return new TextArgumentType();
     }
 
     public static Text getText(CommandContext<FabricClientCommandSource> context, String name) {

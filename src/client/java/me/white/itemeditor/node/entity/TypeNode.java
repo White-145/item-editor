@@ -23,6 +23,7 @@ import net.minecraft.text.Text;
 public class TypeNode implements Node {
     public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.type.error.cannotedit")).create();
     public static final CommandSyntaxException NO_ENTITY_TYPE = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.type.error.noentitytype")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.type.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.entity.type.get";
     private static final String OUTPUT_RESET = "commands.edit.entity.type.reset";
     private static final String OUTPUT_SET = "commands.edit.entity.type.set";
@@ -78,6 +79,10 @@ public class TypeNode implements Node {
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
                     EntityType<?> type = EditorUtil.getRegistryEntryArgument(context, "type", RegistryKeys.ENTITY_TYPE);
+                    if (ItemUtil.hasEntityType(stack)) {
+                        EntityType<?> oldType = ItemUtil.getEntityType(stack);
+                        if (oldType.equals(type)) throw ALREADY_IS_EXCEPTION;
+                    }
                     ItemUtil.setEntityType(stack, type);
 
                     EditorUtil.setStack(context.getSource(), stack);

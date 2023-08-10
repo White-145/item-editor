@@ -13,7 +13,17 @@ import java.net.URL;
 public class TextUtil {
     private static final String OUTPUT_COPY = "chat.copyable.copy";
 
-    public static Text itemStackComponent(ItemStack stack) {
+    public static Text copyable(Text text, String copy) {
+        return Text.empty()
+                .append(text)
+                .setStyle(Style.EMPTY
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(OUTPUT_COPY)))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copy))
+                        .withInsertion(copy)
+                );
+    }
+
+    public static Text copyable(ItemStack stack) {
         String copied = Registries.ITEM.getId(stack.getItem()).toString();
         if (stack.hasNbt()) copied += stack.getNbt().toString();
 
@@ -26,29 +36,15 @@ public class TextUtil {
                 );
     }
 
-    public static Text copyableTextComponent(Text text) {
-        String copied = EditorUtil.textToString(text);
-
-        return Text.empty()
-                .append(text)
-                .setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(OUTPUT_COPY)))
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copied))
-                        .withInsertion(copied)
-                );
+    public static Text copyable(Text text) {
+        return copyable(text, EditorUtil.textToString(text));
     }
 
-    public static Text copyableTextComponent(String str) {
-        return Text.empty()
-                .append(str)
-                .setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(OUTPUT_COPY)))
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, str))
-                        .withInsertion(str)
-                );
+    public static Text copyable(String str) {
+        return copyable(Text.literal(str), str);
     }
 
-    public static Text urlComponent(URL url) {
+    public static Text url(URL url) {
         String copied = url.toString();
 
         return Text.empty()

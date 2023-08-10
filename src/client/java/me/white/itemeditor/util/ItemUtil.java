@@ -12,6 +12,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
 import net.minecraft.nbt.*;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -71,7 +72,9 @@ public class ItemUtil {
     private static final String ENCHANTMENTS_LVL_KEY = "lvl";
     private static final String ENTITY_TAG_KEY = "EntityTag";
     private static final String ENTITY_TAG_ID_KEY = "id";
+    private static final String ENTITY_TAG_MOTION_KEY = "Motion";
     private static final String ENTITY_TAG_POS_KEY = "Pos";
+    private static final String ENTITY_TAG_ROTATION_KEY = "Rotation";
     private static final String EXPLOSION_KEY = "Explosion";
     private static final String EXPLOSION_COLORS_KEY = "Colors";
     private static final String FIREWORKS_KEY = "Fireworks";
@@ -679,6 +682,62 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has entity motion
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity motion. False to only check for tag
+     * @return Does item stack have entity motion
+     */
+    public static boolean hasEntityMotion(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_MOTION_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!validate) return true;
+        NbtList pos = entityTag.getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
+        return pos.size() == 3;
+    }
+
+    /**
+     * Redirects to {@link #hasEntityMotion(ItemStack, boolean) hasEntityMotion} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity motion
+     */
+    public static boolean hasEntityMotion(@NotNull ItemStack stack) {
+        return hasEntityMotion(stack, true);
+    }
+
+    /**
+     * Checks if stack has entity rotation
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity rotation. False to only check for tag
+     * @return Does item stack have entity rotation
+     */
+    public static boolean hasEntityRotation(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_MOTION_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!validate) return true;
+        NbtList rotation = entityTag.getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
+        return rotation.size() == 2;
+    }
+
+    /**
+     * Redirects to {@link #hasEntityRotation(ItemStack, boolean) hasEntityRotation} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity rotation
+     */
+    public static boolean hasEntityRotation(@NotNull ItemStack stack) {
+        return hasEntityRotation(stack, true);
+    }
+
+    /**
      * Gets attribute modifiers from stack
      *
      * @param stack Item stack to get from
@@ -1075,6 +1134,30 @@ public class ItemUtil {
         if (!hasEntityPosition(stack)) return null;
         NbtList pos = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_POS_KEY, NbtElement.DOUBLE_TYPE);
         return new Vec3d(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
+    }
+
+    /**
+     * Gets entity motion from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity motion from item stack, or null if none
+     */
+    public static @Nullable Vec3d getEntityMotion(@NotNull ItemStack stack) {
+        if (!hasEntityMotion(stack)) return null;
+        NbtList motion = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
+        return new Vec3d(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
+    }
+
+    /**
+     * Gets entity rotation from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity rotation from item stack, or null if none
+     */
+    public static @Nullable Vec2f getEntityRotation(@NotNull ItemStack stack) {
+        if (!hasEntityRotation(stack)) return null;
+        NbtList rotation = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
+        return new Vec2f(rotation.getFloat(0), rotation.getFloat(1));
     }
 
     /**
@@ -1770,14 +1853,71 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         } else {
-            NbtList pos = new NbtList();
-            pos.add(NbtDouble.of(position.x));
-            pos.add(NbtDouble.of(position.y));
-            pos.add(NbtDouble.of(position.z));
+            NbtList nbtPosition = new NbtList();
+            nbtPosition.add(NbtDouble.of(position.x));
+            nbtPosition.add(NbtDouble.of(position.y));
+            nbtPosition.add(NbtDouble.of(position.z));
 
             NbtCompound nbt = stack.getOrCreateNbt();
             NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-            entityTag.put(ENTITY_TAG_POS_KEY, pos);
+            entityTag.put(ENTITY_TAG_POS_KEY, nbtPosition);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity motion to the stack
+     *
+     * @param stack Item stack to modify
+     * @param motion Entity motion to set. Removes tag if null
+     */
+    public static void setEntityMotion(@NotNull ItemStack stack, @Nullable Vec3d motion) {
+        if (motion == null) {
+            if (!hasEntityMotion(stack, false)) return;
+
+            NbtCompound nbt = stack.getNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_MOTION_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtList nbtMotion = new NbtList();
+            nbtMotion.add(NbtDouble.of(motion.x));
+            nbtMotion.add(NbtDouble.of(motion.y));
+            nbtMotion.add(NbtDouble.of(motion.z));
+
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.put(ENTITY_TAG_MOTION_KEY, nbtMotion);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity rotation to the stack
+     *
+     * @param stack Item stack to modify
+     * @param rotation Entity rotation to set. Removes tag if null
+     */
+    public static void setEntityRotation(@NotNull ItemStack stack, @Nullable Vec2f rotation) {
+        if (rotation == null) {
+            if (!hasEntityRotation(stack, false)) return;
+
+            NbtCompound nbt = stack.getNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_ROTATION_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtList nbtRotation = new NbtList();
+            nbtRotation.add(NbtFloat.of(rotation.x));
+            nbtRotation.add(NbtFloat.of(rotation.y));
+
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.put(ENTITY_TAG_ROTATION_KEY, nbtRotation);
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }

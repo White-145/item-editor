@@ -4,7 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.itemeditor.argument.Vec3ArgumentType;
+import me.white.itemeditor.argument.Vec2ArgumentType;
 import me.white.itemeditor.node.EntityNode;
 import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
@@ -14,18 +14,18 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec2f;
 
-public class PositionNode implements Node {
-    public static final CommandSyntaxException NO_POSITION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.position.error.noposition")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.position.error.alreadyis")).create();
-    private static final String OUTPUT_GET = "commands.edit.entity.position.get";
-    private static final String OUTPUT_RESET = "commands.edit.entity.position.reset";
-    private static final String OUTPUT_SET = "commands.edit.entity.position.set";
+public class RotationNode implements Node {
+    public static final CommandSyntaxException NO_ROTATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.rotation.error.norotation")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.rotation.error.alreadyis")).create();
+    private static final String OUTPUT_GET = "commands.edit.entity.rotation.get";
+    private static final String OUTPUT_RESET = "commands.edit.entity.rotation.reset";
+    private static final String OUTPUT_SET = "commands.edit.entity.rotation.set";
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("position")
+                .literal("rotation")
                 .build();
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
@@ -34,13 +34,12 @@ public class PositionNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasEntityPosition(stack)) throw NO_POSITION_EXCEPTION;
-                    Vec3d pos = ItemUtil.getEntityPosition(stack);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
+                    if (!ItemUtil.hasEntityRotation(stack)) throw NO_ROTATION_EXCEPTION;
+                    Vec2f motion = ItemUtil.getEntityRotation(stack);
+                    String x = String.format("%.2f", motion.x);
+                    String y = String.format("%.2f", motion.y);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y));
                     return 1;
                 })
                 .build();
@@ -52,8 +51,8 @@ public class PositionNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasEntityPosition(stack, false)) throw NO_POSITION_EXCEPTION;
-                    ItemUtil.setEntityPosition(stack, null);
+                    if (!ItemUtil.hasEntityRotation(stack, false)) throw NO_ROTATION_EXCEPTION;
+                    ItemUtil.setEntityRotation(stack, null);
 
                     EditorUtil.setStack(context.getSource(), stack);
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
@@ -61,25 +60,24 @@ public class PositionNode implements Node {
                 })
                 .build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Vec3d> setPositionNode = ClientCommandManager
-                .argument("position", Vec3ArgumentType.vec3d())
+        ArgumentCommandNode<FabricClientCommandSource, Vec2f> setRotationNode = ClientCommandManager
+                .argument("rotation", Vec2ArgumentType.vec2f())
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    Vec3d pos = Vec3ArgumentType.getVec3dArgument(context, "position");
-                    if (ItemUtil.hasEntityPosition(stack)) {
-                        Vec3d oldPos = ItemUtil.getEntityPosition(stack);
-                        if (oldPos.equals(pos)) throw ALREADY_IS_EXCEPTION;
+                    Vec2f rotation = Vec2ArgumentType.getVec2fArgument(context, "rotation");
+                    if (ItemUtil.hasEntityRotation(stack)) {
+                        Vec2f oldRotation = ItemUtil.getEntityRotation(stack);
+                        if (oldRotation.equals(rotation)) throw ALREADY_IS_EXCEPTION;
                     }
-                    ItemUtil.setEntityPosition(stack, pos);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
+                    ItemUtil.setEntityRotation(stack, rotation);
+                    String x = String.format("%.2f", rotation.x);
+                    String y = String.format("%.2f", rotation.y);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y));
                     return 1;
                 })
                 .build();
@@ -89,8 +87,8 @@ public class PositionNode implements Node {
         // ... get
         node.addChild(getNode);
 
-        // ... set [<position>]
+        // ... set [<motion>]
         node.addChild(setNode);
-        setNode.addChild(setPositionNode);
+        setNode.addChild(setRotationNode);
     }
 }

@@ -37,7 +37,7 @@ public class NameNode implements Node {
 					if (!ItemUtil.hasName(stack)) throw NO_NAME_EXCEPTION;
 					Text name = ItemUtil.getName(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyableTextComponent(name)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(name)));
 					return 1;
 				})
 				.build();
@@ -58,7 +58,7 @@ public class NameNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> setNameNode = ClientCommandManager
-				.argument("name", TextArgumentType.visual())
+				.argument("name", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -68,7 +68,7 @@ public class NameNode implements Node {
 					ItemUtil.setName(stack, name);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyableTextComponent(name)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(name)));
 					return 1;
 				})
 				.build();

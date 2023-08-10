@@ -16,16 +16,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
-public class PositionNode implements Node {
-    public static final CommandSyntaxException NO_POSITION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.position.error.noposition")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.position.error.alreadyis")).create();
-    private static final String OUTPUT_GET = "commands.edit.entity.position.get";
-    private static final String OUTPUT_RESET = "commands.edit.entity.position.reset";
-    private static final String OUTPUT_SET = "commands.edit.entity.position.set";
+public class MotionNode implements Node {
+    public static final CommandSyntaxException NO_MOTION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.motion.error.nomotion")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.motion.error.alreadyis")).create();
+    private static final String OUTPUT_GET = "commands.edit.entity.motion.get";
+    private static final String OUTPUT_RESET = "commands.edit.entity.motion.reset";
+    private static final String OUTPUT_SET = "commands.edit.entity.motion.set";
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("position")
+                .literal("motion")
                 .build();
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
@@ -34,11 +34,11 @@ public class PositionNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasEntityPosition(stack)) throw NO_POSITION_EXCEPTION;
-                    Vec3d pos = ItemUtil.getEntityPosition(stack);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
+                    if (!ItemUtil.hasEntityMotion(stack)) throw NO_MOTION_EXCEPTION;
+                    Vec3d motion = ItemUtil.getEntityMotion(stack);
+                    String x = String.format("%.2f", motion.x);
+                    String y = String.format("%.2f", motion.y);
+                    String z = String.format("%.2f", motion.z);
 
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y, z));
                     return 1;
@@ -52,8 +52,8 @@ public class PositionNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasEntityPosition(stack, false)) throw NO_POSITION_EXCEPTION;
-                    ItemUtil.setEntityPosition(stack, null);
+                    if (!ItemUtil.hasEntityMotion(stack, false)) throw NO_MOTION_EXCEPTION;
+                    ItemUtil.setEntityMotion(stack, null);
 
                     EditorUtil.setStack(context.getSource(), stack);
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
@@ -61,22 +61,22 @@ public class PositionNode implements Node {
                 })
                 .build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Vec3d> setPositionNode = ClientCommandManager
-                .argument("position", Vec3ArgumentType.vec3d())
+        ArgumentCommandNode<FabricClientCommandSource, Vec3d> setMotionNode = ClientCommandManager
+                .argument("motion", Vec3ArgumentType.vec3d())
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
-                    Vec3d pos = Vec3ArgumentType.getVec3dArgument(context, "position");
-                    if (ItemUtil.hasEntityPosition(stack)) {
-                        Vec3d oldPos = ItemUtil.getEntityPosition(stack);
-                        if (oldPos.equals(pos)) throw ALREADY_IS_EXCEPTION;
+                    Vec3d motion = Vec3ArgumentType.getVec3dArgument(context, "motion");
+                    if (ItemUtil.hasEntityMotion(stack)) {
+                        Vec3d oldMotion = ItemUtil.getEntityMotion(stack);
+                        if (oldMotion.equals(motion)) throw ALREADY_IS_EXCEPTION;
                     }
-                    ItemUtil.setEntityPosition(stack, pos);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
+                    ItemUtil.setEntityMotion(stack, motion);
+                    String x = String.format("%.2f", motion.x);
+                    String y = String.format("%.2f", motion.y);
+                    String z = String.format("%.2f", motion.z);
 
                     EditorUtil.setStack(context.getSource(), stack);
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y, z));
@@ -89,8 +89,8 @@ public class PositionNode implements Node {
         // ... get
         node.addChild(getNode);
 
-        // ... set [<position>]
+        // ... set [<motion>]
         node.addChild(setNode);
-        setNode.addChild(setPositionNode);
+        setNode.addChild(setMotionNode);
     }
 }

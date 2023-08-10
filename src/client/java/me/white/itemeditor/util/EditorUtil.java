@@ -1,6 +1,8 @@
 package me.white.itemeditor.util;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -8,6 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.itemeditor.ItemEditor;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -115,5 +118,10 @@ public class EditorUtil {
 		RegistryKey<?> registryKey = reference.registryKey();
 		if (!registryKey.isOf(registryEntryKey)) throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryEntryKey.getValue());
 		return (T)reference.value();
+	}
+
+	public static void throwWithContext(SimpleCommandExceptionType exception, StringReader reader, int cursor) throws CommandSyntaxException {
+		reader.setCursor(cursor);
+		throw exception.createWithContext(reader);
 	}
 }

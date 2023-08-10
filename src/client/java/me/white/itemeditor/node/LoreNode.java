@@ -51,7 +51,7 @@ public class LoreNode implements Node {
 					for (int i = 0; i < lore.size(); ++i) {
 						context.getSource().sendFeedback(Text.empty()
 								.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-								.append(TextUtil.copyableTextComponent(lore.get(i)))
+								.append(TextUtil.copyable(lore.get(i)))
 						);
 					}
 					return lore.size();
@@ -69,7 +69,7 @@ public class LoreNode implements Node {
 					if (lore.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, lore.size());
 					Text line = lore.get(index);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, TextUtil.copyableTextComponent(line)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, TextUtil.copyable(line)));
 					return lore.size();
 				})
 				.build();
@@ -105,7 +105,7 @@ public class LoreNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> setIndexLineNode = ClientCommandManager
-				.argument("line", TextArgumentType.visual())
+				.argument("line", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -126,7 +126,7 @@ public class LoreNode implements Node {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, TextUtil.copyableTextComponent(line)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, TextUtil.copyable(line)));
 					return lore.size();
 				})
 				.build();
@@ -171,7 +171,7 @@ public class LoreNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> addLineNode = ClientCommandManager
-				.argument("line", TextArgumentType.visual())
+				.argument("line", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -182,7 +182,7 @@ public class LoreNode implements Node {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, TextUtil.copyableTextComponent(line)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, TextUtil.copyable(line)));
 					return lore.size() - 1;
 				})
 				.build();
@@ -215,7 +215,7 @@ public class LoreNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> insertIndexLineNode = ClientCommandManager
-				.argument("line", TextArgumentType.visual())
+				.argument("line", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -233,7 +233,7 @@ public class LoreNode implements Node {
 					ItemUtil.setLore(stack, lore);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyableTextComponent(line), index));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(line), index));
 					return lore.size();
 				})
 				.build();

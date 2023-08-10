@@ -100,7 +100,7 @@ public class BookNode implements Node {
 					if (!ItemUtil.hasBookAuthor(stack)) throw NO_AUTHOR_EXCEPTION;
 					String author = ItemUtil.getBookAuthor(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_GET, TextUtil.copyableTextComponent(author)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_GET, TextUtil.copyable(author)));
 					return 1;
 				})
 				.build();
@@ -134,7 +134,7 @@ public class BookNode implements Node {
 					ItemUtil.setBookAuthor(stack, author);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, TextUtil.copyableTextComponent(author)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_AUTHOR_SET, TextUtil.copyable(author)));
 					return 1;
 				})
 				.build();
@@ -152,7 +152,7 @@ public class BookNode implements Node {
 					if (!ItemUtil.hasBookTitle(stack)) throw NO_TITLE_EXCEPTION;
 					String title = ItemUtil.getBookTitle(stack);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_GET, TextUtil.copyableTextComponent(title)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_GET, TextUtil.copyable(title)));
 					return 1;
 				})
 				.build();
@@ -186,7 +186,7 @@ public class BookNode implements Node {
 					ItemUtil.setBookTitle(stack, title);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, TextUtil.copyableTextComponent(title)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_TITLE_SET, TextUtil.copyable(title)));
 					return 1;
 				})
 				.build();
@@ -246,7 +246,7 @@ public class BookNode implements Node {
 					for (int i = 0; i < pages.size(); ++i) {
 						context.getSource().sendFeedback(Text.empty()
 								.append(Text.literal(String.format("%d. ", i)).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
-								.append(TextUtil.copyableTextComponent(pages.get(i)))
+								.append(TextUtil.copyable(pages.get(i)))
 						);
 					}
 					return pages.size();
@@ -264,7 +264,7 @@ public class BookNode implements Node {
 					if (pages.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, pages.size());
 					Text page = pages.get(index);
 
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, index, TextUtil.copyableTextComponent(page)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_GET_PAGE, index, TextUtil.copyable(page)));
 					return pages.size();
 				})
 				.build();
@@ -300,7 +300,7 @@ public class BookNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageSetIndexPageNode = ClientCommandManager
-				.argument("page", TextArgumentType.all())
+				.argument("page", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -321,7 +321,7 @@ public class BookNode implements Node {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, TextUtil.copyableTextComponent(page)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_SET, index, TextUtil.copyable(page)));
 					return pages.size();
 				})
 				.build();
@@ -366,7 +366,7 @@ public class BookNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageAddPageNode = ClientCommandManager
-				.argument("page", TextArgumentType.all())
+				.argument("page", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -377,7 +377,7 @@ public class BookNode implements Node {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, TextUtil.copyableTextComponent(page)));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_ADD, TextUtil.copyable(page)));
 					return pages.size() - 1;
 				})
 				.build();
@@ -410,7 +410,7 @@ public class BookNode implements Node {
 				.build();
 
 		ArgumentCommandNode<FabricClientCommandSource, Text> pageInsertIndexPageNode = ClientCommandManager
-				.argument("page", TextArgumentType.all())
+				.argument("page", TextArgumentType.text())
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -428,7 +428,7 @@ public class BookNode implements Node {
 					ItemUtil.setBookPages(stack, pages);
 
 					EditorUtil.setStack(context.getSource(), stack);
-					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, TextUtil.copyableTextComponent(page), index));
+					context.getSource().sendFeedback(Text.translatable(OUTPUT_PAGE_INSERT, TextUtil.copyable(page), index));
 					return pages.size();
 				})
 				.build();
