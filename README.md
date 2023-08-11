@@ -116,9 +116,19 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... set <effect> [<level>] [<duration>|infinity] [<particle>]`
 - - `... remove [<effect>]`
 - - `... clear`
-
-### `/registry` command:
-- `... <registry> [<entry>]`
+- `... entity ...`
+- - `... type ...`
+- - - `... get`
+- - - `... set [<type>]`
+- - `... position`
+- - - `... get`
+- - - `... set [<position>]`
+- - `... motion`
+- - - `... get`
+- - - `... set [<motion>]`
+- - `... rotation`
+- - - `... get`
+- - - `... set [<rotation>]`
 
 All commands are also available as `/itemeditor:<command>`
 
