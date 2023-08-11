@@ -176,7 +176,7 @@ public class FireworkNode implements Node {
                 .build();
 
         ArgumentCommandNode<FabricClientCommandSource, List<Integer>> explosionAddTypeColorsNode = ClientCommandManager
-                .argument("colors", ListArgumentType.listArgument(ColorArgumentType.hex()))
+                .argument("colors", ListArgumentType.listArgument(ColorArgumentType.color()))
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -236,7 +236,7 @@ public class FireworkNode implements Node {
                 .build();
 
         ArgumentCommandNode<FabricClientCommandSource, List<Integer>> explosionAddTypeColorsFlickerTrailFadecolorsNode = ClientCommandManager
-                .argument("fadeColors", ListArgumentType.listArgument(ColorArgumentType.hex()))
+                .argument("fadeColors", ListArgumentType.listArgument(ColorArgumentType.color()))
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy().copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;

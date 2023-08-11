@@ -2,7 +2,9 @@ package me.white.itemeditor.node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import me.white.itemeditor.argument.EnumArgumentType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -11,7 +13,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.itemeditor.argument.ColorArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -44,13 +45,45 @@ public class BannerNode implements Node {
 	private static final String OUTPUT_CLEAR_BEFORE = "commands.edit.banner.clearbefore";
 	private static final String OUTPUT_CLEAR_AFTER = "commands.edit.banner.clearafter";
 
+	private enum Color {
+		WHITE(0),
+		ORANGE(1),
+		MAGENTA(2),
+		LIGHT_BLUE(3),
+		YELLOW(4),
+		LIME(5),
+		PINK(6),
+		GRAY(7),
+		LIGHT_GRAY(8),
+		CYAN(9),
+		PURPLE(10),
+		BLUE(11),
+		BROWN(12),
+		GREEN(13),
+		RED(14),
+		BLACK(15);
+
+		final int index;
+
+		Color(int index) {
+			this.index = index;
+		}
+
+		public static Color byIndex(int index) {
+			for (Color color : Color.values()) {
+				if (color.index == index) return color;
+			}
+			return null;
+		}
+	}
+
 	private static boolean canEdit(ItemStack stack) {
 		Item item = stack.getItem();
 		return item instanceof BannerItem;
 	}
 
 	private static Text translation(Identifier id, int color) {
-		return Text.translatable(String.format("block.%s.banner.%s.%s", id.getNamespace(), id.getPath(), ColorArgumentType.BLOCK_COLORS[color]));
+		return Text.translatable(String.format("block.%s.banner.%s.%s", id.getNamespace(), id.getPath(), Color.byIndex(color).name().toLowerCase(Locale.ROOT)));
 	}
 
 	private static Text translation(BannerPattern pattern, int color) {
@@ -116,8 +149,8 @@ public class BannerNode implements Node {
 				.argument("pattern", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BANNER_PATTERN))
 				.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.block())
+		ArgumentCommandNode<FabricClientCommandSource, Color> setIndexPatternColorNode = ClientCommandManager
+				.argument("color", EnumArgumentType.enumArgument(Color.class))
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -126,7 +159,7 @@ public class BannerNode implements Node {
 					if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 					int index = IntegerArgumentType.getInteger(context, "index");
 					BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
-					int color = ColorArgumentType.getColor(context, "color");
+					int color = EnumArgumentType.getEnum(context, "color", Color.class).index;
 					Pair<BannerPattern, Integer> bannerPattern = Pair.of(pattern, color);
 					List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
 					if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
@@ -173,14 +206,14 @@ public class BannerNode implements Node {
 				.argument("pattern", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BANNER_PATTERN))
 				.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> addPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.block())
+		ArgumentCommandNode<FabricClientCommandSource, Color> addPatternColorNode = ClientCommandManager
+				.argument("color", EnumArgumentType.enumArgument(Color.class))
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
 					if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
 					BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
-					int color = ColorArgumentType.getColor(context, "color");
+					int color = EnumArgumentType.getEnum(context, "color", Color.class).index;
 					List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
 					patterns.add(Pair.of(pattern, color));
 					ItemUtil.setBannerPatterns(stack, patterns);
@@ -203,8 +236,8 @@ public class BannerNode implements Node {
 				.argument("pattern", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.BANNER_PATTERN))
 				.build();
 
-		ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexPatternColorNode = ClientCommandManager
-				.argument("color", ColorArgumentType.block())
+		ArgumentCommandNode<FabricClientCommandSource, Color> insertIndexPatternColorNode = ClientCommandManager
+				.argument("color", EnumArgumentType.enumArgument(Color.class))
 				.executes(context -> {
 					ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
 					if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -212,7 +245,7 @@ public class BannerNode implements Node {
 					if (!ItemUtil.hasBannerPatterns(stack)) throw NO_PATTERNS_EXCEPTION;
 					int index = IntegerArgumentType.getInteger(context, "index");
 					BannerPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.BANNER_PATTERN);
-					int color = ColorArgumentType.getColor(context, "color");
+					int color = EnumArgumentType.getEnum(context, "color", Color.class).index;
 					List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>(ItemUtil.getBannerPatterns(stack));
 					if (patterns.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, patterns.size());
 					patterns.add(index, Pair.of(pattern, color));

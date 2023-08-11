@@ -721,7 +721,7 @@ public class ItemUtil {
         NbtCompound nbt = stack.getNbt();
         if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
         NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-        if (!entityTag.contains(ENTITY_TAG_MOTION_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!entityTag.contains(ENTITY_TAG_ROTATION_KEY, NbtElement.LIST_TYPE)) return false;
         if (!validate) return true;
         NbtList rotation = entityTag.getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
         return rotation.size() == 2;

@@ -5,6 +5,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 
 import me.white.itemeditor.command.EditCommand;
+import net.minecraft.SharedConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,9 @@ public class ItemEditor implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(EditCommand::register);
-        ClientCommandRegistrationCallback.EVENT.register(RegistryCommand::register);
+        if (SharedConstants.isDevelopment) {
+            ClientCommandRegistrationCallback.EVENT.register(RegistryCommand::register);
+        }
         // TODO:
         // color command
         // character command

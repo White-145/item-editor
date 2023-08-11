@@ -5,8 +5,6 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
@@ -14,10 +12,10 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 public class Vec3ArgumentType implements ArgumentType<Vec3d> {
-    public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.position.incomplete"));
+    public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec3.incomplete"));
+    public static final SimpleCommandExceptionType MISSING_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec3.missing"));
 
     private static final String[] EXAMPLES = new String[] {
             "0 0 0",
@@ -28,17 +26,15 @@ public class Vec3ArgumentType implements ArgumentType<Vec3d> {
     @Override
     public Vec3d parse(StringReader reader) throws CommandSyntaxException {
         int cursor = reader.getCursor();
+        if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double x = reader.readDouble();
         if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double y = reader.readDouble();
         if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double z = reader.readDouble();
         return new Vec3d(x, y, z);
-    }
-
-    @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return ArgumentType.super.listSuggestions(context, builder);
     }
 
     @Override

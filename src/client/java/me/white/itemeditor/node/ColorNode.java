@@ -70,7 +70,7 @@ public class ColorNode implements Node {
                 .build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setHexColorNode = ClientCommandManager
-                .argument("color", ColorArgumentType.hex())
+                .argument("color", ColorArgumentType.color())
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;

@@ -9,6 +9,7 @@ import me.white.itemeditor.node.EntityNode;
 import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -35,11 +36,9 @@ public class RotationNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!ItemUtil.hasEntityRotation(stack)) throw NO_ROTATION_EXCEPTION;
-                    Vec2f motion = ItemUtil.getEntityRotation(stack);
-                    String x = String.format("%.2f", motion.x);
-                    String y = String.format("%.2f", motion.y);
+                    Vec2f rotation = ItemUtil.getEntityRotation(stack);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(rotation)));
                     return 1;
                 })
                 .build();
@@ -73,11 +72,9 @@ public class RotationNode implements Node {
                         if (oldRotation.equals(rotation)) throw ALREADY_IS_EXCEPTION;
                     }
                     ItemUtil.setEntityRotation(stack, rotation);
-                    String x = String.format("%.2f", rotation.x);
-                    String y = String.format("%.2f", rotation.y);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(rotation)));
                     return 1;
                 })
                 .build();
@@ -87,7 +84,7 @@ public class RotationNode implements Node {
         // ... get
         node.addChild(getNode);
 
-        // ... set [<motion>]
+        // ... set [<rotation>]
         node.addChild(setNode);
         setNode.addChild(setRotationNode);
     }

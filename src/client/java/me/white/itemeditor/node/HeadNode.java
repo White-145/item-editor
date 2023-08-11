@@ -65,7 +65,7 @@ public class HeadNode implements Node {
                         String texture = ItemUtil.getHeadTexture(stack);
 
                         try {
-                            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.url(new URL(texture))));
+                            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.clickable(new URL(texture))));
                         } catch (MalformedURLException e) {
                             throw INVALID_URL_EXCEPTION;
                         }
@@ -131,7 +131,7 @@ public class HeadNode implements Node {
 
                     EditorUtil.setStack(context.getSource(), stack);
                     try {
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(new URL(texture))));
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(new URL(texture))));
                     } catch (MalformedURLException e) {
                         throw INVALID_URL_EXCEPTION;
                     }

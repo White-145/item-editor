@@ -42,8 +42,6 @@ public class EntityNode implements Node {
         }
 
         // TODO:
-        // maybe combine position and rotation
-        // TODO:
         // BINARY
         // ... gravity ...
         // ... silence ...

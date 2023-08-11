@@ -5,20 +5,17 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.white.itemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 public class Vec2ArgumentType implements ArgumentType<Vec2f> {
     public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec2.incomplete"));
+    public static final SimpleCommandExceptionType MISSING_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec2.missing"));
 
     private static final String[] EXAMPLES = new String[] {
             "0 0",
@@ -29,15 +26,12 @@ public class Vec2ArgumentType implements ArgumentType<Vec2f> {
     @Override
     public Vec2f parse(StringReader reader) throws CommandSyntaxException {
         int cursor = reader.getCursor();
+        if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         float x = reader.readFloat();
         if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         float y = reader.readFloat();
         return new Vec2f(x, y);
-    }
-
-    @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return ArgumentType.super.listSuggestions(context, builder);
     }
 
     @Override

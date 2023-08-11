@@ -138,7 +138,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                 }
                 switch (reader.peek()) {
                     case '#' -> {  // hex color
-                        int color = ColorArgumentType.hex().parse(reader);
+                        int color = ColorArgumentType.color().parse(reader);
                         if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
                         builder = new StringBuilder();
                         style = EMPTY_STYLE.withColor(color);

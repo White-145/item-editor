@@ -7,11 +7,15 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 
 import java.net.URL;
 
 public class TextUtil {
     private static final String OUTPUT_COPY = "chat.copyable.copy";
+    private static final String OUTPUT_VEC3 = "chat.copyable.vec3";
+    private static final String OUTPUT_VEC2 = "chat.copyable.vec2";
 
     public static Text copyable(Text text, String copy) {
         return Text.empty()
@@ -44,16 +48,29 @@ public class TextUtil {
         return copyable(Text.literal(str), str);
     }
 
-    public static Text url(URL url) {
-        String copied = url.toString();
+    public static Text clickable(URL url) {
+        String str = url.toString();
 
         return Text.empty()
                 .append(url.toString())
                 .setStyle(Style.EMPTY
-                        .withUnderline(true)
                         .withColor(Formatting.BLUE)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, copied))
-                        .withInsertion(copied)
+                        .withUnderline(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, str))
+                        .withInsertion(str)
                 );
+    }
+
+    public static Text copyable(Vec3d vec) {
+        String x = String.format("%.2f", vec.x);
+        String y = String.format("%.2f", vec.y);
+        String z = String.format("%.2f", vec.z);
+        return copyable(Text.translatable(OUTPUT_VEC3, x, y, z), vec.x + " " + vec.y + " " + vec.z);
+    }
+
+    public static Text copyable(Vec2f vec) {
+        String x = String.format("%.2f", vec.x);
+        String y = String.format("%.2f", vec.y);
+        return copyable(Text.translatable(OUTPUT_VEC2, x, y), vec.x + " " + vec.y);
     }
 }

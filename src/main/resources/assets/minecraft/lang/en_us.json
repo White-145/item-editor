@@ -93,6 +93,33 @@
   "commands.edit.enchantment.glintenable": "Item glint was enabled",
   "commands.edit.enchantment.glintdisable": "Item glint was disabled",
 
+  "commands.edit.entity.error.cannotedit": "Can only edit armor stands or spawn eggs",
+
+  "commands.edit.entity.motion.error.alreadyis": "Entity already has given motion",
+  "commands.edit.entity.motion.error.nomotion": "Entity doesn't have motion",
+  "commands.edit.entity.motion.get": "Entity has the following motion: %s",
+  "commands.edit.entity.motion.reset": "Entity motion was reset",
+  "commands.edit.entity.motion.set": "Entity motion was set to %s",
+
+  "commands.edit.entity.position.error.alreadyis": "Entity already has given position",
+  "commands.edit.entity.position.error.noposition": "Entity doesn't have position",
+  "commands.edit.entity.position.get": "Entity has the following position: %s",
+  "commands.edit.entity.position.reset": "Entity position was reset",
+  "commands.edit.entity.position.set": "Entity position was set to %s",
+
+  "commands.edit.entity.rotation.error.alreadyis": "Entity already has given rotation",
+  "commands.edit.entity.rotation.error.norotation": "Entity doesn't have rotation",
+  "commands.edit.entity.rotation.get": "Entity has the following rotation: %s",
+  "commands.edit.entity.rotation.reset": "Entity rotation was reset",
+  "commands.edit.entity.rotation.set": "Entity rotation was set to %s",
+
+  "commands.edit.entity.type.error.cannotedit": "Can only edit spawn eggs",
+  "commands.edit.entity.type.error.noentitytype": "Item doesn't have entity type",
+  "commands.edit.entity.type.error.alreadyis": "Item already has given entity type",
+  "commands.edit.entity.type.get": "Item has the following entity type: %s",
+  "commands.edit.entity.type.reset": "Item entity type was reset",
+  "commands.edit.entity.type.set": "Item entity type was set to %s",
+
   "commands.edit.equip": "Equipped item",
 
   "commands.edit.firework.error.cannotedit": "Can only edit fireworks",
@@ -231,15 +258,20 @@
   "commands.edit.whitelist.clearplace": "Cleared placing whitelist from the item",
   "commands.edit.whitelist.cleardestroy": "Cleared destroying whitelist from the item",
 
-  "argument.color.invalidhex": "Invalid hex color",
-  "argument.color.invalidblock": "Invalid block color",
+  "argument.color.invalidcolor": "Invalid hex color",
   "argument.enum.invalidenum": "Invalid enum",
   "argument.text.invalidhex": "Invalid hex character sequence",
   "argument.text.invalidunicode": "Invalid unicode character sequence",
   "argument.text.invalidescape": "Invalid escape sequence",
   "argument.text.invalidplaceholder": "Invalid placeholder",
+  "argument.vec2.incomplete": "Incomplete vec2",
+  "argument.vec2.missing": "Missing vec2 coordinate",
+  "argument.vec3.incomplete": "Incomplete vec3",
+  "argument.vec3.missing": "Missing vec3 coordinate",
 
   "chat.copyable.copy": "Click to copy",
+  "chat.copyable.vec3": "%s, %s, %s",
+  "chat.copyable.vec2": "%s, %s",
 
   "commands.edit.error.notcreative": "Can only edit items in creative game mode",
   "commands.edit.error.noitem": "No item in main hand",

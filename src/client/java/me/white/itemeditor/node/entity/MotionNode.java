@@ -9,6 +9,7 @@ import me.white.itemeditor.node.EntityNode;
 import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -36,11 +37,8 @@ public class MotionNode implements Node {
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!ItemUtil.hasEntityMotion(stack)) throw NO_MOTION_EXCEPTION;
                     Vec3d motion = ItemUtil.getEntityMotion(stack);
-                    String x = String.format("%.2f", motion.x);
-                    String y = String.format("%.2f", motion.y);
-                    String z = String.format("%.2f", motion.z);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(motion)));
                     return 1;
                 })
                 .build();
@@ -74,12 +72,9 @@ public class MotionNode implements Node {
                         if (oldMotion.equals(motion)) throw ALREADY_IS_EXCEPTION;
                     }
                     ItemUtil.setEntityMotion(stack, motion);
-                    String x = String.format("%.2f", motion.x);
-                    String y = String.format("%.2f", motion.y);
-                    String z = String.format("%.2f", motion.z);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(motion)));
                     return 1;
                 })
                 .build();

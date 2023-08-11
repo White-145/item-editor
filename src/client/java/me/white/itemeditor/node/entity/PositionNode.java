@@ -9,6 +9,7 @@ import me.white.itemeditor.node.EntityNode;
 import me.white.itemeditor.node.Node;
 import me.white.itemeditor.util.EditorUtil;
 import me.white.itemeditor.util.ItemUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -36,11 +37,8 @@ public class PositionNode implements Node {
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!ItemUtil.hasEntityPosition(stack)) throw NO_POSITION_EXCEPTION;
                     Vec3d pos = ItemUtil.getEntityPosition(stack);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(pos)));
                     return 1;
                 })
                 .build();
@@ -74,12 +72,9 @@ public class PositionNode implements Node {
                         if (oldPos.equals(pos)) throw ALREADY_IS_EXCEPTION;
                     }
                     ItemUtil.setEntityPosition(stack, pos);
-                    String x = String.format("%.2f", pos.x);
-                    String y = String.format("%.2f", pos.y);
-                    String z = String.format("%.2f", pos.z);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, x, y, z));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(pos)));
                     return 1;
                 })
                 .build();
