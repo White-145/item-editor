@@ -1,5 +1,7 @@
 package me.white.itemeditor.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -9,6 +11,7 @@ import java.util.UUID;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import me.white.itemeditor.ItemEditor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
 import net.minecraft.nbt.*;
@@ -38,6 +41,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.mineskin.MineskinClient;
 import oshi.util.tuples.Quintet;
 
 public class ItemUtil {
@@ -88,6 +92,7 @@ public class ItemUtil {
     private static final String GENERATION_KEY = "generation";
     private static final String PAGES_KEY = "pages";
     private static final String SKULL_OWNER_KEY = "SkullOwner";
+    private static final String SKULL_OWNER_ID_KEY = "Id";
     private static final String SKULL_OWNER_NAME_KEY = "Name";
     private static final String SKULL_OWNER_PROPERTIES_KEY = "Properties";
     private static final String SKULL_OWNER_PROPERTIES_TEXTURES_KEY = "textures";
@@ -98,7 +103,6 @@ public class ItemUtil {
     private static final String TRIM_PATTERN_KEY = "pattern";
     private static final String UNBREAKABLE_KEY = "Unbreakable";
     private static final String HIDE_FLAGS_KEY = "HideFlags";
-    private static final String HEAD_TEXTURE_URL_REGEX = "https?://textures\\.minecraft\\.net/texture/[0-9a-fA-F]+";
     private static final String HEAD_TEXTURE_OBJECT = "{\"textures\":{\"SKIN\":{\"url\":\"%s\"}}}";
     public static final int FLAGS_AMOUNT = 8;
     public static final int GENERATIONS_AMOUNT = 4;
@@ -182,9 +186,9 @@ public class ItemUtil {
             if (!textures.has("SKIN")) return false;
             JsonObject skin = textures.getAsJsonObject("SKIN");
             if (!skin.has("url")) return false;
-            String url = skin.get("url").getAsString();
-            return url.matches(HEAD_TEXTURE_URL_REGEX);
-        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException e) {
+            URL url = new URL(skin.get("url").getAsString());
+            return isValidHeadTextureUrl(url);
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
             return false;
         }
     }
@@ -195,8 +199,9 @@ public class ItemUtil {
      * @param url Texture url
      * @return Is url valid for head texture
      */
-    public static boolean isValidHeadTextureUrl(@NotNull String url) {
-        return url.matches(HEAD_TEXTURE_URL_REGEX);
+    public static boolean isValidHeadTextureUrl(@NotNull URL url) {
+        String path = url.getPath();
+        return url.getHost().equals("textures.minecraft.net") && path.startsWith("/texture/") && path.substring(9).matches("[a-fA-F0-9]+");
     }
 
     /**
@@ -939,14 +944,14 @@ public class ItemUtil {
      * @param stack Item stack to get from
      * @return Head texture from item stack, or null if none is present
      */
-    public static @Nullable String getHeadTexture(@NotNull ItemStack stack) {
+    public static @Nullable URL getHeadTexture(@NotNull ItemStack stack) {
         if (!hasHeadTexture(stack)) return null;
         String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
         try {
             String value = new String(Base64.getDecoder().decode(texture));
             JsonObject textures = JsonParser.parseString(value).getAsJsonObject().getAsJsonObject("textures");
-            return textures.getAsJsonObject("SKIN").get("url").getAsString();
-        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException e) {
+            return new URL(textures.getAsJsonObject("SKIN").get("url").getAsString());
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
             return null;
         }
     }
@@ -1519,9 +1524,9 @@ public class ItemUtil {
      * Sets head texture to the stack
      *
      * @param stack Item stack to modify
-     * @param texture Head texture to set. Removes tag if null
+     * @param texture URL to head texture to set. Removes tag if null
      */
-    public static void setHeadTexture(@NotNull ItemStack stack, @Nullable String texture) {
+    public static void setHeadTexture(@NotNull ItemStack stack, @Nullable URL texture) {
         if (texture == null) {
             if (!hasHeadTexture(stack)) return;
 
@@ -1529,19 +1534,40 @@ public class ItemUtil {
             nbt.remove(SKULL_OWNER_KEY);
             stack.setNbt(nbt);
         } else {
-            NbtList textures = new NbtList();
-            NbtCompound nbtTexture = new NbtCompound();
-            String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, texture).getBytes()));
-            nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
-            textures.add(nbtTexture);
+            if (isValidHeadTextureUrl(texture)) {
+                NbtList textures = new NbtList();
+                NbtCompound nbtTexture = new NbtCompound();
+                String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, texture).getBytes()));
+                nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
+                textures.add(nbtTexture);
 
-            NbtCompound nbt = stack.getOrCreateNbt();
-            NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
-            NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
-            properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
-            skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
-            nbt.put(SKULL_OWNER_KEY, skullOwner);
-            stack.setNbt(nbt);
+                NbtCompound nbt = stack.getOrCreateNbt();
+                NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+                NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
+                properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
+                skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
+                skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
+                nbt.put(SKULL_OWNER_KEY, skullOwner);
+                stack.setNbt(nbt);
+            } else {
+                ItemEditor.getMineskinInstance().generateUrl(texture.toString()).thenAccept(skin -> {
+                    String url = skin.data.texture.url;
+                    NbtList textures = new NbtList();
+                    NbtCompound nbtTexture = new NbtCompound();
+                    String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, url).getBytes()));
+                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
+                    textures.add(nbtTexture);
+
+                    NbtCompound nbt = stack.getOrCreateNbt();
+                    NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+                    NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
+                    properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
+                    skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
+                    skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
+                    nbt.put(SKULL_OWNER_KEY, skullOwner);
+                    stack.setNbt(nbt);
+                });
+            }
         }
     }
 

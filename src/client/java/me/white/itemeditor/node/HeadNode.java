@@ -62,13 +62,9 @@ public class HeadNode implements Node {
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
                     } else {
                         if (!ItemUtil.hasHeadTexture(stack)) throw NO_TEXTURE_EXCEPTION;
-                        String texture = ItemUtil.getHeadTexture(stack);
+                        URL texture = ItemUtil.getHeadTexture(stack);
 
-                        try {
-                            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.clickable(new URL(texture))));
-                        } catch (MalformedURLException e) {
-                            throw INVALID_URL_EXCEPTION;
-                        }
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.clickable(texture)));
                     }
                     return 1;
                 })
@@ -123,18 +119,18 @@ public class HeadNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    String oldTexture = ItemUtil.getHeadTexture(stack);
-                    String texture = StringArgumentType.getString(context, "texture");
-                    if (!ItemUtil.isValidHeadTextureUrl(texture)) throw INVALID_URL_EXCEPTION;
+                    URL oldTexture = ItemUtil.getHeadTexture(stack);
+                    URL texture;
+                    try {
+                        texture = new URL(StringArgumentType.getString(context, "texture"));
+                    } catch (MalformedURLException e) {
+                        throw INVALID_URL_EXCEPTION;
+                    }
                     if (oldTexture != null && oldTexture.equals(texture)) throw TEXTURE_ALREADY_IS_EXCEPTION;
                     ItemUtil.setHeadTexture(stack, texture);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    try {
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(new URL(texture))));
-                    } catch (MalformedURLException e) {
-                        throw INVALID_URL_EXCEPTION;
-                    }
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(texture)));
                     return 1;
                 })
                 .build();
