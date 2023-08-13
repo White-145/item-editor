@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -16,7 +17,6 @@ import net.minecraft.command.argument.NbtPathArgumentType.NbtPath;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
 
 public class DataNode implements Node {
@@ -41,7 +41,7 @@ public class DataNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(stack.getNbt())));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(stack.getNbt())));
                     return 1;
                 })
                 .build();
@@ -55,7 +55,7 @@ public class DataNode implements Node {
                     NbtPath path = context.getArgument("path", NbtPath.class);
                     NbtElement element = path.get(stack.getNbt()).get(0);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, NbtHelper.toPrettyPrintedText(element)));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(element)));
                     return 1;
                 })
                 .build();
@@ -86,7 +86,7 @@ public class DataNode implements Node {
                     stack.setNbt(nbt);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(element)));
                     return 1;
                 })
                 .build();

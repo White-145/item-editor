@@ -41,7 +41,7 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... add [<attribute> <amount>|infinity] [<operation>] [<slot>]`
 - - `... remove <attribute> [<slot>]`
 - - `... clear [<slot>]`
-- `... equip`
+- `... equip [<slot>]`
 - `... color ...`
 - - `... get`
 - - `... set [<color>]`

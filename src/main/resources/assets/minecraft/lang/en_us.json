@@ -70,7 +70,7 @@
   "commands.edit.data.error.setalreadyhas": "Item already has given NBT data",
   "commands.edit.data.error.mergealreadyhas": "Item alredy has given NBT data",
   "commands.edit.data.get": "Item has the following NBT data: %s",
-  "commands.edit.data.set": "Item NBT data was modified",
+  "commands.edit.data.set": "Item NBT data at given path was set to %s",
   "commands.edit.data.merge": "Item NBT data was merged",
   "commands.edit.data.remove": "Item NBT data was removed",
 

@@ -8,6 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.itemeditor.argument.ColorArgumentType;
 import me.white.itemeditor.util.ItemUtil;
 import me.white.itemeditor.util.EditorUtil;
+import me.white.itemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -47,7 +48,7 @@ public class ColorNode implements Node {
                     if (!ItemUtil.hasColor(stack)) throw NO_COLOR_EXCEPTION;
                     int color = ItemUtil.getColor(stack);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, EditorUtil.formatColor(color)));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(EditorUtil.formatColor(color))));
                     return color;
                 })
                 .build();
@@ -82,7 +83,7 @@ public class ColorNode implements Node {
                     ItemUtil.setColor(stack, color);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, EditorUtil.formatColor(color)));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(EditorUtil.formatColor(color))));
                     return old == null ? 0 : old;
                 })
                 .build();
