@@ -2,7 +2,6 @@ package me.white.itemeditor.util;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -10,7 +9,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.itemeditor.ItemEditor;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -42,8 +40,20 @@ public class EditorUtil {
 		return client.interactionManager.getCurrentGameMode().isCreative();
 	}
 
+	public static ItemStack getSecondaryStack(FabricClientCommandSource source) {
+		return source.getPlayer().getOffHandStack();
+	}
+
+	public static void setSecondaryStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
+		if (getSecondaryStack(source) == stack) ItemEditor.LOGGER.warn("Using setSecondaryStack without clonning result of getSecondaryStack (If you see it report to github pls)");
+		if (!hasCreative(source)) throw NOT_CREATIVE_EXCEPTION;
+		PlayerInventory inventory = source.getPlayer().getInventory();
+		inventory.setStack(40, stack);
+		source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(45, stack));
+	}
+
 	public static ItemStack getStack(FabricClientCommandSource source) {
-		return source.getPlayer().getInventory().getMainHandStack();
+		return source.getPlayer().getMainHandStack();
 	}
 
 	public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
