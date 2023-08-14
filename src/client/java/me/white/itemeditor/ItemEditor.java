@@ -6,18 +6,11 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 
 import me.white.itemeditor.command.EditCommand;
 import net.minecraft.SharedConstants;
-import org.mineskin.MineskinClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ItemEditor implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("item-editor");
-    private static MineskinClient mineskin = null;
-
-    public static MineskinClient getMineskinInstance() {
-        if (mineskin == null) mineskin = new MineskinClient("ItemEditorHeadGenerator-Generator");
-        return mineskin;
-    }
 
     @Override
     public void onInitializeClient() {

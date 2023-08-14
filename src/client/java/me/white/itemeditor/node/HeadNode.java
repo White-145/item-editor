@@ -1,8 +1,17 @@
 package me.white.itemeditor.node;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -30,20 +39,88 @@ public class HeadNode implements Node {
     public static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
     public static final CommandSyntaxException TEXTURE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturealreadyis")).create();
     public static final CommandSyntaxException OWNER_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.owneralreadyis")).create();
-    private static final CommandSyntaxException INVALID_URL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.invalidtexture")).create();
+    public static final CommandSyntaxException INVALID_URL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.invalidtexture")).create();
+    public static final CommandSyntaxException BAD_CUSTOM_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustombad")).create();
+    public static final CommandSyntaxException TOO_FAST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustomtoofast")).create();
+    public static final CommandSyntaxException SERVER_ERROR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustomservererror")).create();
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
     private static final String OUTPUT_TEXTURE_REMOVE = "commands.edit.head.textureremove";
     private static final String OUTPUT_TEXTURE_SET = "commands.edit.head.textureset";
-    private static final String OUTPUT_TEXTURE_SET_CUSTOM = "commands.edit.head.texturesetcustom";
+    private static final String OUTPUT_TEXTURE_CUSTOM_SET = "commands.edit.head.texturecustomset";
+    private static final String OUTPUT_TEXTURE_CUSTOM_OK = "commands.edit.head.texturecustomok";
     private static final String OUTPUT_SOUND_GET = "commands.edit.head.soundget";
     private static final String OUTPUT_SOUND_RESET = "commands.edit.head.soundreset";
     private static final String OUTPUT_SOUND_SET = "commands.edit.head.soundset";
+    private static final URL MINESKIN_API;
+
+    static {
+        try {
+            MINESKIN_API = new URL("https://api.mineskin.org/generate/url");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static boolean canEdit(ItemStack stack) {
         Item item = stack.getItem();
         return item == Items.PLAYER_HEAD;
+    }
+
+    public static void setFromUrl(URL url, FabricClientCommandSource source) {
+        try {
+            JsonObject body = new JsonObject();
+            body.addProperty("url", url.toString());
+            body.addProperty("visibility", 1);
+
+            HttpURLConnection connection = (HttpURLConnection) MINESKIN_API.openConnection();
+            connection.addRequestProperty("User-Agent", "ItemEditor-HeadGenerator");
+            connection.setConnectTimeout(30000);
+            connection.addRequestProperty("Content-Type", "application/json");
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+
+            try (OutputStream output = connection.getOutputStream()) {
+                byte[] input = body.toString().getBytes(StandardCharsets.UTF_8);
+                output.write(input, 0, input.length);
+            }
+
+            int code = connection.getResponseCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String responseLine;
+                    while ((responseLine = buffer.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                    JsonObject object = JsonParser.parseString(response.toString()).getAsJsonObject();
+                    JsonObject texture = object.getAsJsonObject("data").getAsJsonObject("texture");
+
+                    String value = texture.get("value").getAsString();
+                    String signature = texture.get("signature").getAsString();
+
+                    ItemStack stack = EditorUtil.getStack(source);
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(source)) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    ItemUtil.setHeadTexture(stack, value, signature);
+
+                    EditorUtil.setStack(source, stack);
+                    source.sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
+                }
+            } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                throw BAD_CUSTOM_TEXTURE_EXCEPTION;
+            } else if (code == 429) {
+                throw TOO_FAST_EXCEPTION;
+            } else {
+                throw SERVER_ERROR_EXCEPTION;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (CommandSyntaxException e) {
+            source.sendError(Text.literal(e.getMessage()));
+        }
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -57,15 +134,13 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    if (ItemUtil.hasHeadOwner(stack)) {
-                        String owner = ItemUtil.getHeadOwner(stack);
-
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
-                    } else {
-                        if (!ItemUtil.hasHeadTexture(stack)) throw NO_TEXTURE_EXCEPTION;
+                    if (ItemUtil.hasHeadTexture(stack)) {
                         URL texture = ItemUtil.getHeadTexture(stack);
-
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.clickable(texture)));
+                    } else {
+                        if (!ItemUtil.hasHeadOwner(stack)) throw NO_TEXTURE_EXCEPTION;
+                        String owner = ItemUtil.getHeadOwner(stack);
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_GET, owner));
                     }
                     return 1;
                 })
@@ -78,7 +153,7 @@ public class HeadNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasHeadOwner(stack) && !ItemUtil.hasHeadTexture(stack, true)) throw NO_TEXTURE_EXCEPTION;
+                    if (!ItemUtil.hasHeadOwner(stack) && !ItemUtil.hasHeadTexture(stack, false)) throw NO_TEXTURE_EXCEPTION;
                     ItemUtil.setHeadTexture(stack, null);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -127,14 +202,14 @@ public class HeadNode implements Node {
                     } catch (MalformedURLException e) {
                         throw INVALID_URL_EXCEPTION;
                     }
-                    if (oldTexture != null && oldTexture.equals(texture)) throw TEXTURE_ALREADY_IS_EXCEPTION;
-                    ItemUtil.setHeadTexture(stack, texture);
-
-                    EditorUtil.setStack(context.getSource(), stack);
-                    if (!ItemUtil.isValidHeadTextureUrl(texture)) {
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET_CUSTOM, TextUtil.clickable(texture)));
-                    } else {
+                    if (ItemUtil.isValidHeadTextureUrl(texture)) {
+                        if (oldTexture != null && texture.getPath().equals(oldTexture.getPath())) throw TEXTURE_ALREADY_IS_EXCEPTION;
+                        ItemUtil.setHeadTexture(stack, texture);
+                        EditorUtil.setStack(context.getSource(), stack);
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(texture)));
+                    } else {
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_SET, TextUtil.clickable(texture)));
+                        CompletableFuture.runAsync(() -> setFromUrl(texture, context.getSource()));
                     }
                     return 1;
                 })

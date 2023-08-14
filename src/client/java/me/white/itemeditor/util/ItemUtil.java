@@ -11,7 +11,6 @@ import java.util.UUID;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import me.white.itemeditor.ItemEditor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.*;
 import net.minecraft.nbt.*;
@@ -192,14 +191,18 @@ public class ItemUtil {
         try {
             String value = new String(Base64.getDecoder().decode(texture));
             JsonObject textureObj = JsonParser.parseString(value).getAsJsonObject();
+            System.out.println(textureObj.toString());
             if (!textureObj.has("textures")) return false;
             JsonObject textures = textureObj.getAsJsonObject("textures");
+            System.out.println(textures.toString());
             if (!textures.has("SKIN")) return false;
             JsonObject skin = textures.getAsJsonObject("SKIN");
+            System.out.println(skin.toString());
             if (!skin.has("url")) return false;
             URL url = new URL(skin.get("url").getAsString());
             return isValidHeadTextureUrl(url);
         } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
+            System.out.println("failed");
             return false;
         }
     }
@@ -1622,40 +1625,45 @@ public class ItemUtil {
             nbt.remove(SKULL_OWNER_KEY);
             stack.setNbt(nbt);
         } else {
-            if (isValidHeadTextureUrl(texture)) {
-                NbtList textures = new NbtList();
-                NbtCompound nbtTexture = new NbtCompound();
-                String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, texture).getBytes()));
-                nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
-                textures.add(nbtTexture);
+            NbtList textures = new NbtList();
+            NbtCompound nbtTexture = new NbtCompound();
+            String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, texture).getBytes()));
+            nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
+            textures.add(nbtTexture);
 
-                NbtCompound nbt = stack.getOrCreateNbt();
-                NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
-                NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
-                properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
-                skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
-                skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
-                nbt.put(SKULL_OWNER_KEY, skullOwner);
-                stack.setNbt(nbt);
-            } else {
-                ItemEditor.getMineskinInstance().generateUrl(texture.toString()).thenAccept(skin -> {
-                    NbtList textures = new NbtList();
-                    NbtCompound nbtTexture = new NbtCompound();
-                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, skin.data.texture.value);
-                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_SIGNATURE_KEY, skin.data.texture.signature);
-                    textures.add(nbtTexture);
-
-                    NbtCompound nbt = stack.getOrCreateNbt();
-                    NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
-                    NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
-                    properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
-                    skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
-                    skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
-                    nbt.put(SKULL_OWNER_KEY, skullOwner);
-                    stack.setNbt(nbt);
-                });
-            }
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+            NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
+            properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
+            skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
+            skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
+            nbt.put(SKULL_OWNER_KEY, skullOwner);
+            stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Sets head texture to the stack
+     *
+     * @param stack Item stack to modify
+     * @param value value of head texture to set
+     * @param signature signature of head texture to set
+     */
+    public static void setHeadTexture(@NotNull ItemStack stack, @NotNull String value, @Nullable String signature) {
+        NbtList textures = new NbtList();
+        NbtCompound nbtTexture = new NbtCompound();
+        nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, value);
+        if (signature != null) nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_SIGNATURE_KEY, signature);
+        textures.add(nbtTexture);
+
+        NbtCompound nbt = stack.getOrCreateNbt();
+        NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+        NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
+        properties.put(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, textures);
+        skullOwner.put(SKULL_OWNER_PROPERTIES_KEY, properties);
+        skullOwner.putUuid(SKULL_OWNER_ID_KEY, UUID.randomUUID());
+        nbt.put(SKULL_OWNER_KEY, skullOwner);
+        stack.setNbt(nbt);
     }
 
     /**
