@@ -152,3 +152,7 @@ All commands are also available as `/itemeditor:<command>`
 - `/color` command
 - `/char` command
 
+## Credits:
+
+- [MineSkin](https://mineskin.org/): Custom head textures
+- [DiamondFire](https://mcdiamondfire.com/home/): Idea of such item editor
