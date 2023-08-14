@@ -225,7 +225,7 @@
   "commands.edit.head.textureget": "Item has the following head texture: %s",
   "commands.edit.head.textureremove": "Item texture was removed",
   "commands.edit.head.textureset": "Item texture was set to %s",
-  "commands.edit.head.texturesetcustom": "Trying to set item texture to %s",
+  "commands.edit.head.texturesetcustom": "Trying to set item texture to %s...",
   "commands.edit.head.soundget": "Item has the following note block sound: %s",
   "commands.edit.head.soundreset": "Item note block sound was reset",
   "commands.edit.head.soundset": "Item note block sound was set to %s",
