@@ -41,7 +41,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.mineskin.MineskinClient;
 import oshi.util.tuples.Quintet;
 
 public class ItemUtil {
@@ -75,10 +74,17 @@ public class ItemUtil {
     private static final String ENCHANTMENTS_ID_KEY = "id";
     private static final String ENCHANTMENTS_LVL_KEY = "lvl";
     private static final String ENTITY_TAG_KEY = "EntityTag";
+    private static final String ENTITY_TAG_CAN_PICK_UP_LOOT_KEY = "CanPickUpLoot";
+    private static final String ENTITY_TAG_GLOWING_KEY = "Glowing";
     private static final String ENTITY_TAG_ID_KEY = "id";
+    private static final String ENTITY_TAG_INVULNERABLE_KEY = "Invulnerable";
     private static final String ENTITY_TAG_MOTION_KEY = "Motion";
+    private static final String ENTITY_TAG_NO_AI_KEY = "NoAI";
+    private static final String ENTITY_TAG_NO_GRAVITY_KEY = "NoGravity";
+    private static final String ENTITY_TAG_PERSISTANCE_REQUIRED_KEY = "PersistanceRequired";
     private static final String ENTITY_TAG_POS_KEY = "Pos";
     private static final String ENTITY_TAG_ROTATION_KEY = "Rotation";
+    private static final String ENTITY_TAG_SILENT_KEY = "Silent";
     private static final String EXPLOSION_KEY = "Explosion";
     private static final String EXPLOSION_COLORS_KEY = "Colors";
     private static final String FIREWORKS_KEY = "Fireworks";
@@ -97,6 +103,7 @@ public class ItemUtil {
     private static final String SKULL_OWNER_PROPERTIES_KEY = "Properties";
     private static final String SKULL_OWNER_PROPERTIES_TEXTURES_KEY = "textures";
     private static final String SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY = "Value";
+    private static final String SKULL_OWNER_PROPERTIES_TEXTURES_SIGNATURE_KEY = "Signature";
     private static final String TITLE_KEY = "title";
     private static final String TRIM_KEY = "Trim";
     private static final String TRIM_MATERIAL_KEY = "material";
@@ -115,8 +122,12 @@ public class ItemUtil {
      */
     public static boolean isValidEnchantment(@NotNull NbtCompound nbt) {
         if (nbt.isEmpty()) return false;
-        if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) return false;
         if (!nbt.contains(ENCHANTMENTS_LVL_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) {
+            if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.SHORT_TYPE)) return false;
+            int id = nbt.getShort(ENCHANTMENTS_ID_KEY);
+            return id >= 0 && id < Registries.ENCHANTMENT.size();
+        }
         Identifier id = Identifier.tryParse(nbt.getString(ENCHANTMENTS_ID_KEY));
         if (id == null) return false;
         return Registries.ENCHANTMENT.containsId(id);
@@ -1166,6 +1177,83 @@ public class ItemUtil {
     }
 
     /**
+     * Gets entity gravity from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity gravity from item stack
+     */
+    public static boolean getEntityGravity(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_GRAVITY_KEY);
+    }
+
+    /**
+     * Gets entity silence from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity silence from item stack
+     */
+    public static boolean getEntitySilence(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_SILENT_KEY);
+    }
+
+    /**
+     * Gets entity invulnerability from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity invulnerability from item stack
+     */
+    public static boolean getEntityInvulnerability(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_INVULNERABLE_KEY);
+    }
+
+    /**
+     * Gets entity picking up from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity picking up from item stack
+     */
+    public static boolean getEntityPickingUp(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY);
+    }
+
+    /**
+     * Gets entity persistance from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity persistance from item stack
+     */
+    public static boolean getEntityPersistance(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY);
+    }
+
+    /**
+     * Gets entity intellect from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity intellect from item stack
+     */
+    public static boolean getEntityIntellect(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_AI_KEY);
+    }
+
+    /**
+     * Gets entity glow from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity glow from item stack
+     */
+    public static boolean getEntityGlow(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_GLOWING_KEY);
+    }
+
+    /**
      * Sets attribute modifiers to the stack
      *
      * @param stack Item stack to modify
@@ -1551,11 +1639,10 @@ public class ItemUtil {
                 stack.setNbt(nbt);
             } else {
                 ItemEditor.getMineskinInstance().generateUrl(texture.toString()).thenAccept(skin -> {
-                    String url = skin.data.texture.url;
                     NbtList textures = new NbtList();
                     NbtCompound nbtTexture = new NbtCompound();
-                    String textureObj = new String(Base64.getEncoder().encode(String.format(HEAD_TEXTURE_OBJECT, url).getBytes()));
-                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, textureObj);
+                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, skin.data.texture.value);
+                    nbtTexture.putString(SKULL_OWNER_PROPERTIES_TEXTURES_SIGNATURE_KEY, skin.data.texture.signature);
                     textures.add(nbtTexture);
 
                     NbtCompound nbt = stack.getOrCreateNbt();
@@ -1944,6 +2031,174 @@ public class ItemUtil {
             NbtCompound nbt = stack.getOrCreateNbt();
             NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
             entityTag.put(ENTITY_TAG_ROTATION_KEY, nbtRotation);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity gravity to the stack
+     *
+     * @param stack Item stack to modify
+     * @param gravity Entity gravity to set. Removes tag if null
+     */
+    public static void setEntityGravity(@NotNull ItemStack stack, @Nullable Boolean gravity) {
+        if (gravity == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_NO_GRAVITY_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_NO_GRAVITY_KEY, !gravity);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity silence to the stack
+     *
+     * @param stack Item stack to modify
+     * @param silence Entity silence to set. Removes tag if null
+     */
+    public static void setEntitySilence(@NotNull ItemStack stack, @Nullable Boolean silence) {
+        if (silence == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_SILENT_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_SILENT_KEY, silence);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity invulnerability to the stack
+     *
+     * @param stack Item stack to modify
+     * @param invulnerability Entity invulnerability to set. Removes tag if null
+     */
+    public static void setEntityInvulnerability(@NotNull ItemStack stack, @Nullable Boolean invulnerability) {
+        if (invulnerability == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_INVULNERABLE_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_INVULNERABLE_KEY, invulnerability);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity picking up to the stack
+     *
+     * @param stack Item stack to modify
+     * @param pickingUp Entity picking up to set. Removes tag if null
+     */
+    public static void setEntityPickingUp(@NotNull ItemStack stack, @Nullable Boolean pickingUp) {
+        if (pickingUp == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY, pickingUp);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity picking up to the stack
+     *
+     * @param stack Item stack to modify
+     * @param persistance Entity persistance to set. Removes tag if null
+     */
+    public static void setEntityPersistance(@NotNull ItemStack stack, @Nullable Boolean persistance) {
+        if (persistance == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY, persistance);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity picking up to the stack
+     *
+     * @param stack Item stack to modify
+     * @param intellect Entity intellect to set. Removes tag if null
+     */
+    public static void setEntityIntellect(@NotNull ItemStack stack, @Nullable Boolean intellect) {
+        if (intellect == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_NO_AI_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_NO_AI_KEY, !intellect);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Sets entity picking up to the stack
+     *
+     * @param stack Item stack to modify
+     * @param glow Entity glow to set. Removes tag if null
+     */
+    public static void setEntityGlow(@NotNull ItemStack stack, @Nullable Boolean glow) {
+        if (glow == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_GLOWING_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_GLOWING_KEY, glow);
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }

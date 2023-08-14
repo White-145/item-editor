@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class ItemEditor implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("item-editor");
-    public static MineskinClient mineskin = null;
+    private static MineskinClient mineskin = null;
 
     public static MineskinClient getMineskinInstance() {
         if (mineskin == null) mineskin = new MineskinClient("ItemEditorHeadGenerator-Generator");

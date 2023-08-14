@@ -29,10 +29,16 @@ public class EntityNode implements Node {
                 .build();
 
         for (Node entityNode : new Node[] {
-                new TypeNode(),
-                new PositionNode(),
+                new GlowNode(),
+                new GravityNode(),
+                new IntellectNode(),
+                new InvulnerabilityNode(),
                 new MotionNode(),
+                new PersistanceNode(),
+                new PositionNode(),
                 new RotationNode(),
+                new SilenceNode(),
+                new TypeNode(),
         }) {
             try {
                 entityNode.register(node, registryAccess);
@@ -42,14 +48,6 @@ public class EntityNode implements Node {
         }
 
         // TODO:
-        // BINARY
-        // ... gravity ...
-        // ... silence ...
-        // ... invulnerability ...
-        // ... picking_up ... (CanPickUpLoot... how do i name it??)
-        // ... persistance ...
-        // ... glow ...
-        // ... intellect ...
         // NUMBER
         // ... fire ...
         // ... air ...
