@@ -93,13 +93,43 @@
   "commands.edit.enchantment.glintenable": "Item glint was enabled",
   "commands.edit.enchantment.glintdisable": "Item glint was disabled",
 
-  "commands.edit.entity.error.cannotedit": "Can only edit armor stands or spawn eggs",
+  "commands.edit.entity.error.cannotedit": "Can only edit items with entities",
+
+  "commands.edit.entity.glow.getenabled": "Entity glow is enabled",
+  "commands.edit.entity.glow.getdisabled": "Entity glow is disabled",
+  "commands.edit.entity.glow.enable": "Entity glow was enabled",
+  "commands.edit.entity.glow.disable": "Entity glow was disabled",
+
+  "commands.edit.entity.gravity.getenabled": "Entity gravity is enabled",
+  "commands.edit.entity.gravity.getdisabled": "Entity gravity is disabled",
+  "commands.edit.entity.gravity.enable": "Entity gravity was enabled",
+  "commands.edit.entity.gravity.disable": "Entity gravity was disabled",
+
+  "commands.edit.entity.intellect.getenabled": "Entity intellect is enabled",
+  "commands.edit.entity.intellect.getdisabled": "Entity intellect is disabled",
+  "commands.edit.entity.intellect.enable": "Entity intellect was enabled",
+  "commands.edit.entity.intellect.disable": "Entity intellect was disabled",
+
+  "commands.edit.entity.invulnerability.getenabled": "Entity invulnerability is enabled",
+  "commands.edit.entity.invulnerability.getdisabled": "Entity invulnerability is disabled",
+  "commands.edit.entity.invulnerability.enable": "Entity invulnerability was enabled",
+  "commands.edit.entity.invulnerability.disable": "Entity invulnerability was disabled",
 
   "commands.edit.entity.motion.error.alreadyis": "Entity already has given motion",
   "commands.edit.entity.motion.error.nomotion": "Entity doesn't have motion",
   "commands.edit.entity.motion.get": "Entity has the following motion: %s",
   "commands.edit.entity.motion.reset": "Entity motion was reset",
   "commands.edit.entity.motion.set": "Entity motion was set to %s",
+
+  "commands.edit.entity.persistance.getenabled": "Entity persistance is enabled",
+  "commands.edit.entity.persistance.getdisabled": "Entity persistance is disabled",
+  "commands.edit.entity.persistance.enable": "Entity persistance was enabled",
+  "commands.edit.entity.persistance.disable": "Entity persistance was disabled",
+
+  "commands.edit.entity.pickingup.getenabled": "Entity can pick up loot",
+  "commands.edit.entity.pickingup.getdisabled": "Entity cannot pick up loot",
+  "commands.edit.entity.pickingup.enable": "Now entity can pick up loot",
+  "commands.edit.entity.pickingup.disable": "Now entity cannot pick up loot",
 
   "commands.edit.entity.position.error.alreadyis": "Entity already has given position",
   "commands.edit.entity.position.error.noposition": "Entity doesn't have position",
@@ -112,6 +142,11 @@
   "commands.edit.entity.rotation.get": "Entity has the following rotation: %s",
   "commands.edit.entity.rotation.reset": "Entity rotation was reset",
   "commands.edit.entity.rotation.set": "Entity rotation was set to %s",
+
+  "commands.edit.entity.silence.getenabled": "Entity silence is enabled",
+  "commands.edit.entity.silence.getdisabled": "Entity silence is disabled",
+  "commands.edit.entity.silence.enable": "Entity silence was enabled",
+  "commands.edit.entity.silence.disable": "Entity silence was disabled",
 
   "commands.edit.entity.type.error.cannotedit": "Can only edit spawn eggs",
   "commands.edit.entity.type.error.noentitytype": "Item doesn't have entity type",
@@ -190,6 +225,7 @@
   "commands.edit.head.textureget": "Item has the following head texture: %s",
   "commands.edit.head.textureremove": "Item texture was removed",
   "commands.edit.head.textureset": "Item texture was set to %s",
+  "commands.edit.head.texturesetcustom": "Trying to set item texture to %s",
   "commands.edit.head.soundget": "Item has the following note block sound: %s",
   "commands.edit.head.soundreset": "Item note block sound was reset",
   "commands.edit.head.soundset": "Item note block sound was set to %s",
