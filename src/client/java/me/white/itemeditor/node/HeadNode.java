@@ -36,6 +36,7 @@ public class HeadNode implements Node {
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
     private static final String OUTPUT_TEXTURE_REMOVE = "commands.edit.head.textureremove";
     private static final String OUTPUT_TEXTURE_SET = "commands.edit.head.textureset";
+    private static final String OUTPUT_TEXTURE_SET_CUSTOM = "commands.edit.head.texturesetcustom";
     private static final String OUTPUT_SOUND_GET = "commands.edit.head.soundget";
     private static final String OUTPUT_SOUND_RESET = "commands.edit.head.soundreset";
     private static final String OUTPUT_SOUND_SET = "commands.edit.head.soundset";
@@ -130,7 +131,11 @@ public class HeadNode implements Node {
                     ItemUtil.setHeadTexture(stack, texture);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(texture)));
+                    if (!ItemUtil.isValidHeadTextureUrl(texture)) {
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET_CUSTOM, TextUtil.clickable(texture)));
+                    } else {
+                        context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(texture)));
+                    }
                     return 1;
                 })
                 .build();

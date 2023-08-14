@@ -35,6 +35,7 @@ public class EntityNode implements Node {
                 new InvulnerabilityNode(),
                 new MotionNode(),
                 new PersistanceNode(),
+                new PickingUpNode(),
                 new PositionNode(),
                 new RotationNode(),
                 new SilenceNode(),
