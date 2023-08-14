@@ -1194,7 +1194,7 @@ public class ItemUtil {
      * @return Entity silence from item stack
      */
     public static boolean getEntitySilence(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
+        if (!stack.hasNbt()) return false;
         return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_SILENT_KEY);
     }
 
@@ -1205,7 +1205,7 @@ public class ItemUtil {
      * @return Entity invulnerability from item stack
      */
     public static boolean getEntityInvulnerability(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
+        if (!stack.hasNbt()) return false;
         return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_INVULNERABLE_KEY);
     }
 
@@ -1216,7 +1216,7 @@ public class ItemUtil {
      * @return Entity picking up from item stack
      */
     public static boolean getEntityPickingUp(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
+        if (!stack.hasNbt()) return false;
         return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY);
     }
 
@@ -1227,7 +1227,7 @@ public class ItemUtil {
      * @return Entity persistance from item stack
      */
     public static boolean getEntityPersistance(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
+        if (!stack.hasNbt()) return false;
         return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY);
     }
 
@@ -1249,8 +1249,8 @@ public class ItemUtil {
      * @return Entity glow from item stack
      */
     public static boolean getEntityGlow(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
-        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_GLOWING_KEY);
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_GLOWING_KEY);
     }
 
     /**
