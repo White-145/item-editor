@@ -114,25 +114,6 @@ public class ItemUtil {
     public static final int GENERATIONS_AMOUNT = 4;
 
     /**
-     * Checks if compound have all valid tags to be parsed to enchantment
-     *
-     * @param nbt NBT compound to check
-     * @return Is compound valid for enchantment
-     */
-    public static boolean isValidEnchantment(@NotNull NbtCompound nbt) {
-        if (nbt.isEmpty()) return false;
-        if (!nbt.contains(ENCHANTMENTS_LVL_KEY, NbtElement.INT_TYPE)) return false;
-        if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) {
-            if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.SHORT_TYPE)) return false;
-            int id = nbt.getShort(ENCHANTMENTS_ID_KEY);
-            return id >= 0 && id < Registries.ENCHANTMENT.size();
-        }
-        Identifier id = Identifier.tryParse(nbt.getString(ENCHANTMENTS_ID_KEY));
-        if (id == null) return false;
-        return Registries.ENCHANTMENT.containsId(id);
-    }
-
-    /**
      * Checks if compound have all valid tags to be parsed to attribute
      *
      * @param nbt NBT compound to check
@@ -148,100 +129,6 @@ public class ItemUtil {
         if (attributeName == null || !Registries.ATTRIBUTE.containsId(attributeName)) return false;
         int operation = nbt.getInt(ATTRIBUTE_MODIFIERS_OPERATION_KEY);
         return operation >= 0 && operation < EntityAttributeModifier.Operation.values().length;
-    }
-
-    /**
-     * Checks if compound have all valid tags to be parsed to banner pattern
-     *
-     * @param nbt NBT compound to check
-     * @return Is compound valid for banner pattern
-     */
-    public static boolean isValidPattern(@NotNull NbtCompound nbt) {
-        if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY, NbtElement.INT_TYPE)) return false;
-        int color = nbt.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
-        if (color < 0 || color >= 16) return false;
-        if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
-        String pattern = nbt.getString(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY);
-        return BannerPattern.byId(pattern) != null;
-    }
-
-    /**
-     * Checks if compound have all valid tags to be parsed to armor trim
-     *
-     * @param nbt NBT compound to check
-     * @param registryManager Dynamic registry manager to check in
-     * @return Is compound valid for armor trim
-     */
-    public static boolean isValidTrim(@NotNull NbtCompound nbt, @NotNull DynamicRegistryManager registryManager) {
-        if (!nbt.contains(TRIM_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
-        if (!nbt.contains(TRIM_MATERIAL_KEY, NbtElement.STRING_TYPE)) return false;
-        Identifier pattern = Identifier.tryParse(nbt.getString(TRIM_PATTERN_KEY));
-        if (pattern == null || !registryManager.get(RegistryKeys.TRIM_PATTERN).containsId(pattern)) return false;
-        Identifier material = Identifier.tryParse(nbt.getString(TRIM_MATERIAL_KEY));
-        return material != null && registryManager.get(RegistryKeys.TRIM_MATERIAL).containsId(material);
-    }
-
-    /**
-     * Checks if object is valid for head texture
-     *
-     * @param texture Base64 encoded texture object
-     * @return Is object valid for head texture
-     */
-    public static boolean isValidHeadTexture(@NotNull String texture) {
-        try {
-            String value = new String(Base64.getDecoder().decode(texture));
-            JsonObject textureObj = JsonParser.parseString(value).getAsJsonObject();
-            System.out.println(textureObj.toString());
-            if (!textureObj.has("textures")) return false;
-            JsonObject textures = textureObj.getAsJsonObject("textures");
-            System.out.println(textures.toString());
-            if (!textures.has("SKIN")) return false;
-            JsonObject skin = textures.getAsJsonObject("SKIN");
-            System.out.println(skin.toString());
-            if (!skin.has("url")) return false;
-            URL url = new URL(skin.get("url").getAsString());
-            return isValidHeadTextureUrl(url);
-        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
-            System.out.println("failed");
-            return false;
-        }
-    }
-
-    /**
-     * Checks if url is valid for head texture
-     *
-     * @param url Texture url
-     * @return Is url valid for head texture
-     */
-    public static boolean isValidHeadTextureUrl(@NotNull URL url) {
-        String path = url.getPath();
-        return url.getHost().equals("textures.minecraft.net") && path.startsWith("/texture/") && path.substring(9).matches("[a-fA-F0-9]+");
-    }
-
-    /**
-     * Checks if sound id is valid
-     *
-     * @param sound Sound id
-     * @return Is sound valid
-     */
-    public static boolean isValidSound(@NotNull String sound) {
-        Identifier id = Identifier.tryParse(sound);
-        if (id == null) return false;
-        return Registries.SOUND_EVENT.containsId(id);
-    }
-
-    /**
-     * Checks if compound have all valid tags to be parsed to potion effect
-     *
-     * @param nbt NBT compound to check
-     * @return Is compound valid for potion effect
-     */
-    public static boolean isValidPotionEffect(@NotNull NbtCompound nbt) {
-        if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
-        if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
-        if (!nbt.contains(CUSTOM_POTION_EFFECTS_DURATION_KEY, NbtElement.INT_TYPE)) return false;
-        StatusEffect effect = StatusEffect.byRawId(nbt.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
-        return effect != null;
     }
 
     /**
@@ -274,489 +161,6 @@ public class ItemUtil {
     }
 
     /**
-     * Checks if stack has banner patterns
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of banner patterns. False to only check for tag
-     * @return Does item stack have banner patterns
-     */
-    public static boolean hasBannerPatterns(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
-        if (!blockEntityTag.contains(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList patterns = blockEntityTag.getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
-        if (!validate) return !patterns.isEmpty();
-        for (NbtElement pattern : patterns) {
-            if (isValidPattern((NbtCompound)pattern)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Redirects to {@link #hasBannerPatterns(ItemStack, boolean) hasBannerPatterns} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid banner patterns
-     */
-    public static boolean hasBannerPatterns(@NotNull ItemStack stack) {
-        return hasBannerPatterns(stack, true);
-    }
-
-    /**
-     * Checks if stack has book author
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have book author
-     */
-    public static boolean hasBookAuthor(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        return nbt.contains(AUTHOR_KEY, NbtElement.STRING_TYPE);
-    }
-
-    /**
-     * Checks if stack has book title
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have book title
-     */
-    public static boolean hasBookTitle(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        return nbt.contains(TITLE_KEY, NbtElement.STRING_TYPE);
-    }
-
-    /**
-     * Checks if stack has book pages
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have book pages
-     */
-    public static boolean hasBookPages(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(PAGES_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList pages = nbt.getList(PAGES_KEY, NbtElement.STRING_TYPE);
-        return !pages.isEmpty();
-    }
-
-    /**
-     * Checks if stack has custom color
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have custom color
-     */
-    public static boolean hasColor(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        Item item = stack.getItem();
-        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
-            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            return display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE);
-        } else if (item instanceof FilledMapItem) {
-            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            return display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE);
-        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
-            return nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE);
-        } else if (item instanceof FireworkStarItem) {
-            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return false;
-            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
-            return explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE);
-        }
-        return false;
-    }
-
-    /**
-     * Checks if stack has enchantments
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of enchantments. False to only check for tag
-     * @return Does item stack have enchantments
-     */
-    public static boolean hasEnchantments(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(ENCHANTMENTS_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList enchantments = nbt.getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
-        if (!validate) return !enchantments.isEmpty();
-        for (NbtElement enchantment : enchantments) {
-            if (isValidEnchantment((NbtCompound)enchantment)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Redirects to {@link #hasEnchantments(ItemStack, boolean) hasEnchantments} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid enchantments
-     */
-    public static boolean hasEnchantments(@NotNull ItemStack stack) {
-        return hasEnchantments(stack, true);
-    }
-
-    /**
-     * Checks if stack has firework explosions
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have firework explosions
-     */
-    public static boolean hasFireworkExplosions(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound fireworks = nbt.getCompound(FIREWORKS_KEY);
-        if (!fireworks.contains(FIREWORKS_EXPLOSIONS_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList explosions = fireworks.getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
-        // even empty explosion works, no need for validation
-        return !explosions.isEmpty();
-    }
-
-    /**
-     * Checks if stack has head owner name
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have head owner name
-     */
-    public static boolean hasHeadOwner(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
-        return skullOwner.contains(SKULL_OWNER_NAME_KEY, NbtElement.STRING_TYPE);
-    }
-
-    /**
-     * Checks if stack has head texture (not name)
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of texture. False to only check for tag
-     * @return Does item stack have head texture
-     */
-    public static boolean hasHeadTexture(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
-        if (!skullOwner.contains(SKULL_OWNER_PROPERTIES_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
-        if (!properties.contains(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList textures = properties.getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE);
-        if (textures.isEmpty()) return false;
-        NbtCompound texture = textures.getCompound(0);
-        if (!texture.contains(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtElement.STRING_TYPE)) return false;
-        if (!validate) return true;
-        String value = texture.getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
-        return isValidHeadTexture(value);
-    }
-
-    /**
-     * Redirects to {@link #hasHeadTexture(ItemStack, boolean) hasHeadTexture} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid head texture
-     */
-    public static boolean hasHeadTexture(@NotNull ItemStack stack) {
-        return hasHeadTexture(stack, true);
-    }
-
-    /**
-     * Checks if stack has note block sound
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of sound. False to only check for tag
-     * @return Does item stack have note block sound
-     */
-    public static boolean hasNoteBlockSound(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
-        if (!blockEntityTag.contains(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND, NbtElement.STRING_TYPE)) return false;
-        if (!validate) return true;
-        String sound = blockEntityTag.getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND);
-        return isValidSound(sound);
-    }
-
-    /**
-     * Redirects to {@link #hasNoteBlockSound(ItemStack, boolean) hasNoteBlockSound} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid note block sound
-     */
-    public static boolean hasNoteBlockSound(@NotNull ItemStack stack) {
-        return hasNoteBlockSound(stack, true);
-    }
-
-    /**
-     * Checks if stack has lore
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have lore
-     */
-    public static boolean hasLore(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-        if (!display.contains(DISPLAY_LORE_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList lore = display.getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
-        return !lore.isEmpty();
-    }
-
-    /**
-     * Checks if stack has custom model
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have custom model
-     */
-    public static boolean hasModel(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) return false;
-        int model = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
-        return model > 0;
-    }
-
-    /**
-     * Checks if stack has custom name
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have custom name
-     */
-    public static boolean hasName(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-        return display.contains(DISPLAY_NAME_KEY, NbtElement.STRING_TYPE);
-    }
-
-    /**
-     * Checks if stack has armor trim
-     *
-     * @param stack Item stack to check
-     * @param registryManager Dynamic registry manager to check in. Doesn't check for validity if null
-     * @return Does item stack have armor trim
-     */
-    public static boolean hasTrim(@NotNull ItemStack stack, @Nullable DynamicRegistryManager registryManager) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(TRIM_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        if (registryManager == null) return true;
-        NbtCompound trim = nbt.getCompound(TRIM_KEY);
-        return isValidTrim(trim, registryManager);
-    }
-
-    /**
-     * Checks if stack has placing whitelist
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of whitelist. False to only check for tag
-     * @return Does item stack have placing whitelist
-     */
-    public static boolean hasWhitelistPlace(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(CAN_PLACE_ON_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList place = nbt.getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
-        if (!validate) return !place.isEmpty();
-        for (NbtElement element : place) {
-            Identifier id = Identifier.tryParse(element.asString());
-            if (id == null) continue;
-            if (Registries.BLOCK.containsId(id)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Redirects to {@link #hasWhitelistPlace(ItemStack, boolean) hasWhitelistPlace} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid placing whitelist
-     */
-    public static boolean hasWhitelistPlace(@NotNull ItemStack stack) {
-        return hasWhitelistPlace(stack, true);
-    }
-
-    /**
-     * Checks if stack has destroying whitelist
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of whitelist. False to only check for tag
-     * @return Does item stack have destroying whitelist
-     */
-    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(CAN_DESTROY_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList destroy = nbt.getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
-        if (!validate) return !destroy.isEmpty();
-        for (NbtElement element : destroy) {
-            Identifier id = Identifier.tryParse(element.asString());
-            if (id == null) continue;
-            if (Registries.BLOCK.containsId(id)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Redirects to {@link #hasWhitelistDestroy(ItemStack, boolean) hasWhitelistDestroy} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid destroying whitelist
-     */
-    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack) {
-        return hasWhitelistDestroy(stack, true);
-    }
-
-    /**
-     * Checks if stack has potion effects
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of potion effects. False to only check for tag
-     * @return Does item stack have potion effects
-     */
-    public static boolean hasPotionEffects(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(CUSTOM_POTION_EFFECTS_KEY, NbtElement.LIST_TYPE)) return false;
-        NbtList customPotionEffects = nbt.getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
-        if (!validate) return !customPotionEffects.isEmpty();
-        for (NbtElement customPotionEffect : customPotionEffects) {
-            if (isValidPotionEffect((NbtCompound)customPotionEffect)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Redirects to {@link #hasPotionEffects(ItemStack, boolean) hasPotionEffects} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have potion effects tag
-     */
-    public static boolean hasPotionEffects(@NotNull ItemStack stack) {
-        return hasPotionEffects(stack, true);
-    }
-
-    /**
-     * Checks if stack has entity type
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of entity type. False to only check for tag
-     * @return Does item stack have entity type
-     */
-    public static boolean hasEntityType(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-        if (!entityTag.contains(ENTITY_TAG_ID_KEY, NbtElement.STRING_TYPE)) return false;
-        if (!validate) return true;
-        Identifier id = Identifier.tryParse(entityTag.getString(ENTITY_TAG_ID_KEY));
-        if (id == null) return false;
-        return Registries.ENTITY_TYPE.containsId(id);
-    }
-
-    /**
-     * Redirects to {@link #hasEntityType(ItemStack, boolean) hasEntityType} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid entity type
-     */
-    public static boolean hasEntityType(@NotNull ItemStack stack) {
-        return hasEntityType(stack, true);
-    }
-
-    /**
-     * Checks if stack has entity position
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of entity position. False to only check for tag
-     * @return Does item stack have entity position
-     */
-    public static boolean hasEntityPosition(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-        if (!entityTag.contains(ENTITY_TAG_POS_KEY, NbtElement.LIST_TYPE)) return false;
-        if (!validate) return true;
-        NbtList pos = entityTag.getList(ENTITY_TAG_POS_KEY, NbtElement.DOUBLE_TYPE);
-        return pos.size() == 3;
-    }
-
-    /**
-     * Redirects to {@link #hasEntityPosition(ItemStack, boolean) hasEntityPosition} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid entity position
-     */
-    public static boolean hasEntityPosition(@NotNull ItemStack stack) {
-        return hasEntityPosition(stack, true);
-    }
-
-    /**
-     * Checks if stack has entity motion
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of entity motion. False to only check for tag
-     * @return Does item stack have entity motion
-     */
-    public static boolean hasEntityMotion(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-        if (!entityTag.contains(ENTITY_TAG_MOTION_KEY, NbtElement.LIST_TYPE)) return false;
-        if (!validate) return true;
-        NbtList pos = entityTag.getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
-        return pos.size() == 3;
-    }
-
-    /**
-     * Redirects to {@link #hasEntityMotion(ItemStack, boolean) hasEntityMotion} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid entity motion
-     */
-    public static boolean hasEntityMotion(@NotNull ItemStack stack) {
-        return hasEntityMotion(stack, true);
-    }
-
-    /**
-     * Checks if stack has entity rotation
-     *
-     * @param stack Item stack to check
-     * @param validate Check for validity of entity rotation. False to only check for tag
-     * @return Does item stack have entity rotation
-     */
-    public static boolean hasEntityRotation(@NotNull ItemStack stack, boolean validate) {
-        if (!stack.hasNbt()) return false;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
-        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
-        if (!entityTag.contains(ENTITY_TAG_ROTATION_KEY, NbtElement.LIST_TYPE)) return false;
-        if (!validate) return true;
-        NbtList rotation = entityTag.getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
-        return rotation.size() == 2;
-    }
-
-    /**
-     * Redirects to {@link #hasEntityRotation(ItemStack, boolean) hasEntityRotation} with validate param equals to true
-     *
-     * @param stack Item stack to check
-     * @return Does item stack have valid entity rotation
-     */
-    public static boolean hasEntityRotation(@NotNull ItemStack stack) {
-        return hasEntityRotation(stack, true);
-    }
-
-    /**
      * Gets attribute modifiers from stack
      *
      * @param stack Item stack to get from
@@ -783,477 +187,6 @@ public class ItemUtil {
             }
         }
         return attributes;
-    }
-
-    /**
-     * Gets banner patterns from stack
-     *
-     * @param stack Item stack to get from
-     * @return Banner patterns from item stack
-     */
-    public static @NotNull List<Pair<BannerPattern, Integer>> getBannerPatterns(@NotNull ItemStack stack) {
-        if (!hasBannerPatterns(stack)) return List.of();
-        NbtList nbtPatterns = stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
-        List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>();
-        for (NbtElement nbtPattern : nbtPatterns) {
-            NbtCompound pattern = (NbtCompound)nbtPattern;
-            if (!isValidPattern(pattern)) continue;
-            int color = pattern.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
-            BannerPattern bannerPattern = BannerPattern.byId(pattern.getString(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY)).value();
-            patterns.add(Pair.of(bannerPattern, color));
-        }
-        return patterns;
-    }
-
-    /**
-     * Gets book author from stack
-     *
-     * @param stack Item stack to get from
-     * @return Book author from item stack, or null if none is present
-     */
-    public static @Nullable String getBookAuthor(@NotNull ItemStack stack) {
-        if (!hasBookAuthor(stack)) return null;
-        return stack.getNbt().getString(AUTHOR_KEY);
-    }
-
-    /**
-     * Gets book title from stack
-     *
-     * @param stack Item stack to get from
-     * @return Book title from item stack, or null if none is present
-     */
-    public static @Nullable String getBookTitle(@NotNull ItemStack stack) {
-        if (!hasBookTitle(stack)) return null;
-        return stack.getNbt().getString(TITLE_KEY);
-    }
-
-    /**
-     * Gets book generation from stack
-     *
-     * @param stack Item stack to get from
-     * @return Book generation id from item stack
-     */
-    public static int getBookGeneration(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return 0;
-        int generation = stack.getNbt().getInt(GENERATION_KEY);
-        return generation >= 0 && generation < GENERATIONS_AMOUNT ? generation : 0;
-    }
-
-    /**
-     * Gets book pages from stack
-     *
-     * @param stack Item stack to get from
-     * @return Book pages from item stack
-     */
-    public static @NotNull List<Text> getBookPages(@NotNull ItemStack stack) {
-        if (!hasBookPages(stack)) return List.of();
-        List<Text> pages = new ArrayList<>();
-        for (NbtElement page : stack.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE)) {
-            pages.add(Text.Serializer.fromJson(page.asString()));
-        }
-        return pages;
-    }
-
-    /**
-     * Gets custom color from stack
-     *
-     * @param stack Item stack to get from
-     * @return Custom color from item stack, or null if none is present
-     */
-    public static @Nullable Integer getColor(@NotNull ItemStack stack) {
-        if (!hasColor(stack)) return null;
-        NbtCompound nbt = stack.getNbt();
-        Item item = stack.getItem();
-        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
-            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            if (!display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE)) return null;
-            return display.getInt(DISPLAY_COLOR_KEY);
-        } else if (item instanceof FilledMapItem) {
-            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
-            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            if (!display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE)) return null;
-            return display.getInt(DISPLAY_MAP_COLOR_KEY);
-        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
-            if (!nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE)) return null;
-            return nbt.getInt(CUSTOM_POTION_COLOR_KEY);
-        } else if (item instanceof FireworkStarItem) {
-            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return null;
-            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
-            if (!explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE)) return null;
-            return EditorUtil.meanColor(explosion.getIntArray(EXPLOSION_COLORS_KEY));
-        }
-        return null;
-    }
-
-    /**
-     * Gets enchantments from stack
-     *
-     * @param stack Item stack to get from
-     * @return Enchantments from item stack
-     */
-    public static @NotNull HashMap<Enchantment, Integer> getEnchantments(@NotNull ItemStack stack) {
-        if (!hasEnchantments(stack)) return new HashMap<>();
-        NbtList nbtEnchantments = stack.getNbt().getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
-        HashMap<Enchantment, Integer> enchantments = new HashMap<>();
-        for (NbtElement nbtEnchantment : nbtEnchantments) {
-            NbtCompound enchantment = (NbtCompound)nbtEnchantment;
-            if (!isValidEnchantment(enchantment)) continue;
-            String id = enchantment.getString(ENCHANTMENTS_ID_KEY);
-            int lvl = enchantment.getInt(ENCHANTMENTS_LVL_KEY);
-            enchantments.put(Registries.ENCHANTMENT.get(Identifier.tryParse(id)), lvl);
-        }
-        return enchantments;
-    }
-
-    /**
-     * Gets firework explosions from stack
-     *
-     * @param stack Item stack to get from
-     * @return Firework explosions from item stack
-     */
-    public static @NotNull List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> getFireworkExplosions(@NotNull ItemStack stack) {
-        if (!hasFireworkExplosions(stack)) return List.of();
-        NbtList nbtExplosions = stack.getNbt().getCompound(FIREWORKS_KEY).getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
-        List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> result = new ArrayList<>();
-        for (NbtElement nbtExplosion : nbtExplosions) {
-            NbtCompound explosion = (NbtCompound)nbtExplosion;
-            int type = explosion.getInt(FIREWORKS_EXPLOSIONS_TYPE_KEY);
-            int[] colors = explosion.getIntArray(FIREWORKS_EXPLOSIONS_COLORS_KEY);
-            boolean flicker = explosion.getBoolean(FIREWORKS_EXPLOSIONS_FLICKER_KEY);
-            boolean trail = explosion.getBoolean(FIREWORKS_EXPLOSIONS_TRAIL_KEY);
-            int[] fadeColors = explosion.getIntArray(FIREWORKS_EXPLOSIONS_FADE_COLORS_KEY);
-            result.add(new Quintet<>(type, Ints.asList(colors), flicker, trail, Ints.asList(fadeColors)));
-        }
-        return result;
-    }
-
-    /**
-     * Gets firework flight from stack
-     *
-     * @param stack Item stack to get from
-     * @return Firework flight from item stack
-     */
-    public static int getFireworkFlight(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return 0;
-        NbtCompound nbt = stack.getNbt();
-        if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return 0;
-        NbtCompound fireworks = nbt.getCompound(FIREWORKS_KEY);
-        return fireworks.getInt(FIREWORKS_FLIGHT_KEY);
-    }
-
-    /**
-     * Gets head owner name from stack
-     *
-     * @param stack Item stack to get from
-     * @return Head owner name from item stack, or null if none is present
-     */
-    public static @Nullable String getHeadOwner(@NotNull ItemStack stack) {
-        if (!hasHeadOwner(stack)) return null;
-        return stack.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
-    }
-    /**
-     * Gets head texture from stack
-     *
-     * @param stack Item stack to get from
-     * @return Head texture from item stack, or null if none is present
-     */
-    public static @Nullable URL getHeadTexture(@NotNull ItemStack stack) {
-        if (!hasHeadTexture(stack)) return null;
-        String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
-        try {
-            String value = new String(Base64.getDecoder().decode(texture));
-            JsonObject textures = JsonParser.parseString(value).getAsJsonObject().getAsJsonObject("textures");
-            return new URL(textures.getAsJsonObject("SKIN").get("url").getAsString());
-        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Gets note block sound from stack
-     *
-     * @param stack Item stack to get from
-     * @return Note block sound from item stack, or null if none is present
-     */
-    public static @Nullable SoundEvent getNoteBlockSound(@NotNull ItemStack stack) {
-        if (!hasNoteBlockSound(stack)) return null;
-        Identifier id = Identifier.tryParse(stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND));
-        if (id == null) return null;
-        return Registries.SOUND_EVENT.get(id);
-    }
-
-    /**
-     * Gets lore from stack
-     *
-     * @param stack Item stack to get from
-     * @return Lore from item stack
-     */
-    public static @NotNull List<Text> getLore(@NotNull ItemStack stack) {
-        if (!hasLore(stack)) return List.of();
-        NbtList nbtLore = stack.getNbt().getCompound(DISPLAY_KEY).getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
-        List<Text> lore = new ArrayList<>();
-        for (NbtElement nbtLine : nbtLore) {
-            Text line = Text.Serializer.fromJson(nbtLine.asString());
-            lore.add(line);
-        }
-        return lore;
-    }
-
-    /**
-     * Gets custom model from stack
-     *
-     * @param stack Item stack to get from
-     * @return Custom model from item stack
-     */
-    public static int getModel(@NotNull ItemStack stack) {
-        if (!hasModel(stack)) return 0;
-        return stack.getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
-    }
-
-    /**
-     * Gets custom name from stack
-     *
-     * @param stack Item stack to get from
-     * @return Custom name from item stack
-     */
-    public static @Nullable Text getName(@NotNull ItemStack stack) {
-        if (!hasName(stack)) return null;
-        return Text.Serializer.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
-    }
-
-    /**
-     * Gets armor trim from stack
-     *
-     * @param stack Item stack to get from
-     * @param registryManager Dynamic registry manager to get from
-     * @return Armor trim from item stack, or null if none is present
-     */
-    public static @Nullable ArmorTrim getTrim(@NotNull ItemStack stack, @NotNull DynamicRegistryManager registryManager) {
-        if (!hasTrim(stack, registryManager)) return null;
-        NbtCompound nbtTrim = stack.getNbt().getCompound(TRIM_KEY);
-        Identifier patternId = Identifier.tryParse(nbtTrim.getString(TRIM_PATTERN_KEY));
-        Identifier materialId = Identifier.tryParse(nbtTrim.getString(TRIM_MATERIAL_KEY));
-        Registry<ArmorTrimPattern> patternRegistry = registryManager.get(RegistryKeys.TRIM_PATTERN);
-        Registry<ArmorTrimMaterial> materialRegistry = registryManager.get(RegistryKeys.TRIM_MATERIAL);
-        ArmorTrimPattern pattern = patternRegistry.get(patternId);
-        ArmorTrimMaterial material = materialRegistry.get(materialId);
-        return new ArmorTrim(materialRegistry.getEntry(material), patternRegistry.getEntry(pattern));
-    }
-
-    /**
-     * Gets placing whitelist from stack
-     *
-     * @param stack Item stack to get from
-     * @return Placing whitelist from item stack
-     */
-    public static @NotNull List<Block> getWhitelistPlace(@NotNull ItemStack stack) {
-        if (!hasWhitelistPlace(stack)) return List.of();
-        NbtList nbtPlace = stack.getNbt().getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
-        List<Block> result = new ArrayList<>();
-        for (NbtElement nbtBlock : nbtPlace) {
-            Identifier id = Identifier.tryParse(nbtBlock.asString());
-            if (id == null || !Registries.BLOCK.containsId(id)) continue;
-            Block block = Registries.BLOCK.get(id);
-            result.add(block);
-        }
-        return result;
-    }
-
-    /**
-     * Gets destroying whitelist from stack
-     *
-     * @param stack Item stack to get from
-     * @return Destroying whitelist from item stack
-     */
-    public static @NotNull List<Block> getWhitelistDestroy(@NotNull ItemStack stack) {
-        if (!hasWhitelistDestroy(stack)) return List.of();
-        NbtList nbtDestroy = stack.getNbt().getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
-        List<Block> result = new ArrayList<>();
-        for (NbtElement nbtBlock : nbtDestroy) {
-            Identifier id = Identifier.tryParse(nbtBlock.asString());
-            if (id == null || !Registries.BLOCK.containsId(id)) continue;
-            Block block = Registries.BLOCK.get(id);
-            result.add(block);
-        }
-        return result;
-    }
-
-    /**
-     * Gets stack unbreakability
-     *
-     * @param stack Item stack to get from
-     * @return Is stack unbreakable
-     */
-    public static boolean getUnbreakable(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getBoolean(UNBREAKABLE_KEY);
-    }
-
-    /**
-     * Gets display flags from stack
-     *
-     * @param stack Item stack to get from
-     * @return Display flags from item stack
-     */
-    public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
-        List<Boolean> result = new ArrayList<>();
-        if (!stack.hasNbt()) return result;
-        int flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
-        for (int i = 0; i < FLAGS_AMOUNT; ++i) {
-            int mask = 1 << i;
-            result.add((flags & mask) == mask);
-        }
-        return result;
-    }
-
-    /**
-     * Gets potion effects from stack
-     *
-     * @param stack Item stack to get from
-     * @return Potion effects from item stack
-     */
-    public static @NotNull HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(@NotNull ItemStack stack) {
-        if (!hasPotionEffects(stack)) return new HashMap<>();
-        HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> result = new HashMap<>();
-        NbtList customPotionEffects = stack.getNbt().getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
-        for (NbtElement customPotionEffect : customPotionEffects) {
-            NbtCompound potionEffect = (NbtCompound)customPotionEffect;
-            if (!isValidPotionEffect(potionEffect)) continue;
-            StatusEffect effect = StatusEffect.byRawId(potionEffect.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
-            int amplifier = potionEffect.getInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY);
-            int duration = potionEffect.getInt(CUSTOM_POTION_EFFECTS_DURATION_KEY);
-            if (!potionEffect.contains(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, NbtElement.BYTE_TYPE)) {
-                result.put(effect, Triple.of(amplifier, duration, null));
-            } else {
-                result.put(effect, Triple.of(amplifier, duration, potionEffect.getBoolean(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY)));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Gets entity type from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity type from item stack, or null if none
-     */
-    public static @Nullable EntityType<?> getEntityType(@NotNull ItemStack stack) {
-        if (!hasEntityType(stack)) return null;
-        return Registries.ENTITY_TYPE.get(Identifier.tryParse(stack.getNbt().getCompound(ENTITY_TAG_KEY).getString(ENTITY_TAG_ID_KEY)));
-    }
-
-    /**
-     * Gets entity position from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity position from item stack, or null if none
-     */
-    public static @Nullable Vec3d getEntityPosition(@NotNull ItemStack stack) {
-        if (!hasEntityPosition(stack)) return null;
-        NbtList pos = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_POS_KEY, NbtElement.DOUBLE_TYPE);
-        return new Vec3d(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
-    }
-
-    /**
-     * Gets entity motion from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity motion from item stack, or null if none
-     */
-    public static @Nullable Vec3d getEntityMotion(@NotNull ItemStack stack) {
-        if (!hasEntityMotion(stack)) return null;
-        NbtList motion = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
-        return new Vec3d(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
-    }
-
-    /**
-     * Gets entity rotation from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity rotation from item stack, or null if none
-     */
-    public static @Nullable Vec2f getEntityRotation(@NotNull ItemStack stack) {
-        if (!hasEntityRotation(stack)) return null;
-        NbtList rotation = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
-        return new Vec2f(rotation.getFloat(0), rotation.getFloat(1));
-    }
-
-    /**
-     * Gets entity gravity from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity gravity from item stack
-     */
-    public static boolean getEntityGravity(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
-        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_GRAVITY_KEY);
-    }
-
-    /**
-     * Gets entity silence from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity silence from item stack
-     */
-    public static boolean getEntitySilence(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_SILENT_KEY);
-    }
-
-    /**
-     * Gets entity invulnerability from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity invulnerability from item stack
-     */
-    public static boolean getEntityInvulnerability(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_INVULNERABLE_KEY);
-    }
-
-    /**
-     * Gets entity picking up from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity picking up from item stack
-     */
-    public static boolean getEntityPickingUp(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY);
-    }
-
-    /**
-     * Gets entity persistance from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity persistance from item stack
-     */
-    public static boolean getEntityPersistance(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY);
-    }
-
-    /**
-     * Gets entity intellect from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity intellect from item stack
-     */
-    public static boolean getEntityIntellect(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return true;
-        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_AI_KEY);
-    }
-
-    /**
-     * Gets entity glow from stack
-     *
-     * @param stack Item stack to get from
-     * @return Entity glow from item stack
-     */
-    public static boolean getEntityGlow(@NotNull ItemStack stack) {
-        if (!stack.hasNbt()) return false;
-        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_GLOWING_KEY);
     }
 
     /**
@@ -1313,6 +246,72 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if compound have all valid tags to be parsed to banner pattern
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for banner pattern
+     */
+    public static boolean isValidPattern(@NotNull NbtCompound nbt) {
+        if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY, NbtElement.INT_TYPE)) return false;
+        int color = nbt.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
+        if (color < 0 || color >= 16) return false;
+        if (!nbt.contains(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
+        String pattern = nbt.getString(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY);
+        return BannerPattern.byId(pattern) != null;
+    }
+
+    /**
+     * Checks if stack has banner patterns
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of banner patterns. False to only check for tag
+     * @return Does item stack have banner patterns
+     */
+    public static boolean hasBannerPatterns(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
+        if (!blockEntityTag.contains(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList patterns = blockEntityTag.getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
+        if (!validate) return !patterns.isEmpty();
+        for (NbtElement pattern : patterns) {
+            if (isValidPattern((NbtCompound)pattern)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasBannerPatterns(ItemStack, boolean) hasBannerPatterns} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid banner patterns
+     */
+    public static boolean hasBannerPatterns(@NotNull ItemStack stack) {
+        return hasBannerPatterns(stack, true);
+    }
+
+    /**
+     * Gets banner patterns from stack
+     *
+     * @param stack Item stack to get from
+     * @return Banner patterns from item stack
+     */
+    public static @NotNull List<Pair<BannerPattern, Integer>> getBannerPatterns(@NotNull ItemStack stack) {
+        if (!hasBannerPatterns(stack)) return List.of();
+        NbtList nbtPatterns = stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getList(BLOCK_ENTITY_TAG_PATTERNS_KEY, NbtElement.COMPOUND_TYPE);
+        List<Pair<BannerPattern, Integer>> patterns = new ArrayList<>();
+        for (NbtElement nbtPattern : nbtPatterns) {
+            NbtCompound pattern = (NbtCompound)nbtPattern;
+            if (!isValidPattern(pattern)) continue;
+            int color = pattern.getInt(BLOCK_ENTITY_TAG_PATTERNS_COLOR_KEY);
+            BannerPattern bannerPattern = BannerPattern.byId(pattern.getString(BLOCK_ENTITY_TAG_PATTERNS_PATTERN_KEY)).value();
+            patterns.add(Pair.of(bannerPattern, color));
+        }
+        return patterns;
+    }
+
+    /**
      * Sets banner patterns to the stack
      *
      * @param stack Item stack to modify
@@ -1347,6 +346,29 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has book author
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book author
+     */
+    public static boolean hasBookAuthor(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        return nbt.contains(AUTHOR_KEY, NbtElement.STRING_TYPE);
+    }
+
+    /**
+     * Gets book author from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book author from item stack, or null if none is present
+     */
+    public static @Nullable String getBookAuthor(@NotNull ItemStack stack) {
+        if (!hasBookAuthor(stack)) return null;
+        return stack.getNbt().getString(AUTHOR_KEY);
+    }
+
+    /**
      * Sets book author to the stack
      *
      * @param stack Item stack to modify
@@ -1364,6 +386,29 @@ public class ItemUtil {
             nbt.putString(AUTHOR_KEY, author);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has book title
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book title
+     */
+    public static boolean hasBookTitle(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        return nbt.contains(TITLE_KEY, NbtElement.STRING_TYPE);
+    }
+
+    /**
+     * Gets book title from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book title from item stack, or null if none is present
+     */
+    public static @Nullable String getBookTitle(@NotNull ItemStack stack) {
+        if (!hasBookTitle(stack)) return null;
+        return stack.getNbt().getString(TITLE_KEY);
     }
 
     /**
@@ -1387,6 +432,18 @@ public class ItemUtil {
     }
 
     /**
+     * Gets book generation from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book generation id from item stack
+     */
+    public static int getBookGeneration(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return 0;
+        int generation = stack.getNbt().getInt(GENERATION_KEY);
+        return generation >= 0 && generation < GENERATIONS_AMOUNT ? generation : 0;
+    }
+
+    /**
      * Sets book generation to the stack
      *
      * @param stack Item stack to modify
@@ -1404,6 +461,35 @@ public class ItemUtil {
             nbt.putInt(GENERATION_KEY, generation);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has book pages
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have book pages
+     */
+    public static boolean hasBookPages(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(PAGES_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList pages = nbt.getList(PAGES_KEY, NbtElement.STRING_TYPE);
+        return !pages.isEmpty();
+    }
+
+    /**
+     * Gets book pages from stack
+     *
+     * @param stack Item stack to get from
+     * @return Book pages from item stack
+     */
+    public static @NotNull List<Text> getBookPages(@NotNull ItemStack stack) {
+        if (!hasBookPages(stack)) return List.of();
+        List<Text> pages = new ArrayList<>();
+        for (NbtElement page : stack.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE)) {
+            pages.add(Text.Serializer.fromJson(page.asString()));
+        }
+        return pages;
     }
 
     /**
@@ -1429,6 +515,66 @@ public class ItemUtil {
             nbt.put(PAGES_KEY, nbtPages);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has custom color
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom color
+     */
+    public static boolean hasColor(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        Item item = stack.getItem();
+        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            return display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof FilledMapItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            return display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+            return nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE);
+        } else if (item instanceof FireworkStarItem) {
+            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return false;
+            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+            return explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE);
+        }
+        return false;
+    }
+
+    /**
+     * Gets custom color from stack
+     *
+     * @param stack Item stack to get from
+     * @return Custom color from item stack, or null if none is present
+     */
+    public static @Nullable Integer getColor(@NotNull ItemStack stack) {
+        if (!hasColor(stack)) return null;
+        NbtCompound nbt = stack.getNbt();
+        Item item = stack.getItem();
+        if (item instanceof ArmorItem || item instanceof HorseArmorItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            if (!display.contains(DISPLAY_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return display.getInt(DISPLAY_COLOR_KEY);
+        } else if (item instanceof FilledMapItem) {
+            if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+            if (!display.contains(DISPLAY_MAP_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return display.getInt(DISPLAY_MAP_COLOR_KEY);
+        } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+            if (!nbt.contains(CUSTOM_POTION_COLOR_KEY, NbtElement.INT_TYPE)) return null;
+            return nbt.getInt(CUSTOM_POTION_COLOR_KEY);
+        } else if (item instanceof FireworkStarItem) {
+            if (!nbt.contains(EXPLOSION_KEY, NbtElement.COMPOUND_TYPE)) return null;
+            NbtCompound explosion = nbt.getCompound(EXPLOSION_KEY);
+            if (!explosion.contains(EXPLOSION_COLORS_KEY, NbtElement.INT_ARRAY_TYPE)) return null;
+            return EditorUtil.meanColor(explosion.getIntArray(EXPLOSION_COLORS_KEY));
+        }
+        return null;
     }
 
     /**
@@ -1477,6 +623,74 @@ public class ItemUtil {
             }
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if compound have all valid tags to be parsed to enchantment
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for enchantment
+     */
+    public static boolean isValidEnchantment(@NotNull NbtCompound nbt) {
+        if (nbt.isEmpty()) return false;
+        if (!nbt.contains(ENCHANTMENTS_LVL_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.STRING_TYPE)) {
+            if (!nbt.contains(ENCHANTMENTS_ID_KEY, NbtElement.SHORT_TYPE)) return false;
+            int id = nbt.getShort(ENCHANTMENTS_ID_KEY);
+            return id >= 0 && id < Registries.ENCHANTMENT.size();
+        }
+        Identifier id = Identifier.tryParse(nbt.getString(ENCHANTMENTS_ID_KEY));
+        if (id == null) return false;
+        return Registries.ENCHANTMENT.containsId(id);
+    }
+
+    /**
+     * Checks if stack has enchantments
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of enchantments. False to only check for tag
+     * @return Does item stack have enchantments
+     */
+    public static boolean hasEnchantments(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENCHANTMENTS_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList enchantments = nbt.getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
+        if (!validate) return !enchantments.isEmpty();
+        for (NbtElement enchantment : enchantments) {
+            if (isValidEnchantment((NbtCompound)enchantment)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasEnchantments(ItemStack, boolean) hasEnchantments} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid enchantments
+     */
+    public static boolean hasEnchantments(@NotNull ItemStack stack) {
+        return hasEnchantments(stack, true);
+    }
+
+    /**
+     * Gets enchantments from stack
+     *
+     * @param stack Item stack to get from
+     * @return Enchantments from item stack
+     */
+    public static @NotNull HashMap<Enchantment, Integer> getEnchantments(@NotNull ItemStack stack) {
+        if (!hasEnchantments(stack)) return new HashMap<>();
+        NbtList nbtEnchantments = stack.getNbt().getList(ENCHANTMENTS_KEY, NbtElement.COMPOUND_TYPE);
+        HashMap<Enchantment, Integer> enchantments = new HashMap<>();
+        for (NbtElement nbtEnchantment : nbtEnchantments) {
+            NbtCompound enchantment = (NbtCompound)nbtEnchantment;
+            if (!isValidEnchantment(enchantment)) continue;
+            String id = enchantment.getString(ENCHANTMENTS_ID_KEY);
+            int lvl = enchantment.getInt(ENCHANTMENTS_LVL_KEY);
+            enchantments.put(Registries.ENCHANTMENT.get(Identifier.tryParse(id)), lvl);
+        }
+        return enchantments;
     }
 
     /**
@@ -1531,6 +745,45 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has firework explosions
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have firework explosions
+     */
+    public static boolean hasFireworkExplosions(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound fireworks = nbt.getCompound(FIREWORKS_KEY);
+        if (!fireworks.contains(FIREWORKS_EXPLOSIONS_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList explosions = fireworks.getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
+        // even empty explosion works, no need for validation
+        return !explosions.isEmpty();
+    }
+
+    /**
+     * Gets firework explosions from stack
+     *
+     * @param stack Item stack to get from
+     * @return Firework explosions from item stack
+     */
+    public static @NotNull List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> getFireworkExplosions(@NotNull ItemStack stack) {
+        if (!hasFireworkExplosions(stack)) return List.of();
+        NbtList nbtExplosions = stack.getNbt().getCompound(FIREWORKS_KEY).getList(FIREWORKS_EXPLOSIONS_KEY, NbtElement.COMPOUND_TYPE);
+        List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> result = new ArrayList<>();
+        for (NbtElement nbtExplosion : nbtExplosions) {
+            NbtCompound explosion = (NbtCompound)nbtExplosion;
+            int type = explosion.getInt(FIREWORKS_EXPLOSIONS_TYPE_KEY);
+            int[] colors = explosion.getIntArray(FIREWORKS_EXPLOSIONS_COLORS_KEY);
+            boolean flicker = explosion.getBoolean(FIREWORKS_EXPLOSIONS_FLICKER_KEY);
+            boolean trail = explosion.getBoolean(FIREWORKS_EXPLOSIONS_TRAIL_KEY);
+            int[] fadeColors = explosion.getIntArray(FIREWORKS_EXPLOSIONS_FADE_COLORS_KEY);
+            result.add(new Quintet<>(type, Ints.asList(colors), flicker, trail, Ints.asList(fadeColors)));
+        }
+        return result;
+    }
+
+    /**
      * Sets firework explosions to the stack
      *
      * @param stack Item stack to modify
@@ -1566,6 +819,20 @@ public class ItemUtil {
     }
 
     /**
+     * Gets firework flight from stack
+     *
+     * @param stack Item stack to get from
+     * @return Firework flight from item stack
+     */
+    public static int getFireworkFlight(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return 0;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(FIREWORKS_KEY, NbtElement.COMPOUND_TYPE)) return 0;
+        NbtCompound fireworks = nbt.getCompound(FIREWORKS_KEY);
+        return fireworks.getInt(FIREWORKS_FLIGHT_KEY);
+    }
+
+    /**
      * Sets firework flight to the stack
      *
      * @param stack Item stack to modify
@@ -1590,6 +857,31 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has head owner name
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have head owner name
+     */
+    public static boolean hasHeadOwner(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+        return skullOwner.contains(SKULL_OWNER_NAME_KEY, NbtElement.STRING_TYPE);
+    }
+
+    /**
+     * Gets head owner name from stack
+     *
+     * @param stack Item stack to get from
+     * @return Head owner name from item stack, or null if none is present
+     */
+    public static @Nullable String getHeadOwner(@NotNull ItemStack stack) {
+        if (!hasHeadOwner(stack)) return null;
+        return stack.getNbt().getCompound(SKULL_OWNER_KEY).getString(SKULL_OWNER_NAME_KEY);
+    }
+
+    /**
      * Sets head owner name to the stack
      *
      * @param stack Item stack to modify
@@ -1608,6 +900,95 @@ public class ItemUtil {
             NbtCompound nbt = stack.getOrCreateNbt();
             nbt.putString(SKULL_OWNER_KEY, owner);
             stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if object is valid for head texture
+     *
+     * @param texture Base64 encoded texture object
+     * @return Is object valid for head texture
+     */
+    public static boolean isValidHeadTexture(@NotNull String texture) {
+        try {
+            String value = new String(Base64.getDecoder().decode(texture));
+            JsonObject textureObj = JsonParser.parseString(value).getAsJsonObject();
+            System.out.println(textureObj.toString());
+            if (!textureObj.has("textures")) return false;
+            JsonObject textures = textureObj.getAsJsonObject("textures");
+            System.out.println(textures.toString());
+            if (!textures.has("SKIN")) return false;
+            JsonObject skin = textures.getAsJsonObject("SKIN");
+            System.out.println(skin.toString());
+            if (!skin.has("url")) return false;
+            URL url = new URL(skin.get("url").getAsString());
+            return isValidHeadTextureUrl(url);
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
+            System.out.println("failed");
+            return false;
+        }
+    }
+
+    /**
+     * Checks if url is valid for head texture
+     *
+     * @param url Texture url
+     * @return Is url valid for head texture
+     */
+    public static boolean isValidHeadTextureUrl(@NotNull URL url) {
+        String path = url.getPath();
+        return url.getHost().equals("textures.minecraft.net") && path.startsWith("/texture/") && path.substring(9).matches("[a-fA-F0-9]+");
+    }
+
+    /**
+     * Checks if stack has head texture (not name)
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of texture. False to only check for tag
+     * @return Does item stack have head texture
+     */
+    public static boolean hasHeadTexture(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(SKULL_OWNER_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound skullOwner = nbt.getCompound(SKULL_OWNER_KEY);
+        if (!skullOwner.contains(SKULL_OWNER_PROPERTIES_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound properties = skullOwner.getCompound(SKULL_OWNER_PROPERTIES_KEY);
+        if (!properties.contains(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList textures = properties.getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE);
+        if (textures.isEmpty()) return false;
+        NbtCompound texture = textures.getCompound(0);
+        if (!texture.contains(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY, NbtElement.STRING_TYPE)) return false;
+        if (!validate) return true;
+        String value = texture.getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
+        return isValidHeadTexture(value);
+    }
+
+    /**
+     * Redirects to {@link #hasHeadTexture(ItemStack, boolean) hasHeadTexture} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid head texture
+     */
+    public static boolean hasHeadTexture(@NotNull ItemStack stack) {
+        return hasHeadTexture(stack, true);
+    }
+
+    /**
+     * Gets head texture from stack
+     *
+     * @param stack Item stack to get from
+     * @return Head texture from item stack, or null if none is present
+     */
+    public static @Nullable URL getHeadTexture(@NotNull ItemStack stack) {
+        if (!hasHeadTexture(stack)) return null;
+        String texture = stack.getNbt().getCompound(SKULL_OWNER_KEY).getCompound(SKULL_OWNER_PROPERTIES_KEY).getList(SKULL_OWNER_PROPERTIES_TEXTURES_KEY, NbtElement.COMPOUND_TYPE).getCompound(0).getString(SKULL_OWNER_PROPERTIES_TEXTURES_VALUE_KEY);
+        try {
+            String value = new String(Base64.getDecoder().decode(texture));
+            JsonObject textures = JsonParser.parseString(value).getAsJsonObject().getAsJsonObject("textures");
+            return new URL(textures.getAsJsonObject("SKIN").get("url").getAsString());
+        } catch (JsonParseException | IllegalStateException | ClassCastException | UnsupportedOperationException | IllegalArgumentException | MalformedURLException e) {
+            return null;
         }
     }
 
@@ -1667,6 +1048,59 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if sound id is valid
+     *
+     * @param sound Sound id
+     * @return Is sound valid
+     */
+    public static boolean isValidSound(@NotNull String sound) {
+        Identifier id = Identifier.tryParse(sound);
+        if (id == null) return false;
+        return Registries.SOUND_EVENT.containsId(id);
+    }
+
+    /**
+     * Checks if stack has note block sound
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of sound. False to only check for tag
+     * @return Does item stack have note block sound
+     */
+    public static boolean hasNoteBlockSound(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(BLOCK_ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound blockEntityTag = nbt.getCompound(BLOCK_ENTITY_TAG_KEY);
+        if (!blockEntityTag.contains(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND, NbtElement.STRING_TYPE)) return false;
+        if (!validate) return true;
+        String sound = blockEntityTag.getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND);
+        return isValidSound(sound);
+    }
+
+    /**
+     * Redirects to {@link #hasNoteBlockSound(ItemStack, boolean) hasNoteBlockSound} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid note block sound
+     */
+    public static boolean hasNoteBlockSound(@NotNull ItemStack stack) {
+        return hasNoteBlockSound(stack, true);
+    }
+
+    /**
+     * Gets note block sound from stack
+     *
+     * @param stack Item stack to get from
+     * @return Note block sound from item stack, or null if none is present
+     */
+    public static @Nullable SoundEvent getNoteBlockSound(@NotNull ItemStack stack) {
+        if (!hasNoteBlockSound(stack)) return null;
+        Identifier id = Identifier.tryParse(stack.getNbt().getCompound(BLOCK_ENTITY_TAG_KEY).getString(BLOCK_ENTITY_TAG_NOTE_BLOCK_SOUND));
+        if (id == null) return null;
+        return Registries.SOUND_EVENT.get(id);
+    }
+
+    /**
      * Sets note block sound to the stack
      *
      * @param stack Item stack to modify
@@ -1690,6 +1124,53 @@ public class ItemUtil {
             nbt.put(BLOCK_ENTITY_TAG_KEY, blockEntityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has custom model
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom model
+     */
+    public static boolean hasModel(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(CUSTOM_MODEL_DATA_KEY, NbtElement.INT_TYPE)) return false;
+        int model = nbt.getInt(CUSTOM_MODEL_DATA_KEY);
+        return model > 0;
+    }
+
+    /**
+     * Checks if stack has lore
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have lore
+     */
+    public static boolean hasLore(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+        if (!display.contains(DISPLAY_LORE_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList lore = display.getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
+        return !lore.isEmpty();
+    }
+
+    /**
+     * Gets lore from stack
+     *
+     * @param stack Item stack to get from
+     * @return Lore from item stack
+     */
+    public static @NotNull List<Text> getLore(@NotNull ItemStack stack) {
+        if (!hasLore(stack)) return List.of();
+        NbtList nbtLore = stack.getNbt().getCompound(DISPLAY_KEY).getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
+        List<Text> lore = new ArrayList<>();
+        for (NbtElement nbtLine : nbtLore) {
+            Text line = Text.Serializer.fromJson(nbtLine.asString());
+            lore.add(line);
+        }
+        return lore;
     }
 
     /**
@@ -1722,23 +1203,39 @@ public class ItemUtil {
     }
 
     /**
-     * Sets custom model to the stack
+     * Gets custom model from stack
      *
-     * @param stack Item stack to modify
-     * @param model Custom model to set. Removes tag if null or less than 1
+     * @param stack Item stack to get from
+     * @return Custom model from item stack
      */
-    public static void setModel(@NotNull ItemStack stack, @Nullable Integer model) {
-        if (model == null || model <= 0) {
-            if (!hasModel(stack)) return;
+    public static int getModel(@NotNull ItemStack stack) {
+        if (!hasModel(stack)) return 0;
+        return stack.getNbt().getInt(CUSTOM_MODEL_DATA_KEY);
+    }
 
-            NbtCompound nbt = stack.getNbt();
-            nbt.remove(CUSTOM_MODEL_DATA_KEY);
-            stack.setNbt(nbt);
-        } else {
-            NbtCompound nbt = stack.getOrCreateNbt();
-            nbt.putInt(CUSTOM_MODEL_DATA_KEY, model);
-            stack.setNbt(nbt);
-        }
+    /**
+     * Checks if stack has custom name
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have custom name
+     */
+    public static boolean hasName(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound display = nbt.getCompound(DISPLAY_KEY);
+        return display.contains(DISPLAY_NAME_KEY, NbtElement.STRING_TYPE);
+    }
+
+    /**
+     * Gets custom name from stack
+     *
+     * @param stack Item stack to get from
+     * @return Custom name from item stack
+     */
+    public static @Nullable Text getName(@NotNull ItemStack stack) {
+        if (!hasName(stack)) return null;
+        return Text.Serializer.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
     }
 
     /**
@@ -1763,6 +1260,77 @@ public class ItemUtil {
             nbt.put(DISPLAY_KEY, display);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Sets custom model to the stack
+     *
+     * @param stack Item stack to modify
+     * @param model Custom model to set. Removes tag if null or less than 1
+     */
+    public static void setModel(@NotNull ItemStack stack, @Nullable Integer model) {
+        if (model == null || model <= 0) {
+            if (!hasModel(stack)) return;
+
+            NbtCompound nbt = stack.getNbt();
+            nbt.remove(CUSTOM_MODEL_DATA_KEY);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            nbt.putInt(CUSTOM_MODEL_DATA_KEY, model);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if compound have all valid tags to be parsed to armor trim
+     *
+     * @param nbt NBT compound to check
+     * @param registryManager Dynamic registry manager to check in
+     * @return Is compound valid for armor trim
+     */
+    public static boolean isValidTrim(@NotNull NbtCompound nbt, @NotNull DynamicRegistryManager registryManager) {
+        if (!nbt.contains(TRIM_PATTERN_KEY, NbtElement.STRING_TYPE)) return false;
+        if (!nbt.contains(TRIM_MATERIAL_KEY, NbtElement.STRING_TYPE)) return false;
+        Identifier pattern = Identifier.tryParse(nbt.getString(TRIM_PATTERN_KEY));
+        if (pattern == null || !registryManager.get(RegistryKeys.TRIM_PATTERN).containsId(pattern)) return false;
+        Identifier material = Identifier.tryParse(nbt.getString(TRIM_MATERIAL_KEY));
+        return material != null && registryManager.get(RegistryKeys.TRIM_MATERIAL).containsId(material);
+    }
+
+    /**
+     * Checks if stack has armor trim
+     *
+     * @param stack Item stack to check
+     * @param registryManager Dynamic registry manager to check in. Doesn't check for validity if null
+     * @return Does item stack have armor trim
+     */
+    public static boolean hasTrim(@NotNull ItemStack stack, @Nullable DynamicRegistryManager registryManager) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(TRIM_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        if (registryManager == null) return true;
+        NbtCompound trim = nbt.getCompound(TRIM_KEY);
+        return isValidTrim(trim, registryManager);
+    }
+
+    /**
+     * Gets armor trim from stack
+     *
+     * @param stack Item stack to get from
+     * @param registryManager Dynamic registry manager to get from
+     * @return Armor trim from item stack, or null if none is present
+     */
+    public static @Nullable ArmorTrim getTrim(@NotNull ItemStack stack, @NotNull DynamicRegistryManager registryManager) {
+        if (!hasTrim(stack, registryManager)) return null;
+        NbtCompound nbtTrim = stack.getNbt().getCompound(TRIM_KEY);
+        Identifier patternId = Identifier.tryParse(nbtTrim.getString(TRIM_PATTERN_KEY));
+        Identifier materialId = Identifier.tryParse(nbtTrim.getString(TRIM_MATERIAL_KEY));
+        Registry<ArmorTrimPattern> patternRegistry = registryManager.get(RegistryKeys.TRIM_PATTERN);
+        Registry<ArmorTrimMaterial> materialRegistry = registryManager.get(RegistryKeys.TRIM_MATERIAL);
+        ArmorTrimPattern pattern = patternRegistry.get(patternId);
+        ArmorTrimMaterial material = materialRegistry.get(materialId);
+        return new ArmorTrim(materialRegistry.getEntry(material), patternRegistry.getEntry(pattern));
     }
 
     /**
@@ -1807,6 +1375,56 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has placing whitelist
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of whitelist. False to only check for tag
+     * @return Does item stack have placing whitelist
+     */
+    public static boolean hasWhitelistPlace(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(CAN_PLACE_ON_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList place = nbt.getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
+        if (!validate) return !place.isEmpty();
+        for (NbtElement element : place) {
+            Identifier id = Identifier.tryParse(element.asString());
+            if (id == null) continue;
+            if (Registries.BLOCK.containsId(id)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasWhitelistPlace(ItemStack, boolean) hasWhitelistPlace} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid placing whitelist
+     */
+    public static boolean hasWhitelistPlace(@NotNull ItemStack stack) {
+        return hasWhitelistPlace(stack, true);
+    }
+
+    /**
+     * Gets placing whitelist from stack
+     *
+     * @param stack Item stack to get from
+     * @return Placing whitelist from item stack
+     */
+    public static @NotNull List<Block> getWhitelistPlace(@NotNull ItemStack stack) {
+        if (!hasWhitelistPlace(stack)) return List.of();
+        NbtList nbtPlace = stack.getNbt().getList(CAN_PLACE_ON_KEY, NbtElement.STRING_TYPE);
+        List<Block> result = new ArrayList<>();
+        for (NbtElement nbtBlock : nbtPlace) {
+            Identifier id = Identifier.tryParse(nbtBlock.asString());
+            if (id == null || !Registries.BLOCK.containsId(id)) continue;
+            Block block = Registries.BLOCK.get(id);
+            result.add(block);
+        }
+        return result;
+    }
+
+    /**
      * Sets placing whitelist to the stack
      *
      * @param stack Item stack to modify
@@ -1829,6 +1447,56 @@ public class ItemUtil {
             nbt.put(CAN_PLACE_ON_KEY, nbtPlace);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has destroying whitelist
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of whitelist. False to only check for tag
+     * @return Does item stack have destroying whitelist
+     */
+    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(CAN_DESTROY_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList destroy = nbt.getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
+        if (!validate) return !destroy.isEmpty();
+        for (NbtElement element : destroy) {
+            Identifier id = Identifier.tryParse(element.asString());
+            if (id == null) continue;
+            if (Registries.BLOCK.containsId(id)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasWhitelistDestroy(ItemStack, boolean) hasWhitelistDestroy} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid destroying whitelist
+     */
+    public static boolean hasWhitelistDestroy(@NotNull ItemStack stack) {
+        return hasWhitelistDestroy(stack, true);
+    }
+
+    /**
+     * Gets destroying whitelist from stack
+     *
+     * @param stack Item stack to get from
+     * @return Destroying whitelist from item stack
+     */
+    public static @NotNull List<Block> getWhitelistDestroy(@NotNull ItemStack stack) {
+        if (!hasWhitelistDestroy(stack)) return List.of();
+        NbtList nbtDestroy = stack.getNbt().getList(CAN_DESTROY_KEY, NbtElement.STRING_TYPE);
+        List<Block> result = new ArrayList<>();
+        for (NbtElement nbtBlock : nbtDestroy) {
+            Identifier id = Identifier.tryParse(nbtBlock.asString());
+            if (id == null || !Registries.BLOCK.containsId(id)) continue;
+            Block block = Registries.BLOCK.get(id);
+            result.add(block);
+        }
+        return result;
     }
 
     /**
@@ -1857,6 +1525,17 @@ public class ItemUtil {
     }
 
     /**
+     * Gets stack unbreakability
+     *
+     * @param stack Item stack to get from
+     * @return Is stack unbreakable
+     */
+    public static boolean getUnbreakable(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getBoolean(UNBREAKABLE_KEY);
+    }
+
+    /**
      * Sets unbreakability to the stack
      *
      * @param stack Item stack to modify
@@ -1874,6 +1553,23 @@ public class ItemUtil {
             nbt.putBoolean(UNBREAKABLE_KEY, unbreakable);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Gets display flags from stack
+     *
+     * @param stack Item stack to get from
+     * @return Display flags from item stack
+     */
+    public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
+        List<Boolean> result = new ArrayList<>();
+        if (!stack.hasNbt()) return result;
+        int flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
+        for (int i = 0; i < FLAGS_AMOUNT; ++i) {
+            int mask = 1 << i;
+            result.add((flags & mask) == mask);
+        }
+        return result;
     }
 
     /**
@@ -1899,6 +1595,74 @@ public class ItemUtil {
             nbt.putInt(HIDE_FLAGS_KEY, result);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if compound have all valid tags to be parsed to potion effect
+     *
+     * @param nbt NBT compound to check
+     * @return Is compound valid for potion effect
+     */
+    public static boolean isValidPotionEffect(@NotNull NbtCompound nbt) {
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_DURATION_KEY, NbtElement.INT_TYPE)) return false;
+        StatusEffect effect = StatusEffect.byRawId(nbt.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
+        return effect != null;
+    }
+
+    /**
+     * Checks if stack has potion effects
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of potion effects. False to only check for tag
+     * @return Does item stack have potion effects
+     */
+    public static boolean hasPotionEffects(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_KEY, NbtElement.LIST_TYPE)) return false;
+        NbtList customPotionEffects = nbt.getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
+        if (!validate) return !customPotionEffects.isEmpty();
+        for (NbtElement customPotionEffect : customPotionEffects) {
+            if (isValidPotionEffect((NbtCompound)customPotionEffect)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasPotionEffects(ItemStack, boolean) hasPotionEffects} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have potion effects tag
+     */
+    public static boolean hasPotionEffects(@NotNull ItemStack stack) {
+        return hasPotionEffects(stack, true);
+    }
+
+    /**
+     * Gets potion effects from stack
+     *
+     * @param stack Item stack to get from
+     * @return Potion effects from item stack
+     */
+    public static @NotNull HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> getPotionEffects(@NotNull ItemStack stack) {
+        if (!hasPotionEffects(stack)) return new HashMap<>();
+        HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> result = new HashMap<>();
+        NbtList customPotionEffects = stack.getNbt().getList(CUSTOM_POTION_EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
+        for (NbtElement customPotionEffect : customPotionEffects) {
+            NbtCompound potionEffect = (NbtCompound)customPotionEffect;
+            if (!isValidPotionEffect(potionEffect)) continue;
+            StatusEffect effect = StatusEffect.byRawId(potionEffect.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
+            int amplifier = potionEffect.getInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY);
+            int duration = potionEffect.getInt(CUSTOM_POTION_EFFECTS_DURATION_KEY);
+            if (!potionEffect.contains(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, NbtElement.BYTE_TYPE)) {
+                result.put(effect, Triple.of(amplifier, duration, null));
+            } else {
+                result.put(effect, Triple.of(amplifier, duration, potionEffect.getBoolean(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY)));
+            }
+        }
+        return result;
     }
 
     /**
@@ -1933,6 +1697,46 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has entity type
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity type. False to only check for tag
+     * @return Does item stack have entity type
+     */
+    public static boolean hasEntityType(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_ID_KEY, NbtElement.STRING_TYPE)) return false;
+        if (!validate) return true;
+        Identifier id = Identifier.tryParse(entityTag.getString(ENTITY_TAG_ID_KEY));
+        if (id == null) return false;
+        return Registries.ENTITY_TYPE.containsId(id);
+    }
+
+    /**
+     * Redirects to {@link #hasEntityType(ItemStack, boolean) hasEntityType} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity type
+     */
+    public static boolean hasEntityType(@NotNull ItemStack stack) {
+        return hasEntityType(stack, true);
+    }
+
+    /**
+     * Gets entity type from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity type from item stack, or null if none
+     */
+    public static @Nullable EntityType<?> getEntityType(@NotNull ItemStack stack) {
+        if (!hasEntityType(stack)) return null;
+        return Registries.ENTITY_TYPE.get(Identifier.tryParse(stack.getNbt().getCompound(ENTITY_TAG_KEY).getString(ENTITY_TAG_ID_KEY)));
+    }
+
+    /**
      * Sets entity type to the stack
      *
      * @param stack Item stack to modify
@@ -1956,6 +1760,46 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has entity position
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity position. False to only check for tag
+     * @return Does item stack have entity position
+     */
+    public static boolean hasEntityPosition(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_POS_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!validate) return true;
+        NbtList pos = entityTag.getList(ENTITY_TAG_POS_KEY, NbtElement.DOUBLE_TYPE);
+        return pos.size() == 3;
+    }
+
+    /**
+     * Redirects to {@link #hasEntityPosition(ItemStack, boolean) hasEntityPosition} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity position
+     */
+    public static boolean hasEntityPosition(@NotNull ItemStack stack) {
+        return hasEntityPosition(stack, true);
+    }
+
+    /**
+     * Gets entity position from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity position from item stack, or null if none
+     */
+    public static @Nullable Vec3d getEntityPosition(@NotNull ItemStack stack) {
+        if (!hasEntityPosition(stack)) return null;
+        NbtList pos = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_POS_KEY, NbtElement.DOUBLE_TYPE);
+        return new Vec3d(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
     }
 
     /**
@@ -1988,6 +1832,46 @@ public class ItemUtil {
     }
 
     /**
+     * Checks if stack has entity motion
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity motion. False to only check for tag
+     * @return Does item stack have entity motion
+     */
+    public static boolean hasEntityMotion(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_MOTION_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!validate) return true;
+        NbtList pos = entityTag.getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
+        return pos.size() == 3;
+    }
+
+    /**
+     * Redirects to {@link #hasEntityMotion(ItemStack, boolean) hasEntityMotion} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity motion
+     */
+    public static boolean hasEntityMotion(@NotNull ItemStack stack) {
+        return hasEntityMotion(stack, true);
+    }
+
+    /**
+     * Gets entity motion from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity motion from item stack, or null if none
+     */
+    public static @Nullable Vec3d getEntityMotion(@NotNull ItemStack stack) {
+        if (!hasEntityMotion(stack)) return null;
+        NbtList motion = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_MOTION_KEY, NbtElement.DOUBLE_TYPE);
+        return new Vec3d(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
+    }
+
+    /**
      * Sets entity motion to the stack
      *
      * @param stack Item stack to modify
@@ -2014,6 +1898,46 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Checks if stack has entity rotation
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of entity rotation. False to only check for tag
+     * @return Does item stack have entity rotation
+     */
+    public static boolean hasEntityRotation(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        if (!entityTag.contains(ENTITY_TAG_ROTATION_KEY, NbtElement.LIST_TYPE)) return false;
+        if (!validate) return true;
+        NbtList rotation = entityTag.getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
+        return rotation.size() == 2;
+    }
+
+    /**
+     * Redirects to {@link #hasEntityRotation(ItemStack, boolean) hasEntityRotation} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid entity rotation
+     */
+    public static boolean hasEntityRotation(@NotNull ItemStack stack) {
+        return hasEntityRotation(stack, true);
+    }
+
+    /**
+     * Gets entity rotation from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity rotation from item stack, or null if none
+     */
+    public static @Nullable Vec2f getEntityRotation(@NotNull ItemStack stack) {
+        if (!hasEntityRotation(stack)) return null;
+        NbtList rotation = stack.getNbt().getCompound(ENTITY_TAG_KEY).getList(ENTITY_TAG_ROTATION_KEY, NbtElement.FLOAT_TYPE);
+        return new Vec2f(rotation.getFloat(0), rotation.getFloat(1));
     }
 
     /**
@@ -2045,6 +1969,17 @@ public class ItemUtil {
     }
 
     /**
+     * Gets entity gravity from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity gravity from item stack
+     */
+    public static boolean getEntityGravity(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_GRAVITY_KEY);
+    }
+
+    /**
      * Sets entity gravity to the stack
      *
      * @param stack Item stack to modify
@@ -2066,6 +2001,17 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Gets entity silence from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity silence from item stack
+     */
+    public static boolean getEntitySilence(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_SILENT_KEY);
     }
 
     /**
@@ -2093,6 +2039,17 @@ public class ItemUtil {
     }
 
     /**
+     * Gets entity invulnerability from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity invulnerability from item stack
+     */
+    public static boolean getEntityInvulnerability(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_INVULNERABLE_KEY);
+    }
+
+    /**
      * Sets entity invulnerability to the stack
      *
      * @param stack Item stack to modify
@@ -2114,6 +2071,17 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Gets entity picking up from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity picking up from item stack
+     */
+    public static boolean getEntityPickingUp(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_CAN_PICK_UP_LOOT_KEY);
     }
 
     /**
@@ -2141,6 +2109,17 @@ public class ItemUtil {
     }
 
     /**
+     * Gets entity persistance from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity persistance from item stack
+     */
+    public static boolean getEntityPersistance(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_PERSISTANCE_REQUIRED_KEY);
+    }
+
+    /**
      * Sets entity picking up to the stack
      *
      * @param stack Item stack to modify
@@ -2165,6 +2144,17 @@ public class ItemUtil {
     }
 
     /**
+     * Gets entity intellect from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity intellect from item stack
+     */
+    public static boolean getEntityIntellect(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return true;
+        return !stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_NO_AI_KEY);
+    }
+
+    /**
      * Sets entity picking up to the stack
      *
      * @param stack Item stack to modify
@@ -2186,6 +2176,17 @@ public class ItemUtil {
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
+    }
+
+    /**
+     * Gets entity glow from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity glow from item stack
+     */
+    public static boolean getEntityGlow(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_GLOWING_KEY);
     }
 
     /**

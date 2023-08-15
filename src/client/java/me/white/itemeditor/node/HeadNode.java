@@ -88,27 +88,27 @@ public class HeadNode implements Node {
 
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_OK) {
+                StringBuilder response = new StringBuilder();
                 try (BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                    StringBuilder response = new StringBuilder();
                     String responseLine;
                     while ((responseLine = buffer.readLine()) != null) {
                         response.append(responseLine.trim());
                     }
-                    JsonObject object = JsonParser.parseString(response.toString()).getAsJsonObject();
-                    JsonObject texture = object.getAsJsonObject("data").getAsJsonObject("texture");
-
-                    String value = texture.get("value").getAsString();
-                    String signature = texture.get("signature").getAsString();
-
-                    ItemStack stack = EditorUtil.getStack(source);
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(source)) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    ItemUtil.setHeadTexture(stack, value, signature);
-
-                    EditorUtil.setStack(source, stack);
-                    source.sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
                 }
+                JsonObject object = JsonParser.parseString(response.toString()).getAsJsonObject();
+                JsonObject texture = object.getAsJsonObject("data").getAsJsonObject("texture");
+
+                String value = texture.get("value").getAsString();
+                String signature = texture.get("signature").getAsString();
+
+                ItemStack stack = EditorUtil.getStack(source);
+                if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                if (!EditorUtil.hasCreative(source)) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                ItemUtil.setHeadTexture(stack, value, signature);
+
+                EditorUtil.setStack(source, stack);
+                source.sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
             } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 throw BAD_CUSTOM_TEXTURE_EXCEPTION;
             } else if (code == 429) {
