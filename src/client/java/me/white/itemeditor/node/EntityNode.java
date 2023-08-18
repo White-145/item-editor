@@ -28,6 +28,7 @@ public class EntityNode implements Node {
 
         for (Node entityNode : new Node[] {
                 new AbsorptionNode(),
+                new AirNode(),
                 new GlowNode(),
                 new GravityNode(),
                 new HealthNode(),
@@ -52,7 +53,6 @@ public class EntityNode implements Node {
         // TODO:
         // NUMBER
         // ... fire ...
-        // ... air ...
         // STRING / REGISTRY
         // ... name ...
         // ... loot ...

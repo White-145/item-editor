@@ -74,6 +74,7 @@ public class ItemUtil {
     private static final String ENCHANTMENTS_LVL_KEY = "lvl";
     private static final String ENTITY_TAG_KEY = "EntityTag";
     private static final String ENTITY_TAG_ABSORPTION_AMOUNT_KEY = "AbsorptionAmount";
+    private static final String ENTITY_TAG_AIR_KEY = "Air";
     private static final String ENTITY_TAG_CAN_PICK_UP_LOOT_KEY = "CanPickUpLoot";
     private static final String ENTITY_TAG_GLOWING_KEY = "Glowing";
     private static final String ENTITY_TAG_HEALTH_KEY = "Health";
@@ -2342,6 +2343,54 @@ public class ItemUtil {
             NbtCompound nbt = stack.getOrCreateNbt();
             NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
             entityTag.putBoolean(ENTITY_TAG_INVISIBLE_KEY, invisibility);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if stack has entity air
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have entity air
+     */
+    public static boolean hasEntityAir(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        return entityTag.contains(ENTITY_TAG_AIR_KEY, NbtElement.INT_TYPE);
+    }
+
+    /**
+     * Gets entity air from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity air from item stack, or null if none
+     */
+    public static @Nullable Integer getEntityAir(@NotNull ItemStack stack) {
+        if (!hasEntityHealth(stack)) return null;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getInt(ENTITY_TAG_AIR_KEY);
+    }
+
+    /**
+     * Sets entity air to the stack
+     *
+     * @param stack Item stack to modify
+     * @param air Entity air to set. Removes tag if null
+     */
+    public static void setEntityAir(@NotNull ItemStack stack, @Nullable Integer air) {
+        if (air == null) {
+            if (!hasEntityAir(stack)) return;
+            NbtCompound nbt = stack.getNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_AIR_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putInt(ENTITY_TAG_AIR_KEY, air);
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
