@@ -10,25 +10,30 @@ import me.white.itemeditor.util.ItemUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.item.ArmorStandItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemFrameItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class IntellectNode implements Node {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.intellect.error.cannotedit")).create();
-    private static final String OUTPUT_GET_ENABLED = "commands.edit.entity.intellect.getenabled";
-    private static final String OUTPUT_GET_DISABLED = "commands.edit.entity.intellect.getdisabled";
-    private static final String OUTPUT_ENABLE = "commands.edit.entity.intellect.enable";
-    private static final String OUTPUT_DISABLE = "commands.edit.entity.intellect.disable";
+public class InvisibilityNode implements Node {
+    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.entity.invisibility.error.cannotedit")).create();
+    private static final String OUTPUT_GET_ENABLED = "commands.edit.entity.invisibility.getenabled";
+    private static final String OUTPUT_GET_DISABLED = "commands.edit.entity.invisibility.getdisabled";
+    private static final String OUTPUT_ENABLE = "commands.edit.entity.invisibility.enable";
+    private static final String OUTPUT_DISABLE = "commands.edit.entity.invisibility.disable";
 
     private static boolean canEdit(ItemStack stack) {
-        return EditorUtil.isType(MobEntity.class, stack);
+        Class<? extends Entity> entityType = EditorUtil.getEntityType(stack);
+        return EditorUtil.isType(ArmorStandEntity.class, entityType) || EditorUtil.isType(ItemFrameEntity.class, entityType);
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("intellect")
+                .literal("invisibility")
                 .build();
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
@@ -38,10 +43,10 @@ public class IntellectNode implements Node {
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    boolean intellect = ItemUtil.getEntityIntellect(stack);
+                    boolean invisibility = ItemUtil.getEntityInvisibility(stack);
 
-                    context.getSource().sendFeedback(Text.translatable(intellect ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
-                    return intellect ? 1 : 0;
+                    context.getSource().sendFeedback(Text.translatable(invisibility ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
+                    return invisibility ? 1 : 0;
                 })
                 .build();
 
@@ -53,12 +58,12 @@ public class IntellectNode implements Node {
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EntityNode.canEdit(stack)) throw EntityNode.CANNOT_EDIT_EXCEPTION;
                     if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    boolean intellect = ItemUtil.getEntityIntellect(stack);
-                    ItemUtil.setEntityIntellect(stack, !intellect);
+                    boolean invisibility = ItemUtil.getEntityInvisibility(stack);
+                    ItemUtil.setEntityInvisibility(stack, !invisibility);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(intellect ? OUTPUT_DISABLE : OUTPUT_ENABLE));
-                    return intellect ? 0 : 1;
+                    context.getSource().sendFeedback(Text.translatable(invisibility ? OUTPUT_DISABLE : OUTPUT_ENABLE));
+                    return invisibility ? 0 : 1;
                 })
                 .build();
 

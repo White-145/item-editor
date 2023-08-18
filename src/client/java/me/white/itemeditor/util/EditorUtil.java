@@ -10,8 +10,12 @@ import me.white.itemeditor.ItemEditor;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -133,5 +137,30 @@ public class EditorUtil {
 	public static void throwWithContext(SimpleCommandExceptionType exception, StringReader reader, int cursor) throws CommandSyntaxException {
 		reader.setCursor(cursor);
 		throw exception.createWithContext(reader);
+	}
+
+	public static Class<? extends Entity> getEntityType(ItemStack stack) {
+		Item item = stack.getItem();
+		if (item instanceof SpawnEggItem) {
+			EntityType<?> type = ((SpawnEggItem) item).getEntityType(stack.getNbt());
+			return type.getBaseClass();
+		}
+		if (item instanceof ArmorStandItem) {
+			return ArmorStandEntity.class;
+		}
+		if (item instanceof ItemFrameItem) {
+			// it could be GlowItemFrameEntity, but it's hard to get from item and it's not that important
+			return ItemFrameEntity.class;
+		}
+		return null;
+	}
+
+	public static boolean isType(Class<? extends Entity> base, Class<? extends Entity> toCheck) {
+		if (toCheck == null) return false;
+		return base.isAssignableFrom(toCheck);
+	}
+
+	public static boolean isType(Class<? extends Entity> base, ItemStack toCheck) {
+		return isType(base, getEntityType(toCheck));
 	}
 }

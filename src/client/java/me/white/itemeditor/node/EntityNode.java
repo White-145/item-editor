@@ -8,10 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.item.ArmorStandItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.*;
 import net.minecraft.text.Text;
 
 public class EntityNode implements Node {
@@ -20,7 +17,8 @@ public class EntityNode implements Node {
     public static boolean canEdit(ItemStack stack) {
         Item item = stack.getItem();
         return item instanceof SpawnEggItem ||
-                item instanceof ArmorStandItem;
+                item instanceof ArmorStandItem ||
+                item instanceof ItemFrameItem;
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -29,9 +27,12 @@ public class EntityNode implements Node {
                 .build();
 
         for (Node entityNode : new Node[] {
+                new AbsorptionNode(),
                 new GlowNode(),
                 new GravityNode(),
+                new HealthNode(),
                 new IntellectNode(),
+                new InvisibilityNode(),
                 new InvulnerabilityNode(),
                 new MotionNode(),
                 new PersistanceNode(),
@@ -52,8 +53,6 @@ public class EntityNode implements Node {
         // NUMBER
         // ... fire ...
         // ... air ...
-        // ... absorption ...
-        // ... health ...
         // STRING / REGISTRY
         // ... name ...
         // ... loot ...

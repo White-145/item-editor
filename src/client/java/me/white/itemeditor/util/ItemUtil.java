@@ -73,9 +73,12 @@ public class ItemUtil {
     private static final String ENCHANTMENTS_ID_KEY = "id";
     private static final String ENCHANTMENTS_LVL_KEY = "lvl";
     private static final String ENTITY_TAG_KEY = "EntityTag";
+    private static final String ENTITY_TAG_ABSORPTION_AMOUNT_KEY = "AbsorptionAmount";
     private static final String ENTITY_TAG_CAN_PICK_UP_LOOT_KEY = "CanPickUpLoot";
     private static final String ENTITY_TAG_GLOWING_KEY = "Glowing";
+    private static final String ENTITY_TAG_HEALTH_KEY = "Health";
     private static final String ENTITY_TAG_ID_KEY = "id";
+    private static final String ENTITY_TAG_INVISIBLE_KEY = "Invisible";
     private static final String ENTITY_TAG_INVULNERABLE_KEY = "Invulnerable";
     private static final String ENTITY_TAG_MOTION_KEY = "Motion";
     private static final String ENTITY_TAG_NO_AI_KEY = "NoAI";
@@ -2190,7 +2193,7 @@ public class ItemUtil {
     }
 
     /**
-     * Sets entity picking up to the stack
+     * Sets entity glow to the stack
      *
      * @param stack Item stack to modify
      * @param glow Entity glow to set. Removes tag if null
@@ -2208,6 +2211,137 @@ public class ItemUtil {
             NbtCompound nbt = stack.getOrCreateNbt();
             NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
             entityTag.putBoolean(ENTITY_TAG_GLOWING_KEY, glow);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if stack has entity health
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have entity health
+     */
+    public static boolean hasEntityHealth(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        return entityTag.contains(ENTITY_TAG_HEALTH_KEY, NbtElement.FLOAT_TYPE);
+    }
+
+    /**
+     * Gets entity health from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity health from item stack, or null if none
+     */
+    public static @Nullable Float getEntityHealth(@NotNull ItemStack stack) {
+        if (!hasEntityHealth(stack)) return null;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getFloat(ENTITY_TAG_HEALTH_KEY);
+    }
+
+    /**
+     * Sets entity health to the stack
+     *
+     * @param stack Item stack to modify
+     * @param health Entity health to set. Removes tag if null
+     */
+    public static void setEntityHealth(@NotNull ItemStack stack, @Nullable Float health) {
+        if (health == null) {
+            if (!hasEntityHealth(stack)) return;
+            NbtCompound nbt = stack.getNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_HEALTH_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putFloat(ENTITY_TAG_HEALTH_KEY, health);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if stack has entity absorption
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have entity absorption
+     */
+    public static boolean hasEntityAbsorption(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+        return entityTag.contains(ENTITY_TAG_ABSORPTION_AMOUNT_KEY, NbtElement.FLOAT_TYPE);
+    }
+
+    /**
+     * Gets entity abosrption from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity absorption from item stack, or null if none
+     */
+    public static @Nullable Float getEntityAbsorption(@NotNull ItemStack stack) {
+        if (!hasEntityAbsorption(stack)) return null;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getFloat(ENTITY_TAG_ABSORPTION_AMOUNT_KEY);
+    }
+
+    /**
+     * Sets entity absorption to the stack
+     *
+     * @param stack Item stack to modify
+     * @param absorption Entity absorption to set. Removes tag if null
+     */
+    public static void setEntityAbsorption(@NotNull ItemStack stack, @Nullable Float absorption) {
+        if (absorption == null) {
+            if (!hasEntityAbsorption(stack)) return;
+            NbtCompound nbt = stack.getNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_ABSORPTION_AMOUNT_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putFloat(ENTITY_TAG_ABSORPTION_AMOUNT_KEY, absorption);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Gets entity invisibility from stack
+     *
+     * @param stack Item stack to get from
+     * @return Entity invisibility from item stack
+     */
+    public static boolean getEntityInvisibility(@NotNull ItemStack stack) {
+        if (!stack.hasNbt()) return false;
+        return stack.getNbt().getCompound(ENTITY_TAG_KEY).getBoolean(ENTITY_TAG_INVISIBLE_KEY);
+    }
+
+    /**
+     * Sets entity invisibility to the stack
+     *
+     * @param stack Item stack to modify
+     * @param invisibility Entity invisibility to set. Removes tag if null
+     */
+    public static void setEntityInvisibility(@NotNull ItemStack stack, @Nullable Boolean invisibility) {
+        if (invisibility == null) {
+            if (!stack.hasNbt()) return;
+            NbtCompound nbt = stack.getNbt();
+            if (!nbt.contains(ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) return;
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.remove(ENTITY_TAG_INVISIBLE_KEY);
+            nbt.put(ENTITY_TAG_KEY, entityTag);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtCompound entityTag = nbt.getCompound(ENTITY_TAG_KEY);
+            entityTag.putBoolean(ENTITY_TAG_INVISIBLE_KEY, invisibility);
             nbt.put(ENTITY_TAG_KEY, entityTag);
             stack.setNbt(nbt);
         }
