@@ -52,9 +52,11 @@ public class EditCommand {
 		}
 
 		// TODO:
-		// ... items ... (or block, smth)
-		// ... script ...
-		// ... optimize ...
+		// ... frame ... - edit item frames
+		// ... command ... - edit command blocks. Possibly in block node
+		// ... block ... - edit block data (lectern book, items, metadata)
+		// ... script ... - store/execute list of actions to perform. Possibly parameters
+		// ... optimize ... - remove unnecessary nbt tags and optimize them as much as possible
 
 		dispatcher.getRoot().addChild(node);
 		dispatcher.getRoot().addChild(nodeNamespaced);
