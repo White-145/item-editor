@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.itemeditor.ItemEditor;
 import me.white.itemeditor.node.entity.*;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import me.white.itemeditor.node.entity.DataNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -29,6 +30,7 @@ public class EntityNode implements Node {
         for (Node entityNode : new Node[] {
                 new AbsorptionNode(),
                 new AirNode(),
+                new DataNode(),
                 new GlowNode(),
                 new GravityNode(),
                 new HealthNode(),

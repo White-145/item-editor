@@ -73,6 +73,7 @@
   "commands.edit.data.set": "Item NBT data at given path was set to %s",
   "commands.edit.data.merge": "Item NBT data was merged",
   "commands.edit.data.remove": "Item NBT data was removed",
+  "commands.edit.data.clear": "Item NBT data was cleared",
 
   "commands.edit.durability.error.cannotedit": "Can only edit damagable items",
   "commands.edit.durability.error.alreadyis": "Item already has given durability",
@@ -95,20 +96,60 @@
 
   "commands.edit.entity.error.cannotedit": "Can only edit items with entities",
 
+  "commands.edit.entity.absorption.error.noabsorption": "Item doesn't have entity absorption",
+  "commands.edit.entity.absorption.error.alreadyis": "Item already has given entity absorption",
+  "commands.edit.entity.absorption.error.cannotedit": "Can only edit living entities",
+  "commands.edit.entity.absorption.get": "Item has the following entity absorption: %s",
+  "commands.edit.entity.absorption.reset": "Item entity absorption was reset",
+  "commands.edit.entity.absorption.set": "Item entity absorption was set to %s",
+
+  "commands.edit.entity.air.error.noair": "Item doesn't have entity air",
+  "commands.edit.entity.air.error.alreadyis": "Item already has given entity air",
+  "commands.edit.entity.air.error.cannotedit": "Can only edit living entities",
+  "commands.edit.entity.air.get": "Item has the following entity air: %s",
+  "commands.edit.entity.air.reset": "Item entity air was reset",
+  "commands.edit.entity.air.set": "Item entity air was set to %s",
+
+  "commands.edit.entity.data.error.nonbt": "Item doesn't have NBT data",
+  "commands.edit.entity.data.error.noentitynbt": "Item doesn't have entity NBT data",
+  "commands.edit.entity.data.error.nosuchnbt": "Item doesn't have given entity NBT data",
+  "commands.edit.entity.data.error.setalreadyhas": "Item already has given entity NBT data",
+  "commands.edit.entity.data.error.mergealreadyhas": "Item alredy has given entity NBT data",
+  "commands.edit.entity.data.get": "Item has the following entity NBT data: %s",
+  "commands.edit.entity.data.set": "Item entity NBT data at given path was set to %s",
+  "commands.edit.entity.data.merge": "Item entity NBT data was merged",
+  "commands.edit.entity.data.remove": "Item entity NBT data was removed",
+  "commands.edit.entity.data.clear": "Item entity NBT data was cleared",
+
   "commands.edit.entity.glow.getenabled": "Entity glow is enabled",
   "commands.edit.entity.glow.getdisabled": "Entity glow is disabled",
   "commands.edit.entity.glow.enable": "Entity glow was enabled",
   "commands.edit.entity.glow.disable": "Entity glow was disabled",
 
+  "commands.edit.entity.gravity.error.cannotedit": "Can only edit living entities",
   "commands.edit.entity.gravity.getenabled": "Entity gravity is enabled",
   "commands.edit.entity.gravity.getdisabled": "Entity gravity is disabled",
   "commands.edit.entity.gravity.enable": "Entity gravity was enabled",
   "commands.edit.entity.gravity.disable": "Entity gravity was disabled",
 
+  "commands.edit.entity.health.error.noair": "Item doesn't have entity health",
+  "commands.edit.entity.health.error.alreadyis": "Item already has given entity health",
+  "commands.edit.entity.health.error.cannotedit": "Can only edit living entities",
+  "commands.edit.entity.health.get": "Item has the following entity health: %s",
+  "commands.edit.entity.health.reset": "Item entity health was reset",
+  "commands.edit.entity.health.set": "Item entity health was set to %s",
+
+  "commands.edit.entity.intellect.error.cannotedit": "Can only edit living entities",
   "commands.edit.entity.intellect.getenabled": "Entity intellect is enabled",
   "commands.edit.entity.intellect.getdisabled": "Entity intellect is disabled",
   "commands.edit.entity.intellect.enable": "Entity intellect was enabled",
   "commands.edit.entity.intellect.disable": "Entity intellect was disabled",
+
+  "commands.edit.entity.invisibility.error.cannotedit": "Can only edit living entities",
+  "commands.edit.entity.invisibility.getenabled": "Entity invisibility is enabled",
+  "commands.edit.entity.invisibility.getdisabled": "Entity invisibility is disabled",
+  "commands.edit.entity.invisibility.enable": "Entity invisibility was enabled",
+  "commands.edit.entity.invisibility.disable": "Entity invisibility was disabled",
 
   "commands.edit.entity.invulnerability.getenabled": "Entity invulnerability is enabled",
   "commands.edit.entity.invulnerability.getdisabled": "Entity invulnerability is disabled",
@@ -126,6 +167,7 @@
   "commands.edit.entity.persistance.enable": "Entity persistance was enabled",
   "commands.edit.entity.persistance.disable": "Entity persistance was disabled",
 
+  "commands.edit.entity.pickingup.error.cannotedit": "Can only edit mobs",
   "commands.edit.entity.pickingup.getenabled": "Entity can pick up loot",
   "commands.edit.entity.pickingup.getdisabled": "Entity cannot pick up loot",
   "commands.edit.entity.pickingup.enable": "Now entity can pick up loot",
