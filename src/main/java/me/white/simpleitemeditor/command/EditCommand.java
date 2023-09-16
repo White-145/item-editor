@@ -52,8 +52,9 @@ public class EditCommand {
 		}
 
 		// TODO:
-		// ... frame ... - edit item frames
+		// ... frame ... - edit item frames. Possibly in entity node
 		// ... command ... - edit command blocks. Possibly in block node
+		// ... sign ... - edit signs. Possibly in block node
 		// ... block ... - edit block data (lectern book, items, metadata)
 		// ... script ... - store/execute list of actions to perform. Possibly parameters
 		// ... optimize ... - remove unnecessary nbt tags and optimize them as much as possible
