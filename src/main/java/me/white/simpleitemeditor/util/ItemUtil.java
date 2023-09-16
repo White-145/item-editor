@@ -1700,6 +1700,8 @@ public class ItemUtil {
         }
     }
 
+    // cringe ↓. Possible solutions: Move in another file (e.g. EntityUtil), remove entity editing. ← preferable
+
     /**
      * Checks if stack has entity type
      *

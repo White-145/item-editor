@@ -52,16 +52,31 @@ public class EntityNode implements Node {
             }
         }
 
+        // I HATE working with entities in minecraft. This cannot be made elegant
         // TODO:
-        // ... fire ... - entity fire and visual fire
-        // ... name ... - entity name and its visibility
-        // ... loot ... - entity loot table
-        // ... tag ... - command tags
-        // ... hand ... - left handed
-        // ... effect ... - entity potion effects
-        // ... equipment ... - entity equipment
-        // ... attribute ... - entity attributes
-        // and other entity-specific tags, like bat flags, entity variants, display entities and so on. Will figure this out after im done with common tags
+        // ... fire ...       - entity fire and visual fire
+        // ... name ...       - entity name and its visibility
+        // ... loot ...       - entity loot table
+        // ... tag ...        - command tags
+        // ... hand ...       - left handed
+        // ... effect ...     - entity potion effects
+        // ... equipment ...  - entity equipment
+        // ... attribute ...  - entity attributes
+        // ... power ...      - acceleration
+        // ... villager ...   - villager trades, profession
+        // ... drops ...      - drop chances
+        // ... anger ...      - entity anger
+        // ... horse ...      - horse type, speed, jump height
+        // ... tame ...       - taming
+        // ... size ...       - slime size
+        // ... block ...      - falling blocks
+        // ... explosion ...  - creepers and tnt fuse time, explosion power
+        // ... frame ...      - item in item frame, its rotation
+        // ... cloud ...      - effect in effect cloud, radius, time
+        // ... armorstand ... - armor stand pose, tags
+        // ... display ...    - interpolation, transformation, display entity tags
+        // n lots more cringe tags
+        // will not do it until i find some cool way of organizing it
 
         rootNode.addChild(node);
     }

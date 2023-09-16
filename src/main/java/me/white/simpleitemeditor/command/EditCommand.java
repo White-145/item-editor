@@ -52,7 +52,6 @@ public class EditCommand {
 		}
 
 		// TODO:
-		// ... frame ... - edit item frames. Possibly in entity node
 		// ... command ... - edit command blocks. Possibly in block node
 		// ... sign ... - edit signs. Possibly in block node
 		// ... block ... - edit block data (lectern book, items, metadata)
