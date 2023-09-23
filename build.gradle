@@ -38,6 +38,18 @@ tasks.withType(JavaCompile).configureEach {
 	}
 }
 
+loom {
+	accessWidenerPath = file("src/common/resources/simple-item-editor.accesswidener")
+	splitEnvironmentSourceSets()
+
+	mods {
+		simpleitemeditor {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
 java {
 	def javaVersion = JavaVersion.toVersion(targetJavaVersion)
 	if (JavaVersion.current() < javaVersion) {

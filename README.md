@@ -61,10 +61,13 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... set [<durability>]`
 - - `... percent <durability>`
 - `... data ...`
+- - `... append <path> <value>`
 - - `... get <path>`
-- - `... set <path> <value>`
-- - `... merge <value>`
+- - `... insert <path> <index> <value>`
+- - `... merge <value> [<path>]`
+- - `... prepend <path> <value>`
 - - `... remove [<path>]`
+- - `... set <path> <value>`
 - `... book ...`
 - - `... author ...`
 - - - `... get`
@@ -87,8 +90,9 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - `... head ...`
 - - `... get`
 - - `... set`
-- - `... set owner <owner>`
-- - `... set texture <texture>`
+- - `... set ...`
+- - - `... owner <owner>`
+- - - `... texture <texture>`
 - - `... sound ...`
 - - - `... get`
 - - - `... set <sound>`
@@ -117,18 +121,56 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... remove [<effect>]`
 - - `... clear`
 - `... entity ...`
-- - `... type ...`
+- - `... absorption ...`
 - - - `... get`
-- - - `... set [<type>]`
+- - - `... set [<absorption>]`
+- - `... air ...`
+- - - `... get`
+- - - `... set [<air>]`
+- - `... data ...`
+- - - `... get [<path>]`
+- - - `... set <path> <value>`
+- - - `... merge <value>`
+- - - `... remove <path>`
+- - `... glow ...`
+- - - `... get`
+- - - `... toggle`
+- - `... gravity ...`
+- - - `... get`
+- - - `... toggle`
+- - `... health ...`
+- - - `... get`
+- - - `... set [<absorption>]`
+- - `... intellect ...`
+- - - `... get`
+- - - `... toggle`
+- - `... invisibility ...`
+- - - `... get`
+- - - `... toggle`
+- - `... invulnerability ...`
+- - - `... get`
+- - - `... toggle`
+- - `... motion ...`
+- - - `... get`
+- - - `... set [<motion>]`
+- - `... persistance ...`
+- - - `... get`
+- - - `... toggle`
+- - `... pickingup ...`
+- - - `... get`
+- - - `... toggle`
 - - `... position`
 - - - `... get`
 - - - `... set [<position>]`
-- - `... motion`
-- - - `... get`
-- - - `... set [<motion>]`
 - - `... rotation`
 - - - `... get`
 - - - `... set [<rotation>]`
+- - `... silence ...`
+- - - `... get`
+- - - `... toggle`
+- - `... type ...`
+- - - `... get`
+- - - `... set [<type>]`
 
 All commands are also available as `/itemeditor:<command>`
 
