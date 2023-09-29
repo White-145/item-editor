@@ -1567,8 +1567,12 @@ public class ItemUtil {
      */
     public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
         List<Boolean> result = new ArrayList<>();
-        if (!stack.hasNbt()) return result;
-        int flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
+        int flags;
+        if (!stack.hasNbt()) {
+            flags = 0;
+        } else {
+            flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
+        }
         for (int i = 0; i < FLAGS_AMOUNT; ++i) {
             int mask = 1 << i;
             result.add((flags & mask) == mask);
