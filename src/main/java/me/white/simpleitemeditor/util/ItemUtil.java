@@ -732,7 +732,7 @@ public class ItemUtil {
      * @param glint Do apply glint
      */
     public static void setEnchantmentGlint(@NotNull ItemStack stack, boolean glint) {
-        if (hasEnchantments(stack) == glint) return;
+        if (hasEnchantments(stack, false) == glint) return;
         if (!glint) {
             NbtCompound nbt = stack.getNbt();
             nbt.remove(ENCHANTMENTS_KEY);
