@@ -66,7 +66,8 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... insert <path> <index> <value>`
 - - `... merge <value> [<path>]`
 - - `... prepend <path> <value>`
-- - `... remove [<path>]`
+- - `... remove <path>`
+- - `... clear`
 - - `... set <path> <value>`
 - `... book ...`
 - - `... author ...`
@@ -128,10 +129,14 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - - `... get`
 - - - `... set [<air>]`
 - - `... data ...`
-- - - `... get [<path>]`
-- - - `... set <path> <value>`
-- - - `... merge <value>`
+- - - `... append <path> <value>`
+- - - `... get <path>`
+- - - `... insert <path> <index> <value>`
+- - - `... merge <value> [<path>]`
+- - - `... prepend <path> <value>`
 - - - `... remove <path>`
+- - - `... clear`
+- - - `... set <path> <value>`
 - - `... glow ...`
 - - - `... get`
 - - - `... toggle`

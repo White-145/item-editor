@@ -342,20 +342,6 @@ public class DataNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
                 .literal("remove")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-
-                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
-                    NbtCompound nbt = stack.getNbt();
-                    if (!nbt.contains(ItemUtil.ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) throw NO_ENTITY_NBT_EXCEPTION;
-                    nbt.remove(ItemUtil.ENTITY_TAG_KEY);
-
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
-                    return 1;
-                })
                 .build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> removePathNode = ClientCommandManager
@@ -377,6 +363,24 @@ public class DataNode implements Node {
 
                     EditorUtil.setStack(context.getSource(), stack);
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                    return 1;
+                })
+                .build();
+
+        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
+                .literal("clear")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+
+                    if (!stack.hasNbt()) throw NO_NBT_EXCEPTION;
+                    NbtCompound nbt = stack.getNbt();
+                    if (!nbt.contains(ItemUtil.ENTITY_TAG_KEY, NbtElement.COMPOUND_TYPE)) throw NO_ENTITY_NBT_EXCEPTION;
+                    nbt.remove(ItemUtil.ENTITY_TAG_KEY);
+
+                    EditorUtil.setStack(context.getSource(), stack);
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
                     return 1;
                 })
                 .build();
@@ -413,8 +417,11 @@ public class DataNode implements Node {
         mergeNode.addChild(mergeValueNode);
         mergeValueNode.addChild(mergeValuePathNode);
 
-        // ... remove [<path>]
+        // ... remove <path>
         node.addChild(removeNode);
         removeNode.addChild(removePathNode);
+
+        // ... clear
+        node.addChild(clearNode);
     }
 }
