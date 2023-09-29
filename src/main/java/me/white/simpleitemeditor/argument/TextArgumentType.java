@@ -14,11 +14,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.white.simpleitemeditor.mixin.TranslationStorageMixin;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.resource.language.TranslationStorage;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -269,7 +269,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                             continue;
                         }
                         MinecraftClient client = MinecraftClient.getInstance();
-                        Set<String> keys = ((TranslationStorageMixin) Language.getInstance()).getTranslations().keySet();
+                        Set<String> keys = ((TranslationStorage)Language.getInstance()).translations.keySet();
                         builder = builder.createOffset(builder.getStart() + i);
                         for (String key : keys) {
                             if (key.startsWith(last)) builder.suggest(key);

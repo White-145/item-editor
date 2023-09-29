@@ -59,11 +59,11 @@ public class ItemUtil {
     public static final String CAN_PLACE_ON_KEY = "CanPlaceOn";
     public static final String CUSTOM_MODEL_DATA_KEY = "CustomModelData";
     public static final String CUSTOM_POTION_COLOR_KEY = "CustomPotionColor";
-    public static final String CUSTOM_POTION_EFFECTS_KEY = "CustomPotionEffects";
-    public static final String CUSTOM_POTION_EFFECTS_ID_KEY = "Id";
-    public static final String CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY = "Amplifier";
-    public static final String CUSTOM_POTION_EFFECTS_DURATION_KEY = "Duration";
-    public static final String CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY = "ShowParticles";
+    public static final String CUSTOM_POTION_EFFECTS_KEY = "custom_potion_effects";
+    public static final String CUSTOM_POTION_EFFECTS_ID_KEY = "id";
+    public static final String CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY = "amplifier";
+    public static final String CUSTOM_POTION_EFFECTS_DURATION_KEY = "duration";
+    public static final String CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY = "show_particles";
     public static final String DISPLAY_KEY = "display";
     public static final String DISPLAY_COLOR_KEY = "color";
     public static final String DISPLAY_LORE_KEY = "Lore";
@@ -1608,11 +1608,12 @@ public class ItemUtil {
      * @return Is compound valid for potion effect
      */
     public static boolean isValidPotionEffect(@NotNull NbtCompound nbt) {
-        if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.INT_TYPE)) return false;
+        if (!nbt.contains(CUSTOM_POTION_EFFECTS_ID_KEY, NbtElement.STRING_TYPE)) return false;
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, NbtElement.INT_TYPE)) return false;
         if (!nbt.contains(CUSTOM_POTION_EFFECTS_DURATION_KEY, NbtElement.INT_TYPE)) return false;
-        StatusEffect effect = StatusEffect.byRawId(nbt.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
-        return effect != null;
+        Identifier id = Identifier.tryParse(nbt.getString(CUSTOM_POTION_EFFECTS_ID_KEY));
+        if (id == null) return false;
+        return Registries.STATUS_EFFECT.containsId(id);
     }
 
     /**
@@ -1657,7 +1658,8 @@ public class ItemUtil {
         for (NbtElement customPotionEffect : customPotionEffects) {
             NbtCompound potionEffect = (NbtCompound)customPotionEffect;
             if (!isValidPotionEffect(potionEffect)) continue;
-            StatusEffect effect = StatusEffect.byRawId(potionEffect.getInt(CUSTOM_POTION_EFFECTS_ID_KEY));
+            Identifier id = Identifier.tryParse(potionEffect.getString(CUSTOM_POTION_EFFECTS_ID_KEY));
+            StatusEffect effect = Registries.STATUS_EFFECT.get(id);
             int amplifier = potionEffect.getInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY);
             int duration = potionEffect.getInt(CUSTOM_POTION_EFFECTS_DURATION_KEY);
             if (!potionEffect.contains(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, NbtElement.BYTE_TYPE)) {
@@ -1687,7 +1689,8 @@ public class ItemUtil {
             for (StatusEffect effect : effects.keySet()) {
                 NbtCompound potionEffect = new NbtCompound();
                 Triple<Integer, Integer, Boolean> data = effects.get(effect);
-                potionEffect.putInt(CUSTOM_POTION_EFFECTS_ID_KEY, StatusEffect.getRawId(effect));
+                Identifier id = Registries.STATUS_EFFECT.getId(effect);
+                potionEffect.putString(CUSTOM_POTION_EFFECTS_ID_KEY, id.toString());
                 potionEffect.putInt(CUSTOM_POTION_EFFECTS_AMPLIFIER_KEY, data.getLeft());
                 potionEffect.putInt(CUSTOM_POTION_EFFECTS_DURATION_KEY, data.getMiddle());
                 if (data.getRight() != null) potionEffect.putBoolean(CUSTOM_POTION_EFFECTS_SHOW_PARTICLES_KEY, data.getRight());

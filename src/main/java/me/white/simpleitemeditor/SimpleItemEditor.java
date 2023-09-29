@@ -1,9 +1,9 @@
 package me.white.simpleitemeditor;
 
-import me.white.simpleitemeditor.command.RegistryCommand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 
+import me.white.simpleitemeditor.command.RegistryCommand;
 import me.white.simpleitemeditor.command.EditCommand;
 import net.minecraft.SharedConstants;
 import org.slf4j.Logger;
@@ -22,5 +22,6 @@ public class SimpleItemEditor implements ClientModInitializer {
         // color command
         // character command
         // craft command
+
     }
 }
