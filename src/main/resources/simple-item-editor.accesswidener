@@ -1,3 +1,4 @@
 accessWidener v2 named
 
 accessible field net/minecraft/client/resource/language/TranslationStorage translations Ljava/util/Map;
+accessible field net/minecraft/entity/attribute/EntityAttributeModifier name Ljava/lang/String;

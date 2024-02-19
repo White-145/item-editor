@@ -65,6 +65,15 @@
   "commands.edit.count.get": "Item has the following count: %s",
   "commands.edit.count.set": "Item count was set to %s",
 
+  "commands.edit.custom.error.notags": "Item doesn't have custom tags",
+  "commands.edit.custom.error.nosuchtag": "Item doesn't have given custom tag",
+  "commands.edit.custom.error.alreadyhas": "Item already has given custom tag",
+  "commands.edit.custom.getall": "Item has the following custom tags:",
+  "commands.edit.custom.get": "Item has the following custom tag: %s",
+  "commands.edit.custom.set": "Item custom tag was set to %s",
+  "commands.edit.custom.remove": "Item custom tag was removed",
+  "commands.edit.custom.clear": "Item custom tags were cleared",
+
   "commands.edit.data.error.nonbt": "Item doesn't have NBT data",
   "commands.edit.data.error.nosuchnbt": "Item doesn't have given NBT data",
   "commands.edit.data.error.typemismatch": "Mismatching list types",

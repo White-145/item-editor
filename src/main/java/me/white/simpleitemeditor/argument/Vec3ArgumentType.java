@@ -17,11 +17,11 @@ public class Vec3ArgumentType implements ArgumentType<Vec3d> {
     public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec3.error.incomplete"));
     public static final SimpleCommandExceptionType MISSING_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec3.error.missing"));
 
-    private static final String[] EXAMPLES = new String[] {
+    private static final Collection<String> EXAMPLES = Arrays.asList(
             "0 0 0",
             "3 10 -3",
             "0 1000 0"
-    };
+    );
 
     @Override
     public Vec3d parse(StringReader reader) throws CommandSyntaxException {
@@ -39,7 +39,7 @@ public class Vec3ArgumentType implements ArgumentType<Vec3d> {
 
     @Override
     public Collection<String> getExamples() {
-        return Arrays.stream(EXAMPLES).toList();
+        return EXAMPLES;
     }
 
     public static Vec3ArgumentType vec3d() {

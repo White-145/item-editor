@@ -26,6 +26,7 @@ public class EditCommand {
 				new BookNode(),
 				new ColorNode(),
 				new CountNode(),
+				new CustomNode(),
 				new DataNode(),
 				new DurabilityNode(),
 				new EnchantmentNode(),

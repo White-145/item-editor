@@ -17,11 +17,11 @@ public class Vec2ArgumentType implements ArgumentType<Vec2f> {
     public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec2.error.incomplete"));
     public static final SimpleCommandExceptionType MISSING_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.vec2.error.missing"));
 
-    private static final String[] EXAMPLES = new String[] {
+    private static final Collection<String> EXAMPLES = Arrays.asList(
             "0 0",
             "3 10",
             "0 1000"
-    };
+    );
 
     @Override
     public Vec2f parse(StringReader reader) throws CommandSyntaxException {
@@ -36,7 +36,7 @@ public class Vec2ArgumentType implements ArgumentType<Vec2f> {
 
     @Override
     public Collection<String> getExamples() {
-        return Arrays.stream(EXAMPLES).toList();
+        return EXAMPLES;
     }
 
     public static Vec2ArgumentType vec2f() {

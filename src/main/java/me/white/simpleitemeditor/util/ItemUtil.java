@@ -100,6 +100,7 @@ public class ItemUtil {
     public static final String FIREWORKS_FLIGHT_KEY = "Flight";
     public static final String GENERATION_KEY = "generation";
     public static final String PAGES_KEY = "pages";
+    public static final String PUBLIC_BUKKIT_VALUES_KEY = "PublicBukkitValues";
     public static final String SKULL_OWNER_KEY = "SkullOwner";
     public static final String SKULL_OWNER_ID_KEY = "Id";
     public static final String SKULL_OWNER_NAME_KEY = "Name";
@@ -212,9 +213,9 @@ public class ItemUtil {
                 NbtCompound nbtAttributeModifier = new NbtCompound();
                 EntityAttributeModifier attributeModifier = attribute.getMiddle();
                 EquipmentSlot slot = attribute.getRight();
+                nbtAttributeModifier.putString(ATTRIBUTE_MODIFIERS_ATTRIBUTE_NAME_KEY, attributeModifier.name);
                 nbtAttributeModifier.putDouble(ATTRIBUTE_MODIFIERS_AMOUNT_KEY, attributeModifier.getValue());
                 nbtAttributeModifier.putUuid(ATTRIBUTE_MODIFIERS_UUID_KEY, attributeModifier.getId());
-                nbtAttributeModifier.putString(ATTRIBUTE_MODIFIERS_ATTRIBUTE_NAME_KEY, attributeModifier.getName());
                 nbtAttributeModifier.putInt(ATTRIBUTE_MODIFIERS_OPERATION_KEY, attributeModifier.getOperation().getId());
                 if (slot != null) nbtAttributeModifier.putString(ATTRIBUTE_MODIFIERS_SLOT_KEY, slot.getName());
                 nbtAttributeModifiers.add(nbtAttributeModifier);
@@ -491,7 +492,7 @@ public class ItemUtil {
         if (!hasBookPages(stack)) return List.of();
         List<Text> pages = new ArrayList<>();
         for (NbtElement page : stack.getNbt().getList(PAGES_KEY, NbtElement.STRING_TYPE)) {
-            pages.add(Text.Serializer.fromJson(page.asString()));
+            pages.add(Text.Serialization.fromJson(page.asString()));
         }
         return pages;
     }
@@ -512,7 +513,7 @@ public class ItemUtil {
         } else {
             NbtList nbtPages = new NbtList();
             for (Text page : pages) {
-                nbtPages.add(NbtString.of(Text.Serializer.toJson(page)));
+                nbtPages.add(NbtString.of(Text.Serialization.toJsonString(page)));
             }
 
             NbtCompound nbt = stack.getOrCreateNbt();
@@ -732,7 +733,7 @@ public class ItemUtil {
      * @param glint Do apply glint
      */
     public static void setEnchantmentGlint(@NotNull ItemStack stack, boolean glint) {
-        if (hasEnchantments(stack, false) == glint) return;
+        if (hasEnchantments(stack) == glint) return;
         if (!glint) {
             NbtCompound nbt = stack.getNbt();
             nbt.remove(ENCHANTMENTS_KEY);
@@ -1171,7 +1172,7 @@ public class ItemUtil {
         NbtList nbtLore = stack.getNbt().getCompound(DISPLAY_KEY).getList(DISPLAY_LORE_KEY, NbtElement.STRING_TYPE);
         List<Text> lore = new ArrayList<>();
         for (NbtElement nbtLine : nbtLore) {
-            Text line = Text.Serializer.fromJson(nbtLine.asString());
+            Text line = Text.Serialization.fromJson(nbtLine.asString());
             lore.add(line);
         }
         return lore;
@@ -1195,7 +1196,7 @@ public class ItemUtil {
         } else {
             NbtList nbtLore = new NbtList();
             for (Text line : lore) {
-                nbtLore.add(NbtString.of(Text.Serializer.toJson(line)));
+                nbtLore.add(NbtString.of(Text.Serialization.toJsonString(line)));
             }
 
             NbtCompound nbt = stack.getOrCreateNbt();
@@ -1239,7 +1240,7 @@ public class ItemUtil {
      */
     public static @Nullable Text getName(@NotNull ItemStack stack) {
         if (!hasName(stack)) return null;
-        return Text.Serializer.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
+        return Text.Serialization.fromJson(stack.getNbt().getCompound(DISPLAY_KEY).getString(DISPLAY_NAME_KEY));
     }
 
     /**
@@ -1260,7 +1261,7 @@ public class ItemUtil {
         } else {
             NbtCompound nbt = stack.getOrCreateNbt();
             NbtCompound display = nbt.getCompound(DISPLAY_KEY);
-            display.putString(DISPLAY_NAME_KEY, Text.Serializer.toJson(name));
+            display.putString(DISPLAY_NAME_KEY, Text.Serialization.toJsonString(name));
             nbt.put(DISPLAY_KEY, display);
             stack.setNbt(nbt);
         }
@@ -1567,12 +1568,8 @@ public class ItemUtil {
      */
     public static @NotNull List<Boolean> getFlags(@NotNull ItemStack stack) {
         List<Boolean> result = new ArrayList<>();
-        int flags;
-        if (!stack.hasNbt()) {
-            flags = 0;
-        } else {
-            flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
-        }
+        if (!stack.hasNbt()) return result;
+        int flags = stack.getNbt().getInt(HIDE_FLAGS_KEY);
         for (int i = 0; i < FLAGS_AMOUNT; ++i) {
             int mask = 1 << i;
             result.add((flags & mask) == mask);
@@ -1643,7 +1640,7 @@ public class ItemUtil {
      * Redirects to {@link #hasPotionEffects(ItemStack, boolean) hasPotionEffects} with validate param equals to true
      *
      * @param stack Item stack to check
-     * @return Does item stack have potion effects tag
+     * @return Does item stack have valid potion effects tag
      */
     public static boolean hasPotionEffects(@NotNull ItemStack stack) {
         return hasPotionEffects(stack, true);
@@ -1683,7 +1680,7 @@ public class ItemUtil {
      */
     public static void setPotionEffects(@NotNull ItemStack stack, @Nullable HashMap<StatusEffect, Triple<Integer, Integer, Boolean>> effects) {
         if (effects == null || effects.isEmpty()) {
-            if (!hasPotionEffects(stack)) return;
+            if (!hasPotionEffects(stack, false)) return;
 
             NbtCompound nbt = stack.getNbt();
             nbt.remove(CUSTOM_POTION_EFFECTS_KEY);
@@ -1703,6 +1700,79 @@ public class ItemUtil {
 
             NbtCompound nbt = stack.getOrCreateNbt();
             nbt.put(CUSTOM_POTION_EFFECTS_KEY, potionEffects);
+            stack.setNbt(nbt);
+        }
+    }
+
+    /**
+     * Checks if stack has custom tags
+     *
+     * @param stack Item stack to check
+     * @param validate Check for validity of potion effects. False to only check for tag
+     * @return Does item stack have custom tags
+     */
+    public static boolean hasCustomTags(@NotNull ItemStack stack, boolean validate) {
+        if (!stack.hasNbt()) return false;
+        NbtCompound nbt = stack.getNbt();
+        if (!nbt.contains(PUBLIC_BUKKIT_VALUES_KEY, NbtElement.COMPOUND_TYPE)) return false;
+        NbtCompound publicBukkitValues = nbt.getCompound(PUBLIC_BUKKIT_VALUES_KEY);
+        if (!validate) return !publicBukkitValues.isEmpty();
+        for (String customTagName : publicBukkitValues.getKeys()) {
+            if (Identifier.isValid(customTagName)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Redirects to {@link #hasCustomTags(ItemStack, boolean) hasCustomTags} with validate param equals to true
+     *
+     * @param stack Item stack to check
+     * @return Does item stack have valid custom tags
+     */
+    public static boolean hasCustomTags(@NotNull ItemStack stack) {
+        return hasCustomTags(stack, true);
+    }
+
+    /**
+     * Gets potion effects from stack
+     *
+     * @param stack Item stack to get from
+     * @return Potion effects from item stack
+     */
+    public static @NotNull HashMap<Identifier, NbtElement> getCustomTags(@NotNull ItemStack stack) {
+        if (!hasCustomTags(stack)) return new HashMap<>();
+        HashMap<Identifier, NbtElement> result = new HashMap<>();
+        NbtCompound publicBukkitValues = stack.getNbt().getCompound(PUBLIC_BUKKIT_VALUES_KEY);
+        for (String customTagName : publicBukkitValues.getKeys()) {
+            Identifier id = Identifier.tryParse(customTagName);
+            if (id == null) continue;
+            result.put(id, publicBukkitValues.get(customTagName));
+        }
+        return result;
+    }
+
+    /**
+     * Sets custom tags to the stack
+     *
+     * @param stack Item stack to modify
+     * @param tags Custom tags to set. Removes tag if null or empty
+     */
+    public static void setCustomTags(@NotNull ItemStack stack, @Nullable HashMap<Identifier, NbtElement> tags) {
+        if (tags == null || tags.isEmpty()) {
+            if (!hasCustomTags(stack, false)) return;
+
+            NbtCompound nbt = stack.getNbt();
+            nbt.remove(PUBLIC_BUKKIT_VALUES_KEY);
+            stack.setNbt(nbt);
+        } else {
+            NbtCompound publicBukkitValues = new NbtCompound();
+            for (Identifier tagName : tags.keySet()) {
+                NbtElement value = tags.get(tagName);
+                publicBukkitValues.put(tagName.toString(), value);
+            }
+
+            NbtCompound nbt = stack.getOrCreateNbt();
+            nbt.put(PUBLIC_BUKKIT_VALUES_KEY, publicBukkitValues);
             stack.setNbt(nbt);
         }
     }
