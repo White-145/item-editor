@@ -21,13 +21,13 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.text.Text;
 
 public class TrimNode implements Node {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.cannotedit")).create();
+    public static final CommandSyntaxException ISNT_ARMOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.isntarmor")).create();
     public static final CommandSyntaxException NO_TRIM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.trim.error.notrim")).create();
     private static final String OUTPUT_GET = "commands.edit.trim.get";
-    private static final String OUTPUT_RESET = "commands.edit.trim.reset";
+    private static final String OUTPUT_REMOVE = "commands.edit.trim.remove";
     private static final String OUTPUT_SET = "commands.edit.trim.set";
 
-    private static boolean canEdit(ItemStack stack) {
+    private static boolean isArmor(ItemStack stack) {
         return stack.getItem() instanceof ArmorItem;
     }
 
@@ -41,7 +41,7 @@ public class TrimNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isArmor(stack)) throw ISNT_ARMOR_EXCEPTION;
                     if (!ItemUtil.hasTrim(stack, null)) throw NO_TRIM_EXCEPTION;
                     ArmorTrim trim = ItemUtil.getTrim(stack, context.getSource().getRegistryManager());
                     ArmorTrimPattern pattern = trim.getPattern().value();
@@ -58,12 +58,12 @@ public class TrimNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isArmor(stack)) throw ISNT_ARMOR_EXCEPTION;
                     if (!ItemUtil.hasTrim(stack, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
                     ItemUtil.setTrim(stack, null);
 
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
                     return 1;
                 })
                 .build();
@@ -78,7 +78,7 @@ public class TrimNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isArmor(stack)) throw ISNT_ARMOR_EXCEPTION;
                     ArmorTrimPattern pattern = EditorUtil.getRegistryEntryArgument(context, "pattern", RegistryKeys.TRIM_PATTERN);
                     ArmorTrimMaterial material = EditorUtil.getRegistryEntryArgument(context, "material", RegistryKeys.TRIM_MATERIAL);
                     ItemUtil.setTrim(stack, pattern, material);
@@ -89,14 +89,33 @@ public class TrimNode implements Node {
                 })
                 .build();
 
+        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
+                .literal("remove")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!isArmor(stack)) throw ISNT_ARMOR_EXCEPTION;
+                    if (!ItemUtil.hasTrim(stack, context.getSource().getRegistryManager())) throw NO_TRIM_EXCEPTION;
+                    ItemUtil.setTrim(stack, null);
+
+                    EditorUtil.setStack(context.getSource(), stack);
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                    return 1;
+                })
+                .build();
+
         rootNode.addChild(node);
 
         // ... get
         node.addChild(getNode);
 
-        // ... set [<pattern>] <material>
+        // ... set [<pattern> <material>]
         node.addChild(setNode);
         setNode.addChild(setPatternNode);
         setPatternNode.addChild(setPatternMaterialNode);
+
+        // ... remove
+        node.addChild(removeNode);
     }
 }

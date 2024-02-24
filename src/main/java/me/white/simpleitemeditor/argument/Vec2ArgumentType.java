@@ -28,7 +28,8 @@ public class Vec2ArgumentType implements ArgumentType<Vec2f> {
         int cursor = reader.getCursor();
         if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         float x = reader.readFloat();
-        if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead() || reader.read() != ' ')
+            EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
         if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         float y = reader.readFloat();
         return new Vec2f(x, y);

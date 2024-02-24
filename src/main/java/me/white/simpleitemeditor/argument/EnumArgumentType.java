@@ -56,7 +56,8 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         String remaining = builder.getRemainingLowerCase();
-        for (String suggestion : suggestions.keySet()) if (suggestion.toLowerCase(Locale.ROOT).startsWith(remaining)) builder.suggest(suggestion);
+        for (String suggestion : suggestions.keySet())
+            if (suggestion.toLowerCase(Locale.ROOT).startsWith(remaining)) builder.suggest(suggestion);
         return builder.buildFuture();
     }
 }

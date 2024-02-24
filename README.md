@@ -8,7 +8,7 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - `... name ...`
 - - `... get`
 - - `... set [<name>]`
-- - `... reset`
+- - `... remove`
 - `... lore ...`
 - - `... get [<index>]`
 - - `... set <index> [<line>]`
@@ -16,7 +16,9 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... add [<line>]`
 - - `... remove <index>`
 - - `... clear`
-- - `... clear before|after <index>`
+- - `... clear ...`
+- - - `... before <index>`
+- - - `... after <index>`
 - `... material ...`
 - - `... get`
 - - `... set <material>`
@@ -28,7 +30,8 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... stack`
 - `... model ...`
 - - `... get`
-- - `... set [<model>]`
+- - `... set <model>`
+- - `... remove`
 - `... enchantment ...`
 - - `... get [<enchantment>]`
 - - `... set <enchantment> [<level>]`
@@ -44,13 +47,15 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - `... equip [<slot>]`
 - `... color ...`
 - - `... get`
-- - `... set [<color>]`
+- - `... set <color>`
+- - `... remove`
 - `... unbreakable`
 - - `... get`
 - - `... toggle`
 - `... flags ...`
 - - `... get [<flag>]`
 - - `... toggle <flag>`
+- - `... toggle all`
 - `... whitelist ...`
 - - `... get [place|destroy]`
 - - `... add place|destroy <block>`
@@ -60,6 +65,7 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... get`
 - - `... set [<durability>]`
 - - `... percent <durability>`
+- - `... remove`
 - `... data ...`
 - - `... append <path> <value>`
 - - `... get <path>`
@@ -96,17 +102,21 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - - `... texture <texture>`
 - - `... sound ...`
 - - - `... get`
-- - - `... set <sound>`
+- - - `... set [<sound>]`
+- - - `... remove`
 - `... trim ...`
 - - `... get`
 - - `... set [<pattern> <material>]`
+- - `... remove`
 - `... firework ...`
 - - `... flight ...`
 - - - `... get`
 - - - `... set [<flight>]`
-- - `... star ...`
+- - `... explosion ...`
 - - - `... get`
 - - - `... add <type> <colors> [<flicker>] [<trail>] [<fadeColors>]`
+- - - `... remove <index>`
+- - - `... clear`
 - `... banner ...`
 - - `... get [<index>]`
 - - `... set <index> <pattern> <color>`
@@ -120,6 +130,11 @@ Simple item editor is a minecraft mod *(fabric 1.20.1)* for item editing using c
 - - `... get [<effect>]`
 - - `... set <effect> [<level>] [<duration>|infinity] [<particle>]`
 - - `... remove [<effect>]`
+- - `... clear`
+- `... custom ... `
+- - `... get [<identifier>]`
+- - `... set <identifier> <value>`
+- - `... remove <identifier>`
 - - `... clear`
 - `... entity ...`
 - - `... absorption ...`

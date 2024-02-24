@@ -34,7 +34,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 
 public class HeadNode implements Node {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.cannotedit")).create();
+    public static final CommandSyntaxException ISNT_HEAD_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.isnthead")).create();
     public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
     public static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
     public static final CommandSyntaxException TEXTURE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturealreadyis")).create();
@@ -63,7 +63,7 @@ public class HeadNode implements Node {
         }
     }
 
-    private static boolean canEdit(ItemStack stack) {
+    private static boolean isHead(ItemStack stack) {
         Item item = stack.getItem();
         return item == Items.PLAYER_HEAD;
     }
@@ -104,7 +104,7 @@ public class HeadNode implements Node {
                 ItemStack stack = EditorUtil.getStack(source);
                 if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                 if (!EditorUtil.hasCreative(source)) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                 ItemUtil.setHeadTexture(stack, value, signature);
 
                 EditorUtil.setStack(source, stack);
@@ -133,7 +133,7 @@ public class HeadNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     if (ItemUtil.hasHeadTexture(stack)) {
                         URL texture = ItemUtil.getHeadTexture(stack);
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.clickable(texture)));
@@ -152,8 +152,9 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
-                    if (!ItemUtil.hasHeadOwner(stack) && !ItemUtil.hasHeadTexture(stack, false)) throw NO_TEXTURE_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
+                    if (!ItemUtil.hasHeadOwner(stack) && !ItemUtil.hasHeadTexture(stack, false))
+                        throw NO_TEXTURE_EXCEPTION;
                     ItemUtil.setHeadTexture(stack, null);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -172,7 +173,7 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     String oldOwner = ItemUtil.getHeadOwner(stack);
                     String owner = StringArgumentType.getString(context, "owner");
                     if (oldOwner != null && oldOwner.equals(owner)) throw OWNER_ALREADY_IS_EXCEPTION;
@@ -194,7 +195,7 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     URL oldTexture = ItemUtil.getHeadTexture(stack);
                     URL texture;
                     try {
@@ -203,7 +204,8 @@ public class HeadNode implements Node {
                         throw INVALID_URL_EXCEPTION;
                     }
                     if (ItemUtil.isValidHeadTextureUrl(texture)) {
-                        if (oldTexture != null && texture.getPath().equals(oldTexture.getPath())) throw TEXTURE_ALREADY_IS_EXCEPTION;
+                        if (oldTexture != null && texture.getPath().equals(oldTexture.getPath()))
+                            throw TEXTURE_ALREADY_IS_EXCEPTION;
                         ItemUtil.setHeadTexture(stack, texture);
                         EditorUtil.setStack(context.getSource(), stack);
                         context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.clickable(texture)));
@@ -224,7 +226,7 @@ public class HeadNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     if (!ItemUtil.hasNoteBlockSound(stack, true)) throw NO_SOUND_EXCEPTION;
                     SoundEvent sound = ItemUtil.getNoteBlockSound(stack);
 
@@ -239,7 +241,7 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     if (!ItemUtil.hasNoteBlockSound(stack)) throw NO_SOUND_EXCEPTION;
                     ItemUtil.setNoteBlockSound(stack, null);
 
@@ -255,12 +257,28 @@ public class HeadNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
                     SoundEvent sound = EditorUtil.getRegistryEntryArgument(context, "sound", RegistryKeys.SOUND_EVENT);
                     ItemUtil.setNoteBlockSound(stack, sound);
 
                     EditorUtil.setStack(context.getSource(), stack);
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_SET, sound.toString()));
+                    return 1;
+                })
+                .build();
+
+        LiteralCommandNode<FabricClientCommandSource> soundRemoveNode = ClientCommandManager
+                .literal("remove")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!isHead(stack)) throw ISNT_HEAD_EXCEPTION;
+                    if (!ItemUtil.hasNoteBlockSound(stack)) throw NO_SOUND_EXCEPTION;
+                    ItemUtil.setNoteBlockSound(stack, null);
+
+                    EditorUtil.setStack(context.getSource(), stack);
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SOUND_RESET));
                     return 1;
                 })
                 .build();
@@ -286,5 +304,7 @@ public class HeadNode implements Node {
         // ... set [<sound>]
         soundNode.addChild(soundSetNode);
         soundSetNode.addChild(soundSetSoundNode);
+        // ... remove
+        soundNode.addChild(soundRemoveNode);
     }
 }

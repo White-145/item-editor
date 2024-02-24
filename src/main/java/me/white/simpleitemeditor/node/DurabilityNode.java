@@ -15,11 +15,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class DurabilityNode implements Node {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.cannotedit")).create();
+    public static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.isntdamagable")).create();
     public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.durability.get";
     private static final String OUTPUT_SET = "commands.edit.durability.set";
-    private static final String OUTPUT_RESET = "commands.edit.durability.reset";
+    private static final String OUTPUT_REMOVE = "commands.edit.durability.remove";
     private static final String OUTPUT_PERCENT = "commands.edit.durability.percent";
 
     private static boolean canEdit(ItemStack stack) {
@@ -36,10 +36,10 @@ public class DurabilityNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!canEdit(stack)) throw ISNT_DAMAGABLE_EXCEPTION;
                     int damage = stack.getDamage();
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), String.format("%.1f", (1 - (double)damage / stack.getMaxDamage()) * 100)));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, stack.getMaxDamage() - damage, stack.getMaxDamage(), String.format("%.1f", (1 - (double) damage / stack.getMaxDamage()) * 100)));
                     return damage;
                 })
                 .build();
@@ -50,11 +50,11 @@ public class DurabilityNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!canEdit(stack)) throw ISNT_DAMAGABLE_EXCEPTION;
                     if (stack.getDamage() == 0) throw ALREADY_IS_EXCEPTION;
                     stack.setDamage(0);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
                     EditorUtil.setStack(context.getSource(), stack);
                     return stack.getMaxDamage();
                 })
@@ -66,7 +66,7 @@ public class DurabilityNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!canEdit(stack)) throw ISNT_DAMAGABLE_EXCEPTION;
                     int damage = IntegerArgumentType.getInteger(context, "durability");
                     if (stack.getDamage() == stack.getMaxDamage() - damage) throw ALREADY_IS_EXCEPTION;
                     stack.setDamage(stack.getMaxDamage() - damage);
@@ -87,16 +87,32 @@ public class DurabilityNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!canEdit(stack)) throw ISNT_DAMAGABLE_EXCEPTION;
                     double percentage = DoubleArgumentType.getDouble(context, "percentage");
-                    int old = (int)((double)stack.getDamage() / stack.getMaxDamage() * 100);
-                    int actual = (int)(stack.getMaxDamage() * (1 - percentage / 100));
+                    int old = (int) ((double) stack.getDamage() / stack.getMaxDamage() * 100);
+                    int actual = (int) (stack.getMaxDamage() * (1 - percentage / 100));
                     if (stack.getDamage() == actual) throw ALREADY_IS_EXCEPTION;
                     stack.setDamage(actual);
 
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_PERCENT, percentage));
                     EditorUtil.setStack(context.getSource(), stack);
                     return old;
+                })
+                .build();
+
+        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
+                .literal("remove")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!canEdit(stack)) throw ISNT_DAMAGABLE_EXCEPTION;
+                    if (stack.getDamage() == 0) throw ALREADY_IS_EXCEPTION;
+                    stack.setDamage(0);
+
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+                    EditorUtil.setStack(context.getSource(), stack);
+                    return stack.getMaxDamage();
                 })
                 .build();
 
@@ -112,5 +128,8 @@ public class DurabilityNode implements Node {
         // ... percent <durability>
         node.addChild(percentNode);
         percentNode.addChild(percentDurabilityNode);
+
+        // ... remove
+        node.addChild(removeNode);
     }
 }

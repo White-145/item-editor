@@ -1,5 +1,6 @@
 package me.white.simpleitemeditor.util;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -67,6 +68,10 @@ public class TextUtil {
 
     public static MutableText copyable(Identifier id) {
         return copyable(id.toString());
+    }
+
+    public static MutableText copyable(Item item) {
+        return copyable(item.getName(), Registries.ITEM.getId(item).toString());
     }
 
     public static MutableText clickable(URL url) {

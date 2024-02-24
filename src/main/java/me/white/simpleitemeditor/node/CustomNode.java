@@ -104,17 +104,6 @@ public class CustomNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
                 .literal("remove")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!ItemUtil.hasCustomTags(stack, false)) throw NO_TAGS_EXCEPTION;
-
-                    ItemUtil.setCustomTags(stack, null);
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
-                    return 1;
-                })
                 .build();
 
         ArgumentCommandNode<FabricClientCommandSource, Identifier> removeIdentifierNode = ClientCommandManager
@@ -135,6 +124,21 @@ public class CustomNode implements Node {
                 })
                 .build();
 
+        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager
+                .literal("clear")
+                .executes(context -> {
+                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+                    if (!ItemUtil.hasCustomTags(stack, false)) throw NO_TAGS_EXCEPTION;
+
+                    ItemUtil.setCustomTags(stack, null);
+                    EditorUtil.setStack(context.getSource(), stack);
+                    context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+                    return 1;
+                })
+                .build();
+
         rootNode.addChild(node);
 
         // ... get [<identifier>]
@@ -146,8 +150,11 @@ public class CustomNode implements Node {
         setNode.addChild(setIdentifierNode);
         setIdentifierNode.addChild(setIdentifierValueNode);
 
-        // ... remove [<identifier>]
+        // ... remove <identifier>
         node.addChild(removeNode);
         removeNode.addChild(removeIdentifierNode);
+
+        // ... clear
+        node.addChild(clearNode);
     }
 }

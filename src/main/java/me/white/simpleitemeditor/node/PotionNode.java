@@ -46,9 +46,8 @@ public class PotionNode implements Node {
 
     private static boolean canEdit(ItemStack stack) {
         Item item = stack.getItem();
-        return
-                item instanceof PotionItem ||
-                        item instanceof TippedArrowItem;
+        return item instanceof PotionItem ||
+                item instanceof TippedArrowItem;
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {

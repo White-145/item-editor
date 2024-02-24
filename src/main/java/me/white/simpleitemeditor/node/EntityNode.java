@@ -27,7 +27,7 @@ public class EntityNode implements Node {
                 .literal("entity")
                 .build();
 
-        for (Node entityNode : new Node[] {
+        for (Node entityNode : new Node[]{
                 new AbsorptionNode(),
                 new AirNode(),
                 new DataNode(),

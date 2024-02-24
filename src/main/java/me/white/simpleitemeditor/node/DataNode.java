@@ -115,7 +115,8 @@ public class DataNode implements Node {
                     }
                     for (NbtElement el : elements) {
                         if (el instanceof NbtList list) {
-                            if (!list.isEmpty() && list.getHeldType() != element.getType()) throw TYPE_MISMATCH_EXCEPTION;
+                            if (!list.isEmpty() && list.getHeldType() != element.getType())
+                                throw TYPE_MISMATCH_EXCEPTION;
                             list.add(element);
                         } else {
                             throw NOT_LIST_EXCEPTION;
@@ -160,8 +161,10 @@ public class DataNode implements Node {
                     }
                     for (NbtElement el : elements) {
                         if (el instanceof NbtList list) {
-                            if (!list.isEmpty() && list.getHeldType() != element.getType()) throw TYPE_MISMATCH_EXCEPTION;
-                            if (index > list.size()) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, list.size());
+                            if (!list.isEmpty() && list.getHeldType() != element.getType())
+                                throw TYPE_MISMATCH_EXCEPTION;
+                            if (index > list.size())
+                                throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, list.size());
                             list.add(index, element);
                         } else {
                             throw NOT_LIST_EXCEPTION;
@@ -201,7 +204,8 @@ public class DataNode implements Node {
                     }
                     for (NbtElement el : elements) {
                         if (el instanceof NbtList list) {
-                            if (!list.isEmpty() && list.getHeldType() != element.getType()) throw TYPE_MISMATCH_EXCEPTION;
+                            if (!list.isEmpty() && list.getHeldType() != element.getType())
+                                throw TYPE_MISMATCH_EXCEPTION;
                             list.add(0, element);
                         } else {
                             throw NOT_LIST_EXCEPTION;
@@ -232,7 +236,8 @@ public class DataNode implements Node {
                     NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
                     NbtCompound nbt = stack.getOrCreateNbt();
-                    check: if (path.count(nbt) > 0) {
+                    check:
+                    if (path.count(nbt) > 0) {
                         for (NbtElement el : path.get(nbt)) {
                             if (!el.equals(element)) {
                                 break check;

@@ -28,10 +28,12 @@ public class Vec3ArgumentType implements ArgumentType<Vec3d> {
         int cursor = reader.getCursor();
         if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double x = reader.readDouble();
-        if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead() || reader.read() != ' ')
+            EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
         if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double y = reader.readDouble();
-        if (!reader.canRead() || reader.read() != ' ') EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
+        if (!reader.canRead() || reader.read() != ' ')
+            EditorUtil.throwWithContext(INCOMPLETE_EXCEPTION, reader, cursor);
         if (!reader.canRead()) throw MISSING_COORDINATE_EXCEPTION.createWithContext(reader);
         double z = reader.readDouble();
         return new Vec3d(x, y, z);

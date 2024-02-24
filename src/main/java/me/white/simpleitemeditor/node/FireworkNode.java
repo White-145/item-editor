@@ -26,7 +26,7 @@ import net.minecraft.util.Formatting;
 import oshi.util.tuples.Quintet;
 
 public class FireworkNode implements Node {
-    public static final CommandSyntaxException CANNOT_EDIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.cannotedit")).create();
+    public static final CommandSyntaxException ISNT_FIREWORK_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.isntfirework")).create();
     public static final CommandSyntaxException NO_EXPLOSIONS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.noexplosions")).create();
     public static final CommandSyntaxException FLIGHT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.firework.error.flightalreadyis")).create();
     private static final String OUTPUT_FLIGHT_GET = "commands.edit.firework.flightget";
@@ -39,32 +39,20 @@ public class FireworkNode implements Node {
     private static final String OUTPUT_EXPLOSION_CLEAR = "commands.edit.firework.explosionclear";
 
     private enum Type {
-        SMALL(0, "commands.edit.firework.typesmall"),
-        LARGE(1, "commands.edit.firework.typelarge"),
-        STAR(2, "commands.edit.firework.typestar"),
-        CREEPER(3, "commands.edit.firework.typecreeper"),
-        BURST(4, "commands.edit.firework.typeburst");
+        SMALL("commands.edit.firework.typesmall"),
+        LARGE("commands.edit.firework.typelarge"),
+        STAR("commands.edit.firework.typestar"),
+        CREEPER("commands.edit.firework.typecreeper"),
+        BURST("commands.edit.firework.typeburst");
 
-        final int id;
         final String translationKey;
 
-        Type(int id, String translation) {
-            this.id = id;
+        Type(String translation) {
             this.translationKey = translation;
-        }
-
-        public static Type byId(int id) {
-            return switch (id) {
-                case 1 -> LARGE;
-                case 2 -> STAR;
-                case 3 -> CREEPER;
-                case 4 -> BURST;
-                default -> SMALL;
-            };
         }
     }
 
-    private static boolean canEdit(ItemStack stack) {
+    private static boolean isFirework(ItemStack stack) {
         return stack.getItem() instanceof FireworkRocketItem;
     }
 
@@ -96,7 +84,7 @@ public class FireworkNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     int flight = ItemUtil.getFireworkFlight(stack);
 
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_FLIGHT_GET, flight));
@@ -110,7 +98,7 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     int old = ItemUtil.getFireworkFlight(stack);
                     if (old == 0) throw FLIGHT_ALREADY_IS_EXCEPTION;
                     ItemUtil.setFireworkFlight(stack, 0);
@@ -127,7 +115,7 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     int flight = IntegerArgumentType.getInteger(context, "flight");
                     int old = ItemUtil.getFireworkFlight(stack);
                     if (old == flight) throw FLIGHT_ALREADY_IS_EXCEPTION;
@@ -148,14 +136,14 @@ public class FireworkNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = ItemUtil.getFireworkExplosions(stack);
 
                     context.getSource().sendFeedback(Text.translatable(OUTPUT_EXPLOSION_GET));
                     for (int i = 0; i < explosions.size(); ++i) {
                         Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>> explosion = explosions.get(i);
-                        Type type = Type.byId(explosion.getA());
+                        Type type = Type.values()[explosion.getA()];
                         List<Integer> colors = explosion.getB();
                         List<Integer> fadeColors = explosion.getE();
                         context.getSource().sendFeedback(Text.empty()
@@ -181,11 +169,11 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     Type type = EnumArgumentType.getEnum(context, "type", Type.class);
                     List<Integer> colors = ListArgumentType.getListArgument(context, "colors");
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
-                    explosions.add(new Quintet<>(type.id, colors, false, false, List.of()));
+                    explosions.add(new Quintet<>(type.ordinal(), colors, false, false, List.of()));
                     ItemUtil.setFireworkExplosions(stack, explosions);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -200,12 +188,12 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     Type type = EnumArgumentType.getEnum(context, "type", Type.class);
                     List<Integer> colors = ListArgumentType.getListArgument(context, "colors");
                     boolean flicker = BoolArgumentType.getBool(context, "flicker");
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
-                    explosions.add(new Quintet<>(type.id, colors, flicker, false, List.of()));
+                    explosions.add(new Quintet<>(type.ordinal(), colors, flicker, false, List.of()));
                     ItemUtil.setFireworkExplosions(stack, explosions);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -220,13 +208,13 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     Type type = EnumArgumentType.getEnum(context, "type", Type.class);
                     List<Integer> colors = ListArgumentType.getListArgument(context, "colors");
                     boolean flicker = BoolArgumentType.getBool(context, "flicker");
                     boolean trail = BoolArgumentType.getBool(context, "trail");
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
-                    explosions.add(new Quintet<>(type.id, colors, flicker, trail, List.of()));
+                    explosions.add(new Quintet<>(type.ordinal(), colors, flicker, trail, List.of()));
                     ItemUtil.setFireworkExplosions(stack, explosions);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -241,14 +229,14 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy().copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     Type type = EnumArgumentType.getEnum(context, "type", Type.class);
                     List<Integer> colors = ListArgumentType.getListArgument(context, "colors");
                     boolean flicker = BoolArgumentType.getBool(context, "flicker");
                     boolean trail = BoolArgumentType.getBool(context, "trail");
                     List<Integer> fadeColors = ListArgumentType.getListArgument(context, "fadeColors");
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
-                    explosions.add(new Quintet<>(type.id, colors, flicker, trail, fadeColors));
+                    explosions.add(new Quintet<>(type.ordinal(), colors, flicker, trail, fadeColors));
                     ItemUtil.setFireworkExplosions(stack, explosions);
 
                     EditorUtil.setStack(context.getSource(), stack);
@@ -267,11 +255,12 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                     int index = IntegerArgumentType.getInteger(context, "index");
                     List<Quintet<Integer, List<Integer>, Boolean, Boolean, List<Integer>>> explosions = new ArrayList<>(ItemUtil.getFireworkExplosions(stack));
-                    if (explosions.size() <= index) throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, explosions.size());
+                    if (explosions.size() <= index)
+                        throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, explosions.size());
                     explosions.remove(index);
                     ItemUtil.setFireworkExplosions(stack, explosions);
 
@@ -287,7 +276,7 @@ public class FireworkNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!canEdit(stack)) throw CANNOT_EDIT_EXCEPTION;
+                    if (!isFirework(stack)) throw ISNT_FIREWORK_EXCEPTION;
                     if (!ItemUtil.hasFireworkExplosions(stack)) throw NO_EXPLOSIONS_EXCEPTION;
                     ItemUtil.setFireworkExplosions(stack, null);
 

@@ -47,7 +47,8 @@ public class WhitelistNode implements Node {
                 .executes(context -> {
                     ItemStack stack = EditorUtil.getStack(context.getSource());
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!ItemUtil.hasWhitelistPlace(stack) && !ItemUtil.hasWhitelistDestroy(stack)) throw NO_WHITELIST_EXCEPTION;
+                    if (!ItemUtil.hasWhitelistPlace(stack) && !ItemUtil.hasWhitelistDestroy(stack))
+                        throw NO_WHITELIST_EXCEPTION;
                     List<Block> place = ItemUtil.getWhitelistPlace(stack);
                     List<Block> destroy = ItemUtil.getWhitelistDestroy(stack);
 
@@ -214,7 +215,8 @@ public class WhitelistNode implements Node {
                     ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
                     if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!ItemUtil.hasWhitelistPlace(stack, false) && !ItemUtil.hasWhitelistDestroy(stack, false)) throw NO_WHITELIST_EXCEPTION;
+                    if (!ItemUtil.hasWhitelistPlace(stack, false) && !ItemUtil.hasWhitelistDestroy(stack, false))
+                        throw NO_WHITELIST_EXCEPTION;
                     ItemUtil.setWhitelistPlace(stack, null);
                     ItemUtil.setWhitelistDestroy(stack, null);
 

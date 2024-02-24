@@ -170,7 +170,8 @@ public class TextArgumentType implements ArgumentType<Text> {
                         builder = new StringBuilder();
                         StringBuilder keybind = new StringBuilder();
                         int start = reader.getCursor();
-                        keybindReader: {
+                        keybindReader:
+                        {
                             while (reader.canRead()) {
                                 char ch = reader.read();
                                 if (ch == '>') break keybindReader;
@@ -186,7 +187,8 @@ public class TextArgumentType implements ArgumentType<Text> {
                         builder = new StringBuilder();
                         StringBuilder translation = new StringBuilder();
                         int start = reader.getCursor();
-                        keybindReader: {
+                        keybindReader:
+                        {
                             while (reader.canRead()) {
                                 char ch = reader.read();
                                 if (ch == ']') break keybindReader;
@@ -269,7 +271,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                             continue;
                         }
                         MinecraftClient client = MinecraftClient.getInstance();
-                        Set<String> keys = ((TranslationStorage)Language.getInstance()).translations.keySet();
+                        Set<String> keys = ((TranslationStorage) Language.getInstance()).translations.keySet();
                         builder = builder.createOffset(builder.getStart() + i);
                         for (String key : keys) {
                             if (key.startsWith(last)) builder.suggest(key);

@@ -18,10 +18,6 @@ public class SimpleItemEditor implements ClientModInitializer {
         if (SharedConstants.isDevelopment) {
             ClientCommandRegistrationCallback.EVENT.register(RegistryCommand::register);
         }
-        // TODO:
-        // color command
-        // character command
-        // craft command
-
+        // TODO: TEST ALL FLAG EDITS
     }
 }
