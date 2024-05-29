@@ -48,10 +48,7 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         // i can feel that this is not the best approach, but idk how to implement it differently
         String remaining = builder.getRemaining();
-        int lastStart = 0;
-        for (int i = 0; i < remaining.length(); ++i) {
-            if (remaining.charAt(i) == delimeter) lastStart = i + 1;
-        }
+        int lastStart = remaining.lastIndexOf(delimeter) + 1;
         return argumentType.listSuggestions(context, new SuggestionsBuilder(builder.getInput(), builder.getStart() + lastStart));
     }
 }

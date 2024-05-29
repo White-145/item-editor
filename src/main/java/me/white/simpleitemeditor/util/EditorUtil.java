@@ -1,7 +1,6 @@
 package me.white.simpleitemeditor.util;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -9,13 +8,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
@@ -86,7 +81,8 @@ public class EditorUtil {
     public static String textToString(Text text) {
         List<Text> contents = text.withoutStyle();
         StringBuilder result = new StringBuilder();
-        AtomicReference<Style> prevStyle = new AtomicReference<>(Style.EMPTY);
+        AtomicReference<Style> prevStyle = new AtomicReference<>(Style.EMPTY);  // why atomic?
+        Style aaas = Style.EMPTY;
         text.visit((style, literal) -> {
             if (literal.isEmpty()) return Optional.empty();
             if (style != null) {
@@ -122,15 +118,6 @@ public class EditorUtil {
             return Optional.empty();
         }, Style.EMPTY);
         return result.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T getRegistryEntryArgument(CommandContext<FabricClientCommandSource> context, String key, RegistryKey<Registry<T>> registryEntryKey) throws CommandSyntaxException {
-        RegistryEntry.Reference<?> reference = context.getArgument(key, RegistryEntry.Reference.class);
-        RegistryKey<?> registryKey = reference.registryKey();
-        if (!registryKey.isOf(registryEntryKey))
-            throw RegistryEntryArgumentType.INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryEntryKey.getValue());
-        return (T) reference.value();
     }
 
     public static void throwWithContext(SimpleCommandExceptionType exception, StringReader reader, int cursor) throws CommandSyntaxException {

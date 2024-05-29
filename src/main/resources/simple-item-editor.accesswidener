@@ -1,4 +1,9 @@
 accessWidener v2 named
 
-accessible field net/minecraft/client/resource/language/TranslationStorage translations Ljava/util/Map;
 accessible field net/minecraft/entity/attribute/EntityAttributeModifier name Ljava/lang/String;
+accessible field net/minecraft/client/resource/language/TranslationStorage translations Ljava/util/Map;
+accessible field net/minecraft/item/BlockPredicatesChecker predicates Ljava/util/List;
+accessible class net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate
+accessible class net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate
+accessible method net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate <init> (Lnet/minecraft/block/BlockState;Ljava/util/Set;Lnet/minecraft/nbt/NbtCompound;)V
+accessible method net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate <init> (Lnet/minecraft/registry/entry/RegistryEntryList;Ljava/util/Map;Lnet/minecraft/nbt/NbtCompound;)V

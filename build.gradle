@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.5-SNAPSHOT'
+	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -10,12 +10,12 @@ base {
 	archivesName = project.archives_base_name
 }
 
-repositories {
-
-}
-
 loom {
 	accessWidenerPath = file("src/main/resources/simple-item-editor.accesswidener")
+}
+
+repositories {
+
 }
 
 dependencies {

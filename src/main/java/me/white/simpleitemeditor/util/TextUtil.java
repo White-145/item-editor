@@ -11,8 +11,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
-import java.net.URL;
-
 public class TextUtil {
     private static final String OUTPUT_COPY = "chat.copyable.copy";
     private static final String OUTPUT_VEC3 = "chat.copyable.vec3";
@@ -30,7 +28,7 @@ public class TextUtil {
 
     public static MutableText copyable(ItemStack stack) {
         String copied = Registries.ITEM.getId(stack.getItem()).toString();
-        if (stack.hasNbt()) copied += stack.getNbt().toString();
+        // TODO: components
 
         return Text.empty()
                 .append(stack.getName())
@@ -74,16 +72,14 @@ public class TextUtil {
         return copyable(item.getName(), Registries.ITEM.getId(item).toString());
     }
 
-    public static MutableText clickable(URL url) {
-        String str = url.toString();
-
+    public static MutableText url(String url) {
         return Text.empty()
-                .append(url.toString())
+                .append(url)
                 .setStyle(Style.EMPTY
                         .withColor(Formatting.BLUE)
                         .withUnderline(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, str))
-                        .withInsertion(str)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                        .withInsertion(url)
                 );
     }
 }

@@ -1,20 +1,21 @@
 package me.white.simpleitemeditor.node;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry.Reference;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 
 public class MaterialNode implements Node {
@@ -23,41 +24,38 @@ public class MaterialNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.material.set";
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("material")
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("material").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-                .literal("get")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource());
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
+        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(stack.getItem())));
-                    return 1;
-                })
-                .build();
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(stack.getItem())));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-                .literal("set")
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Reference<Item>> setMaterialNode = ClientCommandManager
-                .argument("material", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ITEM))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    Item item = EditorUtil.getRegistryEntryArgument(context, "material", RegistryKeys.ITEM);
-                    if (stack.getItem() == item) throw ALREADY_IS_EXCEPTION;
-                    ItemStack newStack = new ItemStack(item, stack.getCount());
-                    newStack.setNbt(stack.getNbt());
+        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Item>> setMaterialNode = ClientCommandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.ITEM, registryAccess)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            Item item = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ITEM, "material");
+            if (stack.getItem() == item) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            ItemStack newStack = stack.copyComponentsToNewStack(item, 1);
 
-                    EditorUtil.setStack(context.getSource(), newStack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(item)));
-                    return 1;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), newStack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(item)));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
         rootNode.addChild(node);
 

@@ -16,11 +16,7 @@ import net.minecraft.text.Text;
 public class ColorArgumentType implements ArgumentType<Integer> {
     private static final SimpleCommandExceptionType INVALID_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.error.invalidcolor"));
 
-    private static final Collection<String> EXAMPLES = List.of(
-            "#FF0000",
-            "#00bb88",
-            "#b8b8b8"
-    );
+    private static final Collection<String> EXAMPLES = List.of("#FF0000", "#00bb88", "#b8b8b8");
 
     public static ColorArgumentType color() {
         return new ColorArgumentType();

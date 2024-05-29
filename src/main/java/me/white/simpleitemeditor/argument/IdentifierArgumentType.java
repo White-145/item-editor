@@ -12,11 +12,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.Identifier;
 
 public class IdentifierArgumentType implements ArgumentType<Identifier> {
-    private static final Collection<String> EXAMPLES = Arrays.asList(
-            "foo",
-            "foo:bar",
-            "012"
-    );
+    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
 
     public static IdentifierArgumentType identifier() {
         return new IdentifierArgumentType();

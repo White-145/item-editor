@@ -1,5 +1,6 @@
 package me.white.simpleitemeditor.node;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -20,135 +21,152 @@ public class CountNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.count.set";
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("count")
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("count").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-                .literal("get")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource());
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    int count = stack.getCount();
+        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            int count = stack.getCount();
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count));
-                    return count;
-                })
-                .build();
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-                .literal("set")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int old = stack.getCount();
-                    if (old == 1) throw ALREADY_IS_EXCEPTION;
-                    stack.setCount(1);
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (stack.getCount() == 1) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            stack.setCount(1);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, 1));
-                    return old;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, 1));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setCountNode = ClientCommandManager
-                .argument("count", IntegerArgumentType.integer(0, 127))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int old = stack.getCount();
-                    int count = IntegerArgumentType.getInteger(context, "count");
-                    if (old == count) throw ALREADY_IS_EXCEPTION;
-                    stack.setCount(count);
+        ArgumentCommandNode<FabricClientCommandSource, Integer> setCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = IntegerArgumentType.getInteger(context, "count");
+            if (count > stack.getMaxCount()) {
+                throw OVERFLOW_EXCEPTION;
+            }
+            if (stack.getCount() == count) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            stack.setCount(count);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
-                    return old;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager
-                .literal("add")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int count = stack.getCount() + 1;
-                    if (count > 127) throw OVERFLOW_EXCEPTION;
-                    stack.setCount(count);
+        LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager.literal("add").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = stack.getCount() + 1;
+            if (count > stack.getMaxCount()) throw OVERFLOW_EXCEPTION;
+            stack.setCount(count);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
-                    return count;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> addCountNode = ClientCommandManager
-                .argument("count", IntegerArgumentType.integer(-126, 126))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int count = IntegerArgumentType.getInteger(context, "count");
-                    int newCount = stack.getCount() + count;
-                    if (newCount > 127 || newCount < 0) throw OVERFLOW_EXCEPTION;
-                    stack.setCount(newCount);
+        ArgumentCommandNode<FabricClientCommandSource, Integer> addCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(-98, 98)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = IntegerArgumentType.getInteger(context, "count");
+            int newCount = stack.getCount() + count;
+            if (newCount > stack.getMaxCount() || newCount < 0) {
+                throw OVERFLOW_EXCEPTION;
+            }
+            stack.setCount(newCount);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, newCount));
-                    return newCount;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, newCount));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager
-                .literal("remove")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int count = stack.getCount() - 1;
-                    if (count < 0) throw OVERFLOW_EXCEPTION;
-                    stack.setCount(count);
+        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = stack.getCount() - 1;
+            if (count < 0) {
+                throw OVERFLOW_EXCEPTION;
+            }
+            stack.setCount(count);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
-                    return count;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager
-                .argument("count", IntegerArgumentType.integer(-126, 126))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int count = IntegerArgumentType.getInteger(context, "count");
-                    int newCount = stack.getCount() - count;
-                    if (newCount > 127 || newCount < 0) throw OVERFLOW_EXCEPTION;
-                    stack.setCount(newCount);
+        ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(-126, 126)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = IntegerArgumentType.getInteger(context, "count");
+            int newCount = stack.getCount() - count;
+            if (newCount > stack.getMaxCount() || newCount < 0) {
+                throw OVERFLOW_EXCEPTION;
+            }
+            stack.setCount(newCount);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, newCount));
-                    return newCount;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, newCount));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> stackNode = ClientCommandManager
-                .literal("stack")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (stack.getCount() == stack.getMaxCount()) throw ALREADY_IS_EXCEPTION;
-                    stack.setCount(stack.getMaxCount());
+        LiteralCommandNode<FabricClientCommandSource> stackNode = ClientCommandManager.literal("stack").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (stack.getCount() == stack.getMaxCount()) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            stack.setCount(stack.getMaxCount());
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, stack.getMaxCount()));
-                    return stack.getMaxCount();
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, stack.getMaxCount()));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
         rootNode.addChild(node);
 

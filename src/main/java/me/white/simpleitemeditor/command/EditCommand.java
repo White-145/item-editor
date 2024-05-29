@@ -11,39 +11,21 @@ import net.minecraft.command.CommandRegistryAccess;
 
 public class EditCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("edit")
-                .build();
-
-        LiteralCommandNode<FabricClientCommandSource> nodeNamespaced = ClientCommandManager
-                .literal("itemeditor:edit")
-                .redirect(node)
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("edit").build();
 
         for (Node editNode : new Node[]{
-                new AttributeNode(),
                 new BannerNode(),
-                new BookNode(),
                 new ColorNode(),
                 new CountNode(),
-                new CustomNode(),
-                new DataNode(),
-                new DurabilityNode(),
                 new EnchantmentNode(),
-                new EntityNode(),
                 new EquipNode(),
-                new FireworkNode(),
-                new FlagNode(),
                 new GetNode(),
                 new HeadNode(),
                 new LoreNode(),
                 new MaterialNode(),
-                new ModelNode(),
                 new NameNode(),
-                new PotionNode(),
                 new TrimNode(),
-                new UnbreakableNode(),
-                new WhitelistNode()
+                new UnbreakableNode()
         }) {
             try {
                 editNode.register(node, registryAccess);
@@ -56,8 +38,10 @@ public class EditCommand {
         // ... block ... - edit block data (lectern book, items, metadata)
         // ... script ... - store/execute list of actions to perform. Possibly parameters
         // ... optimize ... - remove unnecessary nbt tags and optimize them as much as possible
+        // some way to prevent `/edit` server command to be overriden
 
-        dispatcher.getRoot().addChild(node);
-        dispatcher.getRoot().addChild(nodeNamespaced);
+//        if (dispatcher.getRoot().getChild("edit") == null) {
+            dispatcher.getRoot().addChild(node);
+//        }
     }
 }

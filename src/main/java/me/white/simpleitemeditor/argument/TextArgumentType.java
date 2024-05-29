@@ -14,7 +14,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -26,18 +25,18 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
 
 public class TextArgumentType implements ArgumentType<Text> {
-    public static SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidhex"));
-    public static SimpleCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidunicode"));
-    public static SimpleCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidescape"));
-    public static SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidplaceholder"));
-    public static SimpleCommandExceptionType UNCLOSED_KEYBIND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedkeybind"));
-    public static SimpleCommandExceptionType UNCLOSED_TRANSLATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedtranslation"));
     public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
     private static final String SUGGESTION_HEX = "argument.text.suggestionhex";
     private static final String SUGGESTION_SPACE = "argument.text.suggestionspace";
     private static final String SUGGESTION_KEYBIND = "argument.text.suggestionkeybind";
     private static final String SUGGESTION_TRANSLATION = "argument.text.suggestiontranslation";
     private static final String SUGGESTION_RESET = "argument.text.suggestionreset";
+    public static SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidhex"));
+    public static SimpleCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidunicode"));
+    public static SimpleCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidescape"));
+    public static SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidplaceholder"));
+    public static SimpleCommandExceptionType UNCLOSED_KEYBIND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedkeybind"));
+    public static SimpleCommandExceptionType UNCLOSED_TRANSLATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedtranslation"));
 
     public static TextArgumentType text() {
         return new TextArgumentType();
@@ -49,7 +48,9 @@ public class TextArgumentType implements ArgumentType<Text> {
 
     public static String readEscaped(StringReader reader) throws CommandSyntaxException {
         char result;
-        if (reader.peek() == '\\') reader.skip();
+        if (reader.peek() == '\\') {
+            reader.skip();
+        }
         int cursor = reader.getCursor();
         switch (reader.peek()) {
             case 'n' -> {
@@ -66,7 +67,8 @@ public class TextArgumentType implements ArgumentType<Text> {
                 for (int i = 0; i < 2; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result += Math.pow(16, 1 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
+                        result *= 16;
+                        result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);
                         throw INVALID_HEX_CHARACTER_EXCEPTION.createWithContext(reader);
@@ -82,9 +84,10 @@ public class TextArgumentType implements ArgumentType<Text> {
                 }
                 result = 0;
                 for (int i = 0; i < 4; ++i) {
-                    char ch = reader.read();
+                    char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result += Math.pow(16, 3 - i) * (ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10);
+                        result *= 16;
+                        result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);
                         throw INVALID_UNICODE_CHARACTER_EXCEPTION.createWithContext(reader);
@@ -138,6 +141,11 @@ public class TextArgumentType implements ArgumentType<Text> {
         };
     }
 
+    private static int readUntil(String str, int i, char terminator) {
+        int index = str.indexOf(terminator, i);
+        return index == -1 ? -1 : index - i;
+    }
+
     @Override
     public Text parse(StringReader reader) throws CommandSyntaxException {
         List<Text> texts = new ArrayList<>();
@@ -156,7 +164,9 @@ public class TextArgumentType implements ArgumentType<Text> {
                 switch (reader.peek()) {
                     case '#' -> {  // hex color
                         int color = ColorArgumentType.color().parse(reader);
-                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!builder.isEmpty()) {
+                            texts.add(Text.literal(builder.toString()).setStyle(style));
+                        }
                         builder = new StringBuilder();
                         style = EMPTY_STYLE.withColor(color);
                     }
@@ -166,47 +176,33 @@ public class TextArgumentType implements ArgumentType<Text> {
                     }
                     case '<' -> {  // keybind
                         reader.skip();
-                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
-                        builder = new StringBuilder();
-                        StringBuilder keybind = new StringBuilder();
-                        int start = reader.getCursor();
-                        keybindReader:
-                        {
-                            while (reader.canRead()) {
-                                char ch = reader.read();
-                                if (ch == '>') break keybindReader;
-                                keybind.append(ch);
-                            }
-                            EditorUtil.throwWithContext(UNCLOSED_KEYBIND_EXCEPTION, reader, start);
+                        if (!builder.isEmpty()) {
+                            texts.add(Text.literal(builder.toString()).setStyle(style));
                         }
-                        texts.add(Text.keybind(keybind.toString()).setStyle(style));
+                        builder = new StringBuilder();
+                        texts.add(Text.keybind(reader.readStringUntil('>')).setStyle(style));
                     }
                     case '[' -> {  // translation
                         reader.skip();
-                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
-                        builder = new StringBuilder();
-                        StringBuilder translation = new StringBuilder();
-                        int start = reader.getCursor();
-                        keybindReader:
-                        {
-                            while (reader.canRead()) {
-                                char ch = reader.read();
-                                if (ch == ']') break keybindReader;
-                                translation.append(ch);
-                            }
-                            EditorUtil.throwWithContext(UNCLOSED_KEYBIND_EXCEPTION, reader, start);
+                        if (!builder.isEmpty()) {
+                            texts.add(Text.literal(builder.toString()).setStyle(style));
                         }
-                        texts.add(Text.translatable(translation.toString()).setStyle(style));
+                        builder = new StringBuilder();
+                        texts.add(Text.translatable(reader.readStringUntil(']')).setStyle(style));
                     }
                     default -> {  // color code
-                        if (!reader.canRead()) throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
+                        if (!reader.canRead()) {
+                            throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
+                        }
                         int cursor = reader.getCursor();
-                        char ch = reader.read();
+                        char ch = Character.toLowerCase(reader.read());
                         if (!isHex(ch) && !isModifier(ch)) {
                             reader.setCursor(cursor);
                             throw INVALID_PLACEHOLDER_EXCEPTION.createWithContext(reader);
                         }
-                        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
+                        if (!builder.isEmpty()) {
+                            texts.add(Text.literal(builder.toString()).setStyle(style));
+                        }
                         builder = new StringBuilder();
                         style = modifyStyleWith(style, Character.toLowerCase(ch));
                     }
@@ -215,7 +211,9 @@ public class TextArgumentType implements ArgumentType<Text> {
                 builder.append(reader.read());
             }
         }
-        if (!builder.isEmpty()) texts.add(Text.literal(builder.toString()).setStyle(style));
+        if (!builder.isEmpty()) {
+            texts.add(Text.literal(builder.toString()).setStyle(style));
+        }
         MutableText result = Text.empty();
         for (Text part : texts) {
             result.append(part);
@@ -223,61 +221,47 @@ public class TextArgumentType implements ArgumentType<Text> {
         return result;
     }
 
-    private static int readUntil(String str, int i, char terminator) {
-        for (int j = i; j < str.length(); ++j) {
-            if (str.charAt(j) == terminator) return j - i;
-        }
-        return -1;
-    }
-
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         String remaining = builder.getRemaining();
-        if (remaining.isEmpty()) return Suggestions.empty();
-        for (int i = 0; i < remaining.length(); ++i) {
-            if (remaining.charAt(i) == '&') {
-                if (i == remaining.length() - 1) {
-                    builder = builder.createOffset(builder.getStart() + builder.getRemaining().length() - 1);
-                    builder.suggest("&#", Text.translatable(SUGGESTION_HEX));
-                    builder.suggest("&_", Text.translatable(SUGGESTION_SPACE));
-                    builder.suggest("&<", Text.translatable(SUGGESTION_KEYBIND));
-                    builder.suggest("&[", Text.translatable(SUGGESTION_TRANSLATION));
-                    builder.suggest("&r", Text.translatable(SUGGESTION_RESET));
+        if (remaining.isEmpty()) {
+            return Suggestions.empty();
+        }
+        int i = remaining.lastIndexOf('&');
+        if (i == remaining.length() - 1) {
+            builder = builder.createOffset(builder.getStart() + builder.getRemaining().length() - 1);
+            builder.suggest("&#", Text.translatable(SUGGESTION_HEX));
+            builder.suggest("&_", Text.translatable(SUGGESTION_SPACE));
+            builder.suggest("&<", Text.translatable(SUGGESTION_KEYBIND));
+            builder.suggest("&[", Text.translatable(SUGGESTION_TRANSLATION));
+            builder.suggest("&r", Text.translatable(SUGGESTION_RESET));
+            return builder.buildFuture();
+        }
+        String last = remaining.substring(i + 2);
+        switch (remaining.charAt(i + 1)) {
+            case '<' -> {
+                if (readUntil(last, 0, '>') == -1) {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    List<String> keybinds = Arrays.stream(client.options.allKeys).map(KeyBinding::getTranslationKey).toList();
+                    builder = builder.createOffset(builder.getStart() + i + 2);
+                    for (String key : keybinds) {
+                        if (key.startsWith(last)) {
+                            builder.suggest(key);
+                        }
+                    }
                     return builder.buildFuture();
                 }
-                i += 2;
-                String last = remaining.substring(i);
-                switch (remaining.charAt(i - 1)) {
-                    case '<' -> {
-                        int j = readUntil(last, 0, '>');
-                        if (j != -1) {
-                            i = i + j;
-                            continue;
+            }
+            case '[' -> {
+                if (readUntil(last, 0, ']') == -1) {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    Set<String> keys = ((TranslationStorage) Language.getInstance()).translations.keySet();
+                    builder = builder.createOffset(builder.getStart() + i);
+                    for (String key : keys) {
+                        if (key.startsWith(last)) {
+                            builder.suggest(key);
                         }
-                        MinecraftClient client = MinecraftClient.getInstance();
-                        String[] keybinds = Arrays
-                                .stream(client.options.allKeys)
-                                .map(KeyBinding::getTranslationKey)
-                                .toArray(String[]::new);
-                        builder = builder.createOffset(builder.getStart() + i);
-                        for (String key : keybinds) {
-                            if (key.startsWith(last)) builder.suggest(key);
-                        }
-                        return builder.buildFuture();
                     }
-                    case '[' -> {
-                        int j = readUntil(last, 0, ']');
-                        if (j != -1) {
-                            i = i + j;
-                            continue;
-                        }
-                        MinecraftClient client = MinecraftClient.getInstance();
-                        Set<String> keys = ((TranslationStorage) Language.getInstance()).translations.keySet();
-                        builder = builder.createOffset(builder.getStart() + i);
-                        for (String key : keys) {
-                            if (key.startsWith(last)) builder.suggest(key);
-                        }
-                        return builder.buildFuture();
-                    }
+                    return builder.buildFuture();
                 }
             }
         }

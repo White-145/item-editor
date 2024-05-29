@@ -47,7 +47,9 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
         int cursor = reader.getCursor();
         String remaining = reader.readString();
         for (String suggestion : suggestions.keySet()) {
-            if (suggestion.equals(remaining)) return suggestions.get(suggestion);
+            if (suggestion.equals(remaining)) {
+                return suggestions.get(suggestion);
+            }
         }
         reader.setCursor(cursor);
         throw INVALID_ENUM_EXCEPTION.createWithContext(reader);
@@ -56,8 +58,11 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         String remaining = builder.getRemainingLowerCase();
-        for (String suggestion : suggestions.keySet())
-            if (suggestion.toLowerCase(Locale.ROOT).startsWith(remaining)) builder.suggest(suggestion);
+        for (String suggestion : suggestions.keySet()) {
+            if (suggestion.toLowerCase(Locale.ROOT).startsWith(remaining)) {
+                builder.suggest(suggestion);
+            }
+        }
         return builder.buildFuture();
     }
 }

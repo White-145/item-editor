@@ -1,16 +1,18 @@
 package me.white.simpleitemeditor.node;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import me.white.simpleitemeditor.util.ItemUtil;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
@@ -21,69 +23,80 @@ public class ModelNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.model.set";
     private static final String OUTPUT_REMOVE = "commands.edit.model.remove";
 
+    private static boolean hasModel(ItemStack stack) {
+        return stack.contains(DataComponentTypes.CUSTOM_MODEL_DATA);
+    }
+
+    private static int getModel(ItemStack stack) {
+        if (!hasModel(stack)) {
+            return 0;
+        }
+        return stack.get(DataComponentTypes.CUSTOM_MODEL_DATA).value();
+    }
+
+    private static void setModel(ItemStack stack, int model) {
+        if (model <= 0) {
+            stack.remove(DataComponentTypes.CUSTOM_MODEL_DATA);
+        } else {
+            stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(model));
+        }
+    }
+
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager
-                .literal("model")
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("model").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager
-                .literal("get")
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource());
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
-                    int model = ItemUtil.getModel(stack);
+        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!hasModel(stack)) {
+                throw NO_MODEL_EXCEPTION;
+            }
+            int model = getModel(stack);
 
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
-                    return model;
-                })
-                .build();
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, model));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager
-                .literal("set")
-                .build();
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager
-                .argument("model", IntegerArgumentType.integer(0))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    int model = IntegerArgumentType.getInteger(context, "model");
-                    int old = ItemUtil.getModel(stack);
-                    if (model == old) throw ALREADY_IS_EXCEPTION;
-                    if (model == 0) {
-                        if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
-                        ItemUtil.setModel(stack, null);
+        ArgumentCommandNode<FabricClientCommandSource, Integer> setModelNode = ClientCommandManager.argument("model", IntegerArgumentType.integer(1)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int model = IntegerArgumentType.getInteger(context, "model");
+            if (model == getModel(stack)) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            setModel(stack, model);
 
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
-                    } else {
-                        ItemUtil.setModel(stack, model);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
+            EditorUtil.setStack(context.getSource(), stack);
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
-                        context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, model));
-                    }
+        LiteralCommandNode<FabricClientCommandSource> removeModelNode = ClientCommandManager.literal("remove").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!hasModel(stack)) {
+                throw NO_MODEL_EXCEPTION;
+            }
+            setModel(stack, 0);
 
-                    EditorUtil.setStack(context.getSource(), stack);
-                    return old;
-                })
-                .build();
-
-
-        ArgumentCommandNode<FabricClientCommandSource, Integer> removeModelNode = ClientCommandManager
-                .argument("remove", IntegerArgumentType.integer(0))
-                .executes(context -> {
-                    ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-                    if (!EditorUtil.hasItem(stack)) throw EditorUtil.NO_ITEM_EXCEPTION;
-                    if (!EditorUtil.hasCreative(context.getSource())) throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    if (!ItemUtil.hasModel(stack)) throw NO_MODEL_EXCEPTION;
-                    int old = ItemUtil.getModel(stack);
-                    ItemUtil.setModel(stack, null);
-
-                    EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
-                    return old;
-                })
-                .build();
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
         rootNode.addChild(node);
 
