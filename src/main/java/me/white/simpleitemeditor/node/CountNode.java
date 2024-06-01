@@ -11,14 +11,31 @@ import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class CountNode implements Node {
     public static final CommandSyntaxException OVERFLOW_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.overflow")).create();
     public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.alreadyis")).create();
+    public static final CommandSyntaxException MAX_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.count.error.maxalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.count.get";
     private static final String OUTPUT_SET = "commands.edit.count.set";
+    private static final String OUTPUT_MAX_GET = "commands.edit.count.getmax";
+    private static final String OUTPUT_MAX_SET = "commands.edit.count.setmax";
+    private static final String OUTPUT_MAX_RESET = "commands.edit.count.resetmax";
+
+    private static boolean hasMaxCount(ItemStack stack) {
+        return stack.contains(DataComponentTypes.MAX_STACK_SIZE);
+    }
+
+    private static void setMaxCount(ItemStack stack, int count) {
+        stack.set(DataComponentTypes.MAX_STACK_SIZE, count);
+    }
+
+    private static void removeMaxCount(ItemStack stack) {
+        stack.remove(DataComponentTypes.MAX_STACK_SIZE);
+    }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("count").build();
@@ -150,6 +167,58 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        LiteralCommandNode<FabricClientCommandSource> maxNode = ClientCommandManager.literal("max").build();
+
+        LiteralCommandNode<FabricClientCommandSource> maxGetNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            int count = stack.getMaxCount();
+
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_MAX_GET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> maxSetNode = ClientCommandManager.literal("set").build();
+
+        ArgumentCommandNode<FabricClientCommandSource, Integer> maxSetCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 99)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            int count = IntegerArgumentType.getInteger(context, "count");
+            if (count == stack.getMaxCount()) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            setMaxCount(stack, count);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_MAX_SET, count));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> maxResetNode = ClientCommandManager.literal("reset").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!stack.contains(DataComponentTypes.MAX_STACK_SIZE)) {
+                throw MAX_ALREADY_IS_EXCEPTION;
+            }
+            removeMaxCount(stack);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_MAX_RESET));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
         LiteralCommandNode<FabricClientCommandSource> stackNode = ClientCommandManager.literal("stack").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
@@ -184,6 +253,16 @@ public class CountNode implements Node {
         // ... remove [<count>]
         node.addChild(removeNode);
         removeNode.addChild(removeCountNode);
+
+        // ... max ...
+        node.addChild(maxNode);
+        // ... get
+        maxNode.addChild(maxGetNode);
+        // ... set <count>
+        maxNode.addChild(maxSetNode);
+        maxSetNode.addChild(maxSetCountNode);
+        // ... reset
+        maxNode.addChild(maxResetNode);
 
         // ... stack
         node.addChild(stackNode);

@@ -8,6 +8,8 @@ import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
@@ -34,18 +36,117 @@ public class BannerNode implements Node {
     private static final CommandSyntaxException ISNT_BANNER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.isntbanner")).create();
     private static final CommandSyntaxException NO_LAYERS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nolayers")).create();
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.alreadyis")).create();
+    private static final CommandSyntaxException BASE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.basealreadyis")).create();
+    private static final CommandSyntaxException ISNT_SHIELD_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.isntshield")).create();
     private static final String OUTPUT_GET = "commands.edit.banner.get";
     private static final String OUTPUT_GET_LAYER = "commands.edit.banner.getlayer";
     private static final String OUTPUT_SET = "commands.edit.banner.set";
     private static final String OUTPUT_REMOVE = "commands.edit.banner.remove";
     private static final String OUTPUT_ADD = "commands.edit.banner.add";
     private static final String OUTPUT_INSERT = "commands.edit.banner.insert";
+    private static final String OUTPUT_BASE_GET = "commands.edit.banner.baseget";
+    private static final String OUTPUT_BASE_SET = "commands.edit.banner.baseset";
+    private static final String OUTPUT_BASE_REMOVE = "commands.edit.banner.baseremove";
     private static final String OUTPUT_CLEAR = "commands.edit.banner.clear";
     private static final String OUTPUT_CLEAR_BEFORE = "commands.edit.banner.clearbefore";
     private static final String OUTPUT_CLEAR_AFTER = "commands.edit.banner.clearafter";
 
     private static boolean isBanner(ItemStack stack) {
-        return stack.isIn(ItemTags.BANNERS);
+        return stack.isIn(ItemTags.BANNERS) || stack.getItem() == Items.SHIELD;
+    }
+
+    private static boolean hasBaseColor(ItemStack stack) {
+        if (stack.getItem() != Items.SHIELD) {
+            return true;
+        }
+        return stack.contains(DataComponentTypes.BASE_COLOR);
+    }
+
+    private static DyeColor getBaseColor(ItemStack stack) {
+        if (!hasBaseColor(stack)) {
+            return DyeColor.WHITE;
+        }
+        if (stack.getItem() != Items.SHIELD) {
+            Item item = stack.getItem();
+            if (item == Items.WHITE_BANNER) {
+                return DyeColor.WHITE;
+            }
+            if (item == Items.ORANGE_BANNER) {
+                return DyeColor.ORANGE;
+            }
+            if (item == Items.MAGENTA_BANNER) {
+                return DyeColor.MAGENTA;
+            }
+            if (item == Items.LIGHT_BLUE_BANNER) {
+                return DyeColor.LIGHT_BLUE;
+            }
+            if (item == Items.YELLOW_BANNER) {
+                return DyeColor.YELLOW;
+            }
+            if (item == Items.LIME_BANNER) {
+                return DyeColor.LIME;
+            }
+            if (item == Items.PINK_BANNER) {
+                return DyeColor.PINK;
+            }
+            if (item == Items.GRAY_BANNER) {
+                return DyeColor.GRAY;
+            }
+            if (item == Items.LIGHT_GRAY_BANNER) {
+                return DyeColor.LIGHT_GRAY;
+            }
+            if (item == Items.CYAN_BANNER) {
+                return DyeColor.CYAN;
+            }
+            if (item == Items.PURPLE_BANNER) {
+                return DyeColor.PURPLE;
+            }
+            if (item == Items.BLUE_BANNER) {
+                return DyeColor.BLUE;
+            }
+            if (item == Items.BROWN_BANNER) {
+                return DyeColor.BROWN;
+            }
+            if (item == Items.GREEN_BANNER) {
+                return DyeColor.GREEN;
+            }
+            if (item == Items.RED_BANNER) {
+                return DyeColor.RED;
+            }
+            if (item == Items.BLACK_BANNER) {
+                return DyeColor.BLACK;
+            }
+        }
+        return stack.get(DataComponentTypes.BASE_COLOR);
+    }
+
+    private static ItemStack setBaseColor(ItemStack stack, DyeColor color) {
+        if (color == null) {
+            stack.remove(DataComponentTypes.BASE_COLOR);
+        } else {
+            if (stack.getItem() != Items.SHIELD) {
+                return switch (color) {
+                    case WHITE -> stack.copyComponentsToNewStack(Items.WHITE_BANNER, stack.getCount());
+                    case ORANGE -> stack.copyComponentsToNewStack(Items.ORANGE_BANNER, stack.getCount());
+                    case MAGENTA -> stack.copyComponentsToNewStack(Items.MAGENTA_BANNER, stack.getCount());
+                    case LIGHT_BLUE -> stack.copyComponentsToNewStack(Items.LIGHT_BLUE_BANNER, stack.getCount());
+                    case YELLOW -> stack.copyComponentsToNewStack(Items.YELLOW_BANNER, stack.getCount());
+                    case LIME -> stack.copyComponentsToNewStack(Items.LIME_BANNER, stack.getCount());
+                    case PINK -> stack.copyComponentsToNewStack(Items.PINK_BANNER, stack.getCount());
+                    case GRAY -> stack.copyComponentsToNewStack(Items.GRAY_BANNER, stack.getCount());
+                    case LIGHT_GRAY -> stack.copyComponentsToNewStack(Items.LIGHT_GRAY_BANNER, stack.getCount());
+                    case CYAN -> stack.copyComponentsToNewStack(Items.CYAN_BANNER, stack.getCount());
+                    case PURPLE -> stack.copyComponentsToNewStack(Items.PURPLE_BANNER, stack.getCount());
+                    case BLUE -> stack.copyComponentsToNewStack(Items.BLUE_BANNER, stack.getCount());
+                    case BROWN -> stack.copyComponentsToNewStack(Items.BROWN_BANNER, stack.getCount());
+                    case GREEN -> stack.copyComponentsToNewStack(Items.GREEN_BANNER, stack.getCount());
+                    case RED -> stack.copyComponentsToNewStack(Items.RED_BANNER, stack.getCount());
+                    case BLACK -> stack.copyComponentsToNewStack(Items.BLACK_BANNER, stack.getCount());
+                };
+            }
+            stack.set(DataComponentTypes.BASE_COLOR, color);
+        }
+        return stack;
     }
 
     private static boolean hasBannerLayers(ItemStack stack) {
@@ -262,6 +363,67 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        LiteralCommandNode<FabricClientCommandSource> baseNode = ClientCommandManager.literal("base").build();
+
+        LiteralCommandNode<FabricClientCommandSource> baseGetNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isBanner(stack)) {
+                throw ISNT_BANNER_EXCEPTION;
+            }
+            DyeColor color = getBaseColor(stack);
+
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_GET, color.getName()));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> baseSetNode = ClientCommandManager.literal("set").build();
+
+        ArgumentCommandNode<FabricClientCommandSource, DyeColor> baseSetColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isBanner(stack)) {
+                throw ISNT_BANNER_EXCEPTION;
+            }
+            DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
+            if (hasBaseColor(stack) && getBaseColor(stack) == color) {
+                throw BASE_ALREADY_IS_EXCEPTION;
+            }
+            ItemStack newStack = setBaseColor(stack, color);
+
+            EditorUtil.setStack(context.getSource(), newStack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_SET, color.getName()));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> baseRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (stack.getItem() != Items.SHIELD) {
+                throw ISNT_SHIELD_EXCEPTION;
+            }
+            if (!hasBaseColor(stack)) {
+                throw BASE_ALREADY_IS_EXCEPTION;
+            }
+            ItemStack newStack = setBaseColor(stack, null);
+
+            EditorUtil.setStack(context.getSource(), newStack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_REMOVE));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
@@ -367,6 +529,16 @@ public class BannerNode implements Node {
         insertNode.addChild(insertIndexNode);
         insertIndexNode.addChild(insertIndexPatternNode);
         insertIndexPatternNode.addChild(insertIndexPatternColorNode);
+
+        // ... base ...
+        node.addChild(baseNode);
+        // ... get
+        baseNode.addChild(baseGetNode);
+        // ... set <color>
+        baseNode.addChild(baseSetNode);
+        baseSetNode.addChild(baseSetColorNode);
+        // ... remove
+        baseNode.addChild(baseRemoveNode);
 
         // ... clear
         node.addChild(clearNode);

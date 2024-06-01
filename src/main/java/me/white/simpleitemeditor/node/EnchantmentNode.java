@@ -30,10 +30,16 @@ public class EnchantmentNode implements Node {
     public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
     public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
     public static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
+    public static final CommandSyntaxException NO_GLINT_OVERRIDE = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noglintoverride")).create();
     private static final String OUTPUT_GET = "commands.edit.enchantment.get";
     private static final String OUTPUT_GET_ENCHANTMENT = "commands.edit.enchantment.getenchantment";
     private static final String OUTPUT_SET = "commands.edit.enchantment.set";
     private static final String OUTPUT_REMOVE = "commands.edit.enchantment.remove";
+    private static final String OUTPUT_GLINT_GET_ENABLED = "commands.edit.enchantment.getglintenabled";
+    private static final String OUTPUT_GLINT_GET_DISABLED = "commands.edit.enchantment.getglintdisable";
+    private static final String OUTPUT_GLINT_ENABLE = "commands.edit.enchantment.glintenable";
+    private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
+    private static final String OUTPUT_GLINT_RESET = "commands.edit.enchantment.glintreset";
     private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
 
     private static boolean hasEnchantments(ItemStack stack) {
@@ -65,6 +71,25 @@ public class EnchantmentNode implements Node {
             }
             stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
         }
+    }
+
+    private static boolean hasGlintOverride(ItemStack stack) {
+        return stack.contains(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+    }
+
+    private static boolean getGlint(ItemStack stack) {
+        if (hasGlintOverride(stack)) {
+            return stack.get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+        }
+        return hasEnchantments(stack);
+    }
+
+    private static void setGlint(ItemStack stack, boolean glint) {
+        stack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, glint);
+    }
+
+    private static void removeGlintOverride(ItemStack stack) {
+        stack.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -176,6 +201,51 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        LiteralCommandNode<FabricClientCommandSource> glintNode = ClientCommandManager.literal("glint").build();
+
+        LiteralCommandNode<FabricClientCommandSource> glintGetNode = ClientCommandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource());
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            context.getSource().sendFeedback(Text.translatable(getGlint(stack) ? OUTPUT_GLINT_GET_ENABLED : OUTPUT_GLINT_GET_DISABLED));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> glintToggleNode = ClientCommandManager.literal("toggle").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            boolean glint = getGlint(stack);
+            setGlint(stack, !glint);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(glint ? OUTPUT_GLINT_DISABLE : OUTPUT_GLINT_ENABLE));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        LiteralCommandNode<FabricClientCommandSource> glintResetNode = ClientCommandManager.literal("reset").executes(context -> {
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!hasGlintOverride(stack)) {
+                throw NO_GLINT_OVERRIDE;
+            }
+            removeGlintOverride(stack);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GLINT_RESET));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
@@ -208,6 +278,15 @@ public class EnchantmentNode implements Node {
         // ... remove <enchantment>
         node.addChild(removeNode);
         removeNode.addChild(removeEnchantmentNode);
+
+        // ... glint ...
+        node.addChild(glintNode);
+        // ... get
+        glintNode.addChild(glintGetNode);
+        // ... toggle
+        glintNode.addChild(glintToggleNode);
+        // ... reset
+        glintNode.addChild(glintResetNode);
 
         // ... clear
         node.addChild(clearNode);

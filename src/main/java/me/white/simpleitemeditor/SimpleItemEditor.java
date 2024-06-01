@@ -15,7 +15,6 @@ public class SimpleItemEditor implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register(EditCommand::register);
     }
     // ~ fixed `/edit model remove`
-    // - removed `/edit glint`
     // - removed `/edit color` for potions and maps
     // ~ removed ambiguous syntax for removing a component (e.g. `/edit trim set`)
     // ~ fixed various bugs with argument types

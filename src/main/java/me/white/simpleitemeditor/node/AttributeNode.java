@@ -161,11 +161,11 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, Double> setNameAttributeAmountNode = ClientCommandManager.argument("amount", DoubleArgumentType.doubleArg(true, false)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
@@ -184,11 +184,11 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setNameAttributeAmountOperationNode = ClientCommandManager.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
@@ -208,11 +208,11 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, AttributeModifierSlot> setNameAttributeAmountOperationSlotNode = ClientCommandManager.argument("slot", EnumArgumentType.enumArgument(AttributeModifierSlot.class)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
@@ -235,11 +235,11 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, String> removeNameNode = ClientCommandManager.argument("name", StringArgumentType.greedyString()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
@@ -258,11 +258,11 @@ public class AttributeNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;

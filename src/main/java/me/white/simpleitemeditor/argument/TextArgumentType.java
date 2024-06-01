@@ -67,7 +67,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                 for (int i = 0; i < 2; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result *= 16;
+                        result >>= 4;
                         result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);
@@ -86,7 +86,7 @@ public class TextArgumentType implements ArgumentType<Text> {
                 for (int i = 0; i < 4; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result *= 16;
+                        result >>= 4;
                         result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);

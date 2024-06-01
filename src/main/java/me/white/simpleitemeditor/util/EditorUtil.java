@@ -1,6 +1,5 @@
 package me.white.simpleitemeditor.util;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -99,11 +98,21 @@ public class EditorUtil {
                         result.append(Formatting.byName(color.getName()).getCode());
                     }
                 }
-                if (style.isObfuscated()) result.append("&k");
-                if (style.isBold()) result.append("&l");
-                if (style.isStrikethrough()) result.append("&m");
-                if (style.isUnderlined()) result.append("&n");
-                if (style.isItalic()) result.append("&o");
+                if (style.isObfuscated()) {
+                    result.append("&k");
+                }
+                if (style.isBold()) {
+                    result.append("&l");
+                }
+                if (style.isStrikethrough()) {
+                    result.append("&m");
+                }
+                if (style.isUnderlined()) {
+                    result.append("&n");
+                }
+                if (style.isItalic()) {
+                    result.append("&o");
+                }
 
                 prevStyle[0] = style;
             }
@@ -111,10 +120,5 @@ public class EditorUtil {
             return Optional.empty();
         }, Style.EMPTY);
         return result.toString();
-    }
-
-    public static void throwWithContext(SimpleCommandExceptionType exception, StringReader reader, int cursor) throws CommandSyntaxException {
-        reader.setCursor(cursor);
-        throw exception.createWithContext(reader);
     }
 }

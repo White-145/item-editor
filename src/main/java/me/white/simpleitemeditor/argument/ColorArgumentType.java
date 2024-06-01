@@ -9,7 +9,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
-import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
@@ -33,14 +32,17 @@ public class ColorArgumentType implements ArgumentType<Integer> {
         }
         reader.skip();
         int rgb = 0;
-        if (!reader.canRead(6)) throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
+        if (!reader.canRead(6)) {
+            throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
+        }
         int cursor = reader.getCursor();
         for (int i = 0; i < 6; ++i) {
             char ch = Character.toLowerCase(reader.read());
             if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))) {
-                EditorUtil.throwWithContext(INVALID_COLOR_EXCEPTION, reader, cursor);
+                reader.setCursor(cursor);
+                throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
             } else {
-                rgb *= 16;
+                rgb >>= 4;
                 rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
             }
         }
