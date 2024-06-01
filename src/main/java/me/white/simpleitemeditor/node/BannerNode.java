@@ -63,7 +63,11 @@ public class BannerNode implements Node {
     }
 
     private static void setBannerLayers(ItemStack stack, List<BannerPatternsComponent.Layer> layers) {
-        stack.set(DataComponentTypes.BANNER_PATTERNS, new BannerPatternsComponent(layers));
+        if (layers == null || layers.isEmpty()) {
+            stack.remove(DataComponentTypes.BANNER_PATTERNS);
+        } else {
+            stack.set(DataComponentTypes.BANNER_PATTERNS, new BannerPatternsComponent(layers));
+        }
     }
 
     private static BannerPatternsComponent.Layer getLayer(DynamicRegistryManager registryManager, BannerPattern pattern, DyeColor color) {

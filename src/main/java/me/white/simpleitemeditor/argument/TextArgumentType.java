@@ -25,18 +25,18 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
 
 public class TextArgumentType implements ArgumentType<Text> {
+    public static final SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidhex"));
+    public static final SimpleCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidunicode"));
+    public static final SimpleCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidescape"));
+    public static final SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidplaceholder"));
+    public static final SimpleCommandExceptionType UNCLOSED_KEYBIND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedkeybind"));
+    public static final SimpleCommandExceptionType UNCLOSED_TRANSLATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedtranslation"));
     public static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
+    private static final String SUGGESTION_RESET = "argument.text.suggestionreset";
     private static final String SUGGESTION_HEX = "argument.text.suggestionhex";
     private static final String SUGGESTION_SPACE = "argument.text.suggestionspace";
     private static final String SUGGESTION_KEYBIND = "argument.text.suggestionkeybind";
     private static final String SUGGESTION_TRANSLATION = "argument.text.suggestiontranslation";
-    private static final String SUGGESTION_RESET = "argument.text.suggestionreset";
-    public static SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidhex"));
-    public static SimpleCommandExceptionType INVALID_UNICODE_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidunicode"));
-    public static SimpleCommandExceptionType INVALID_ESCAPE_SEQUENCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidescape"));
-    public static SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidplaceholder"));
-    public static SimpleCommandExceptionType UNCLOSED_KEYBIND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedkeybind"));
-    public static SimpleCommandExceptionType UNCLOSED_TRANSLATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedtranslation"));
 
     public static TextArgumentType text() {
         return new TextArgumentType();

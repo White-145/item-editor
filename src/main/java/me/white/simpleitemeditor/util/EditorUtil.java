@@ -16,10 +16,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class EditorUtil {
     public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
@@ -40,9 +37,12 @@ public class EditorUtil {
     }
 
     public static void setSecondaryStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
-        if (getSecondaryStack(source) == stack)
+        if (getSecondaryStack(source) == stack) {
             SimpleItemEditor.LOGGER.warn("Using setSecondaryStack without clonning result of getSecondaryStack (If you see it report to github pls)");
-        if (!hasCreative(source)) throw NOT_CREATIVE_EXCEPTION;
+        }
+        if (!hasCreative(source)) {
+            throw NOT_CREATIVE_EXCEPTION;
+        }
         PlayerInventory inventory = source.getPlayer().getInventory();
         inventory.setStack(40, stack);
         source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(45, stack));
@@ -53,9 +53,12 @@ public class EditorUtil {
     }
 
     public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
-        if (getStack(source) == stack)
+        if (getStack(source) == stack) {
             SimpleItemEditor.LOGGER.warn("Using setStack without clonning result of getStack (If you see it report to github pls)");
-        if (!hasCreative(source)) throw NOT_CREATIVE_EXCEPTION;
+        }
+        if (!hasCreative(source)) {
+            throw NOT_CREATIVE_EXCEPTION;
+        }
         PlayerInventory inventory = source.getPlayer().getInventory();
         int slot = inventory.selectedSlot;
         inventory.setStack(slot, stack);
@@ -79,24 +82,14 @@ public class EditorUtil {
     }
 
     public static String textToString(Text text) {
-        List<Text> contents = text.withoutStyle();
         StringBuilder result = new StringBuilder();
-        AtomicReference<Style> prevStyle = new AtomicReference<>(Style.EMPTY);  // why atomic?
-        Style aaas = Style.EMPTY;
+        Style[] prevStyle = new Style[]{ Style.EMPTY };
         text.visit((style, literal) -> {
             if (literal.isEmpty()) return Optional.empty();
             if (style != null) {
-                Style prev = prevStyle.get();
                 TextColor color = style.getColor();
 
-                if (
-                        !Objects.equals(prev.getColor(), color) ||
-                                (prev.isObfuscated() && !style.isObfuscated()) ||
-                                (prev.isBold() && !style.isBold()) ||
-                                (prev.isStrikethrough() && !style.isStrikethrough()) ||
-                                (prev.isUnderlined() && !style.isUnderlined()) ||
-                                (prev.isItalic() && !style.isItalic())
-                ) {
+                if (!prevStyle[0].equals(style)) {
                     result.append("&");
                     if (color == null) {
                         result.append("r");
@@ -112,7 +105,7 @@ public class EditorUtil {
                 if (style.isUnderlined()) result.append("&n");
                 if (style.isItalic()) result.append("&o");
 
-                prevStyle.set(style);
+                prevStyle[0] = style;
             }
             result.append(literal);
             return Optional.empty();

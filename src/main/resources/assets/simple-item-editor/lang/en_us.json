@@ -341,7 +341,5 @@
   "chat.copyable.vec2": "%s, %s",
   "commands.edit.error.notcreative": "Can only edit items in creative game mode",
   "commands.edit.error.noitem": "No item in main hand",
-  "commands.edit.error.outofbounds": "Index %s is out of bounds for size %s",
-  "commands.registry.registry": "Registry has the following entries:",
-  "commands.registry.entry": "Got registry entry %s"
+  "commands.edit.error.outofbounds": "Index %s is out of bounds for size %s"
 }

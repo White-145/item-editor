@@ -116,7 +116,7 @@ public class EnchantmentNode implements Node {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
-            Map<Enchantment, Integer> enchantments = getEnchantments(stack);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == 1) {
                 throw ALREADY_EXISTS_EXCEPTION;
             }
@@ -137,7 +137,7 @@ public class EnchantmentNode implements Node {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
-            Map<Enchantment, Integer> enchantments = getEnchantments(stack);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             int level = IntegerArgumentType.getInteger(context, "level");
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == level) {
                 throw ALREADY_EXISTS_EXCEPTION;
@@ -164,7 +164,7 @@ public class EnchantmentNode implements Node {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
-            Map<Enchantment, Integer> enchantments = getEnchantments(stack);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (!enchantments.containsKey(enchantment)) {
                 throw DOESNT_EXIST_EXCEPTION;
             }
@@ -193,6 +193,8 @@ public class EnchantmentNode implements Node {
             context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
+
+        rootNode.addChild(node);
 
         // ... get [<enchantment>]
         node.addChild(getNode);

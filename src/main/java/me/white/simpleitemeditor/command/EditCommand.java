@@ -14,6 +14,7 @@ public class EditCommand {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("edit").build();
 
         for (Node editNode : new Node[]{
+                new AttributeNode(),
                 new BannerNode(),
                 new ColorNode(),
                 new CountNode(),
@@ -37,7 +38,6 @@ public class EditCommand {
         // TODO:
         // ... block ... - edit block data (lectern book, items, metadata)
         // ... script ... - store/execute list of actions to perform. Possibly parameters
-        // ... optimize ... - remove unnecessary nbt tags and optimize them as much as possible
         // some way to prevent `/edit` server command to be overriden
 
 //        if (dispatcher.getRoot().getChild("edit") == null) {
