@@ -100,7 +100,7 @@ public class CountNode implements Node {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
             int count = stack.getCount() + 1;
-            if (count > stack.getMaxCount()) throw OVERFLOW_EXCEPTION;
+            if (count > 99) throw OVERFLOW_EXCEPTION;
             stack.setCount(count);
 
             EditorUtil.setStack(context.getSource(), stack);
@@ -118,7 +118,7 @@ public class CountNode implements Node {
             }
             int count = IntegerArgumentType.getInteger(context, "count");
             int newCount = stack.getCount() + count;
-            if (newCount > stack.getMaxCount() || newCount < 0) {
+            if (newCount > 99 || newCount < 0) {
                 throw OVERFLOW_EXCEPTION;
             }
             stack.setCount(newCount);
@@ -157,7 +157,7 @@ public class CountNode implements Node {
             }
             int count = IntegerArgumentType.getInteger(context, "count");
             int newCount = stack.getCount() - count;
-            if (newCount > stack.getMaxCount() || newCount < 0) {
+            if (newCount > 99 || newCount < 0) {
                 throw OVERFLOW_EXCEPTION;
             }
             stack.setCount(newCount);
