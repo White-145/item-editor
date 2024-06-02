@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -30,7 +31,8 @@ public class EnchantmentNode implements Node {
     public static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
     public static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
     public static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
-    public static final CommandSyntaxException NO_GLINT_OVERRIDE = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noglintoverride")).create();
+    public static final CommandSyntaxException NO_GLINT_OVERRIDE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noglintoverride")).create();
+    public static final CommandSyntaxException GLINT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.glintalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.enchantment.get";
     private static final String OUTPUT_GET_ENCHANTMENT = "commands.edit.enchantment.getenchantment";
     private static final String OUTPUT_SET = "commands.edit.enchantment.set";
@@ -77,11 +79,11 @@ public class EnchantmentNode implements Node {
         return stack.contains(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
     }
 
-    private static boolean getGlint(ItemStack stack) {
-        if (hasGlintOverride(stack)) {
-            return stack.get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+    private static boolean getGlintOverride(ItemStack stack) {
+        if (!hasGlintOverride(stack)) {
+            return false;
         }
-        return hasEnchantments(stack);
+        return stack.get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
     }
 
     private static void setGlint(ItemStack stack, boolean glint) {
@@ -208,11 +210,16 @@ public class EnchantmentNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            context.getSource().sendFeedback(Text.translatable(getGlint(stack) ? OUTPUT_GLINT_GET_ENABLED : OUTPUT_GLINT_GET_DISABLED));
+            if (!hasGlintOverride(stack)) {
+                throw NO_GLINT_OVERRIDE_EXCEPTION;
+            }
+            context.getSource().sendFeedback(Text.translatable(getGlintOverride(stack) ? OUTPUT_GLINT_GET_ENABLED : OUTPUT_GLINT_GET_DISABLED));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> glintToggleNode = ClientCommandManager.literal("toggle").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> glintSetNode = ClientCommandManager.literal("set").build();
+
+        ArgumentCommandNode<FabricClientCommandSource, Boolean> glintSetGlintNode = ClientCommandManager.argument("glint", BoolArgumentType.bool()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -220,11 +227,14 @@ public class EnchantmentNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            boolean glint = getGlint(stack);
-            setGlint(stack, !glint);
+            boolean glint = BoolArgumentType.getBool(context, "glint");
+            if (glint == getGlintOverride(stack)) {
+                throw GLINT_ALREADY_IS_EXCEPTION;
+            }
+            setGlint(stack, glint);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(glint ? OUTPUT_GLINT_DISABLE : OUTPUT_GLINT_ENABLE));
+            context.getSource().sendFeedback(Text.translatable(glint ? OUTPUT_GLINT_ENABLE : OUTPUT_GLINT_DISABLE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -237,7 +247,7 @@ public class EnchantmentNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             if (!hasGlintOverride(stack)) {
-                throw NO_GLINT_OVERRIDE;
+                throw NO_GLINT_OVERRIDE_EXCEPTION;
             }
             removeGlintOverride(stack);
 
@@ -283,8 +293,9 @@ public class EnchantmentNode implements Node {
         node.addChild(glintNode);
         // ... get
         glintNode.addChild(glintGetNode);
-        // ... toggle
-        glintNode.addChild(glintToggleNode);
+        // ... set <glint>
+        glintNode.addChild(glintSetNode);
+        glintSetNode.addChild(glintSetGlintNode);
         // ... reset
         glintNode.addChild(glintResetNode);
 

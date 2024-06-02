@@ -22,4 +22,5 @@ public class SimpleItemEditor implements ClientModInitializer {
     // - removed `/edit whitelist` for now
     // ~ reworked `/edit attribute`
     // ~ renamed `/edit durability percent` to `... progress`
+    // ~ replaced `... toggle` commands with `... set <bool>`
 }

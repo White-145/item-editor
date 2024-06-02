@@ -1,8 +1,10 @@
 package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import me.white.simpleitemeditor.util.EditorUtil;
@@ -16,6 +18,7 @@ import net.minecraft.text.Text;
 
 public class UnbreakableNode implements Node {
     public static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.isntdamagable")).create();
+    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.alreadyis")).create();
     private static final String OUTPUT_GET_ENABLED = "commands.edit.unbreakable.getenabled";
     private static final String OUTPUT_GET_DISABLED = "commands.edit.unbreakable.getdisabled";
     private static final String OUTPUT_ENABLE = "commands.edit.unbreakable.enable";
@@ -54,7 +57,9 @@ public class UnbreakableNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> toggleNode = ClientCommandManager.literal("toggle").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+
+        ArgumentCommandNode<FabricClientCommandSource, Boolean> setUnbreakableNode = ClientCommandManager.argument("unbreakable", BoolArgumentType.bool()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -65,11 +70,14 @@ public class UnbreakableNode implements Node {
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGABLE_EXCEPTION;
             }
-            boolean isUnbreakable = isUnbreakable(stack);
-            setUnbreakable(stack, !isUnbreakable);
+            boolean isUnbreakable = BoolArgumentType.getBool(context, "unbreakable");
+            if (isUnbreakable == isUnbreakable(stack)) {
+                throw ALREADY_IS_EXCEPTION;
+            }
+            setUnbreakable(stack, isUnbreakable);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_DISABLE : OUTPUT_ENABLE));
+            context.getSource().sendFeedback(Text.translatable(isUnbreakable ? OUTPUT_ENABLE : OUTPUT_DISABLE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -78,7 +86,8 @@ public class UnbreakableNode implements Node {
         // ... get
         node.addChild(getNode);
 
-        // ... toggle
-        node.addChild(toggleNode);
+        // ... set <unbreakable>
+        node.addChild(setNode);
+        setNode.addChild(setUnbreakableNode);
     }
 }
