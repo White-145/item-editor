@@ -18,6 +18,7 @@ public class EditCommand {
                 new BannerNode(),
                 new ColorNode(),
                 new CountNode(),
+                new DataNode(),
                 new DurabilityNode(),
                 new EnchantmentNode(),
                 new EquipNode(),
