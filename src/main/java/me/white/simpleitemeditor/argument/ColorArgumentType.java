@@ -1,16 +1,15 @@
 package me.white.simpleitemeditor.argument;
 
-import java.util.Collection;
-import java.util.List;
-
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
+
+import java.util.Collection;
+import java.util.List;
 
 public class ColorArgumentType implements ArgumentType<Integer> {
     private static final SimpleCommandExceptionType INVALID_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.error.invalidcolor"));
@@ -42,7 +41,7 @@ public class ColorArgumentType implements ArgumentType<Integer> {
                 reader.setCursor(cursor);
                 throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
             } else {
-                rgb >>= 4;
+                rgb <<= 4;
                 rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
             }
         }

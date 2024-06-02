@@ -23,4 +23,5 @@ public class SimpleItemEditor implements ClientModInitializer {
     // ~ reworked `/edit attribute`
     // ~ renamed `/edit durability percent` to `... progress`
     // ~ replaced `... toggle` commands with `... set <bool>`
+    // ~ moved visbility flags to their respective nodes
 }

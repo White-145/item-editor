@@ -1,16 +1,9 @@
 package me.white.simpleitemeditor.argument;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -23,6 +16,12 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class TextArgumentType implements ArgumentType<Text> {
     public static final SimpleCommandExceptionType INVALID_HEX_CHARACTER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidhex"));
@@ -60,14 +59,13 @@ public class TextArgumentType implements ArgumentType<Text> {
             case 'x' -> {
                 reader.skip();
                 if (!reader.canRead(2)) {
-                    reader.setCursor(cursor + 1);
                     throw INVALID_HEX_CHARACTER_EXCEPTION.createWithContext(reader);
                 }
                 result = 0;
                 for (int i = 0; i < 2; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result >>= 4;
+                        result <<= 4;
                         result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);
@@ -79,14 +77,13 @@ public class TextArgumentType implements ArgumentType<Text> {
             case 'u' -> {
                 reader.skip();
                 if (!reader.canRead(4)) {
-                    reader.setCursor(cursor + 1);
                     throw INVALID_UNICODE_CHARACTER_EXCEPTION.createWithContext(reader);
                 }
                 result = 0;
                 for (int i = 0; i < 4; ++i) {
                     char ch = Character.toLowerCase(reader.read());
                     if (isHex(ch)) {
-                        result >>= 4;
+                        result <<= 4;
                         result += ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
                     } else {
                         reader.setCursor(cursor + 1);
