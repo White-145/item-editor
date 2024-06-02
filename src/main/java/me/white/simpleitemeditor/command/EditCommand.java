@@ -25,6 +25,7 @@ public class EditCommand {
                 new LoreNode(),
                 new MaterialNode(),
                 new NameNode(),
+                new RarityNode(),
                 new TrimNode(),
                 new UnbreakableNode()
         }) {

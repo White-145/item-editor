@@ -38,7 +38,7 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getRegistryEntry(CommandContext<FabricClientCommandSource> context, RegistryKey<? extends Registry<T>> registry, String name) throws CommandSyntaxException {
+    public static <T> T getRegistryEntry(CommandContext<FabricClientCommandSource> context, String name, RegistryKey<? extends Registry<T>> registry) throws CommandSyntaxException {
         RegistryEntry.Reference<?> reference = context.getArgument(name, RegistryEntry.Reference.class);
         RegistryKey<?> registryKey = reference.registryKey();
         if (!registryKey.getRegistry().equals(registry.getValue())) {

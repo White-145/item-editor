@@ -46,7 +46,7 @@ public class MaterialNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            Item item = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ITEM, "material");
+            Item item = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.ITEM);
             if (stack.getItem() == item) {
                 throw ALREADY_IS_EXCEPTION;
             }

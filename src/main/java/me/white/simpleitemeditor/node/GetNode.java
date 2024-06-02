@@ -64,7 +64,7 @@ public class GetNode implements Node {
 
         rootNode.addChild(node);
 
-        // ... get [<item>] [<count>]
+        // ... [<item>] [<count>]
         node.addChild(itemNode);
         itemNode.addChild(itemCountNode);
     }

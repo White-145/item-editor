@@ -94,8 +94,8 @@ public class TrimNode implements Node {
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
-            ArmorTrimPattern pattern = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.TRIM_PATTERN, "pattern");
-            ArmorTrimMaterial material = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.TRIM_MATERIAL, "material");
+            ArmorTrimPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.TRIM_PATTERN);
+            ArmorTrimMaterial material = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.TRIM_MATERIAL);
             setTrim(stack, context.getSource().getRegistryManager(), pattern, material);
 
             EditorUtil.setStack(context.getSource(), stack);

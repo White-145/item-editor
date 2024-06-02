@@ -249,7 +249,7 @@ public class BannerNode implements Node {
             if (layers.isEmpty() && index != 0) {
                 throw NO_LAYERS_EXCEPTION;
             }
-            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.BANNER_PATTERN, "pattern");
+            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
             DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             if (layers.size() < index) {
@@ -315,7 +315,7 @@ public class BannerNode implements Node {
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
-            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.BANNER_PATTERN, "pattern");
+            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
             DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
@@ -348,7 +348,7 @@ public class BannerNode implements Node {
                 throw NO_LAYERS_EXCEPTION;
             }
             int index = IntegerArgumentType.getInteger(context, "index");
-            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.BANNER_PATTERN, "pattern");
+            BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
             DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));

@@ -168,7 +168,7 @@ public class AttributeNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
-            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
+            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, EntityAttributeModifier.Operation.ADD_VALUE);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(RegistryEntry.of(attribute), modifier, AttributeModifierSlot.ANY);
@@ -191,7 +191,7 @@ public class AttributeNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
-            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
+            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
             EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
@@ -215,7 +215,7 @@ public class AttributeNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             String name = StringArgumentType.getString(context, "name");
-            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ATTRIBUTE, "attribute");
+            EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
             AttributeModifierSlot slot = EnumArgumentType.getEnum(context, "slot", AttributeModifierSlot.class);

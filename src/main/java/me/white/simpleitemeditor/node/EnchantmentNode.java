@@ -120,7 +120,7 @@ public class EnchantmentNode implements Node {
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
-            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = getEnchantments(stack);
             if (!enchantments.containsKey(enchantment)) {
                 throw DOESNT_EXIST_EXCEPTION;
@@ -140,7 +140,7 @@ public class EnchantmentNode implements Node {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
-            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == 1) {
                 throw ALREADY_EXISTS_EXCEPTION;
@@ -161,7 +161,7 @@ public class EnchantmentNode implements Node {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
-            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             int level = IntegerArgumentType.getInteger(context, "level");
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == level) {
@@ -188,7 +188,7 @@ public class EnchantmentNode implements Node {
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
-            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, RegistryKeys.ENCHANTMENT, "enchantment");
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (!enchantments.containsKey(enchantment)) {
                 throw DOESNT_EXIST_EXCEPTION;
