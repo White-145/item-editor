@@ -8,13 +8,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 
 public class TextUtil {
     private static final String OUTPUT_COPY = "chat.copyable.copy";
-    private static final String OUTPUT_VEC3 = "chat.copyable.vec3";
-    private static final String OUTPUT_VEC2 = "chat.copyable.vec2";
 
     public static MutableText copyable(Text text, String copy) {
         return Text.empty()
@@ -47,19 +43,6 @@ public class TextUtil {
         return copyable(Text.literal(str), str);
     }
 
-    public static MutableText copyable(Vec3d vec) {
-        String x = String.format("%.2f", vec.x);
-        String y = String.format("%.2f", vec.y);
-        String z = String.format("%.2f", vec.z);
-        return copyable(Text.translatable(OUTPUT_VEC3, x, y, z), vec.x + " " + vec.y + " " + vec.z);
-    }
-
-    public static MutableText copyable(Vec2f vec) {
-        String x = String.format("%.2f", vec.x);
-        String y = String.format("%.2f", vec.y);
-        return copyable(Text.translatable(OUTPUT_VEC2, x, y), vec.x + " " + vec.y);
-    }
-
     public static MutableText copyable(NbtElement nbt) {
         return copyable(NbtHelper.toPrettyPrintedText(nbt), nbt.toString());
     }
@@ -73,13 +56,6 @@ public class TextUtil {
     }
 
     public static MutableText url(String url) {
-        return Text.empty()
-                .append(url)
-                .setStyle(Style.EMPTY
-                        .withColor(Formatting.BLUE)
-                        .withUnderline(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
-                        .withInsertion(url)
-                );
+        return Text.empty().append(url).setStyle(Style.EMPTY.withColor(Formatting.BLUE).withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)).withInsertion(url));
     }
 }

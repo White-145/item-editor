@@ -17,10 +17,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class NameNode implements Node {
-    public static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.alreadyis")).create();
-    public static final CommandSyntaxException NO_CUSTOM_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.nocustomname")).create();
-    public static final CommandSyntaxException CUSTOM_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.customalreadyis")).create();
+    private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.alreadyis")).create();
+    private static final CommandSyntaxException NO_CUSTOM_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.nocustomname")).create();
+    private static final CommandSyntaxException CUSTOM_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.customalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.name.get";
     private static final String OUTPUT_SET = "commands.edit.name.set";
     private static final String OUTPUT_RESET = "commands.edit.name.reset";
@@ -84,10 +84,10 @@ public class NameNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -102,10 +102,10 @@ public class NameNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Text> setNameNode = ClientCommandManager.argument("name", TextArgumentType.text()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -121,10 +121,10 @@ public class NameNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -155,10 +155,10 @@ public class NameNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> customSetNode = ClientCommandManager.literal("set").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -173,10 +173,10 @@ public class NameNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Text> customSetNameNode = ClientCommandManager.argument("name", TextArgumentType.text()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -192,10 +192,10 @@ public class NameNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> customResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }

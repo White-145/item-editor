@@ -16,7 +16,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Rarity;
 
 public class RarityNode implements Node {
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.rarity.error.alreadyis")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.rarity.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.rarity.get";
     private static final String OUTPUT_SET = "commands.edit.rarity.set";
 
@@ -46,10 +46,10 @@ public class RarityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Rarity> setRarityNode = ClientCommandManager.argument("rarity", EnumArgumentType.enumArgument(Rarity.class)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }

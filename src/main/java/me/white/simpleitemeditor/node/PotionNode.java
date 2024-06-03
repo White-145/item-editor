@@ -34,14 +34,14 @@ import net.minecraft.util.Formatting;
 import java.util.*;
 
 public class PotionNode implements Node {
-    public static final CommandSyntaxException ISNT_POTION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.cannotedit")).create();
-    public static final CommandSyntaxException NO_EFFECTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.noeffects")).create();
-    public static final CommandSyntaxException NO_SUCH_EFFECT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nosucheffect")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.alreadyis")).create();
-    public static final CommandSyntaxException NO_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nocolor")).create();
-    public static final CommandSyntaxException COLOR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.coloralreadyis")).create();
-    public static final CommandSyntaxException NO_TYPE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.notype")).create();
-    public static final CommandSyntaxException TYPE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.typealreadyis")).create();
+    private static final CommandSyntaxException ISNT_POTION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.cannotedit")).create();
+    private static final CommandSyntaxException NO_EFFECTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.noeffects")).create();
+    private static final CommandSyntaxException NO_SUCH_EFFECT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nosucheffect")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.alreadyis")).create();
+    private static final CommandSyntaxException NO_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nocolor")).create();
+    private static final CommandSyntaxException COLOR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.coloralreadyis")).create();
+    private static final CommandSyntaxException NO_TYPE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.notype")).create();
+    private static final CommandSyntaxException TYPE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.typealreadyis")).create();
     private static final String OUTPUT_TYPE_GET = "commands.edit.potion.gettype";
     private static final String OUTPUT_TYPE_SET = "commands.edit.potion.settype";
     private static final String OUTPUT_TYPE_RESET = "commands.edit.potion.resettype";
@@ -204,10 +204,10 @@ public class PotionNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<StatusEffect>> setEffectNode = ClientCommandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectDurationNode = ClientCommandManager.argument("duration", AlternativeArgumentType.argument(DurationArgumentType.duration(), DURATION_CONSTS)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -224,10 +224,10 @@ public class PotionNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectDurationAmplifierNode = ClientCommandManager.argument("amplifier", IntegerArgumentType.integer(StatusEffectInstance.MIN_AMPLIFIER, StatusEffectInstance.MAX_AMPLIFIER)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -245,10 +245,10 @@ public class PotionNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesNode = ClientCommandManager.argument("particles", BoolArgumentType.bool()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -267,10 +267,10 @@ public class PotionNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesIconNode = ClientCommandManager.argument("icon", BoolArgumentType.bool()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -290,10 +290,10 @@ public class PotionNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesIconAmbientNode = ClientCommandManager.argument("ambient", BoolArgumentType.bool()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -316,10 +316,10 @@ public class PotionNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<StatusEffect>> removeEffectNode = ClientCommandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -345,10 +345,10 @@ public class PotionNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -381,10 +381,10 @@ public class PotionNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> colorSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> colorSetColorNode = ClientCommandManager.argument("color", ColorArgumentType.color()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -400,10 +400,10 @@ public class PotionNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> colorResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -436,10 +436,10 @@ public class PotionNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> typeSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Potion>> typeSetTypeNode = ClientCommandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.POTION, registryAccess)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -455,10 +455,10 @@ public class PotionNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> typeResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }

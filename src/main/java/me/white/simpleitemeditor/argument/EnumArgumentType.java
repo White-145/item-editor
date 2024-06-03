@@ -1,10 +1,5 @@
 package me.white.simpleitemeditor.argument;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -12,13 +7,15 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
-public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
-    public static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
+public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
+    private static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
     private HashMap<String, T> suggestions;
 
     private EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
@@ -38,7 +35,7 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
         return new EnumArgumentType<>(clazz, formatter);
     }
 
-    public static <T> T getEnum(CommandContext<FabricClientCommandSource> context, String name, Class<T> clazz) {
+    public static <T> T getEnum(CommandContext<?> context, String name, Class<T> clazz) {
         return context.getArgument(name, clazz);
     }
 

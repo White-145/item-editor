@@ -37,14 +37,14 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 
 public class DataNode implements Node {
-    public static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
-    public static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
-    public static final CommandSyntaxException TYPE_MISMATCH_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.typemismatch")).create();
-    public static final CommandSyntaxException NOT_LIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notlist")).create();
-    public static final CommandSyntaxException NOT_COMPOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notcompound")).create();
-    public static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
-    public static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
-    public static final CommandSyntaxException NOT_APPLICABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notapplicable")).create();
+    private static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
+    private static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
+    private static final CommandSyntaxException TYPE_MISMATCH_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.typemismatch")).create();
+    private static final CommandSyntaxException NOT_LIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notlist")).create();
+    private static final CommandSyntaxException NOT_COMPOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notcompound")).create();
+    private static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
+    private static final CommandSyntaxException SET_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.setalreadyhas")).create();
+    private static final CommandSyntaxException NOT_APPLICABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notapplicable")).create();
     private static final String OUTPUT_GET = "commands.edit.data.get";
     private static final String OUTPUT_APPEND = "commands.edit.data.append";
     private static final String OUTPUT_INSERT = "commands.edit.data.insert";
@@ -114,10 +114,10 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceAppendPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceAppendPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -162,10 +162,10 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, Integer> sourceInsertPathIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceInsertPathIndexValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -212,10 +212,10 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourcePrependPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourcePrependPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -258,10 +258,10 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceSetPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceSetPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -293,10 +293,10 @@ public class DataNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> sourceMergeNode = ClientCommandManager.literal("merge").build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtCompound> sourceMergeValueNode = ClientCommandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -320,12 +320,12 @@ public class DataNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceMergeValuePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+            if (!EditorUtil.hasCreative(context.getSource())) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
@@ -369,10 +369,10 @@ public class DataNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> sourceRemoveNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceRemovePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -398,10 +398,10 @@ public class DataNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> sourceClearNode = ClientCommandManager.literal("clear").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }

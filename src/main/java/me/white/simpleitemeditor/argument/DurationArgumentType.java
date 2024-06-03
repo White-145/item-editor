@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 
 import java.util.Arrays;
@@ -16,9 +15,9 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class DurationArgumentType implements ArgumentType<Integer> {
-    public static final Collection<String> EXAMPLES = Arrays.asList("0m", "0s", "0t", "0");
-    public static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.duration.error.invalidunit"));
-    public static final Dynamic2CommandExceptionType DURATION_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.stringifiedTranslatable("argument.duration.error.toolow", minimum, value));
+    private static final Collection<String> EXAMPLES = Arrays.asList("0m", "0s", "0t", "0");
+    private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.duration.error.invalidunit"));
+    private static final Dynamic2CommandExceptionType DURATION_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.stringifiedTranslatable("argument.duration.error.toolow", minimum, value));
     private static final String SUGGESTION_TICKS = "argument.duration.suggestionticks";
     private static final String SUGGESTION_SECONDS = "argument.duration.suggestionseconds";
     private static final String SUGGESTION_MINUTES = "argument.duration.suggestionminutes";
@@ -37,7 +36,7 @@ public class DurationArgumentType implements ArgumentType<Integer> {
         return new DurationArgumentType(min);
     }
 
-    public static Integer getDuration(CommandContext<FabricClientCommandSource> context, String name) {
+    public static Integer getDuration(CommandContext<?> context, String name) {
         return context.getArgument(name, Integer.class);
     }
 

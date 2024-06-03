@@ -1,15 +1,15 @@
 package me.white.simpleitemeditor.argument;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentType<List<T>> {
     private U argumentType;
@@ -29,7 +29,7 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
     }
 
     @SuppressWarnings("unchecked")
-    public static <T, U extends ArgumentType<T>, S> List<T> getListArgument(CommandContext<S> context, String name) {
+    public static <T, U extends ArgumentType<T>> List<T> getListArgument(CommandContext<?> context, String name) {
         return context.getArgument(name, List.class);
     }
 
@@ -46,7 +46,6 @@ public class ListArgumentType<T, U extends ArgumentType<T>> implements ArgumentT
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        // i can feel that this is not the best approach, but idk how to implement it differently
         String remaining = builder.getRemaining();
         int lastStart = remaining.lastIndexOf(delimeter) + 1;
         return argumentType.listSuggestions(context, new SuggestionsBuilder(builder.getInput(), builder.getStart() + lastStart));

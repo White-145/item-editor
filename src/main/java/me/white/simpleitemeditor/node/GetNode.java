@@ -18,7 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class GetNode implements Node {
-    public static final CommandSyntaxException HAS_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.hasitem")).create();
+    private static final CommandSyntaxException HAS_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.get.error.hasitem")).create();
     private static final String OUTPUT_ITEM = "commands.edit.get.item";
     private static final String OUTPUT_GET = "commands.edit.get.get";
 

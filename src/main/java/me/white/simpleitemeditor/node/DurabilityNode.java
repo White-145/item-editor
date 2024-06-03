@@ -16,12 +16,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class DurabilityNode implements Node {
-    public static final CommandSyntaxException STACKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.stackable")).create();
-    public static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.isntdamagable")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.alreadyis")).create();
-    public static final CommandSyntaxException TOO_MUCH_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.toomuch")).create();
-    public static final CommandSyntaxException MAX_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.maxalreadyis")).create();
-    public static final CommandSyntaxException NO_MAX_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.nomax")).create();
+    private static final CommandSyntaxException STACKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.stackable")).create();
+    private static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.isntdamagable")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.alreadyis")).create();
+    private static final CommandSyntaxException TOO_MUCH_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.toomuch")).create();
+    private static final CommandSyntaxException MAX_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.maxalreadyis")).create();
+    private static final CommandSyntaxException NO_MAX_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.nomax")).create();
     private static final String OUTPUT_GET = "commands.edit.durability.get";
     private static final String OUTPUT_SET = "commands.edit.durability.set";
     private static final String OUTPUT_RESET = "commands.edit.durability.reset";
@@ -73,10 +73,10 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager.argument("durability", IntegerArgumentType.integer(0)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -101,10 +101,10 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> progressNode = ClientCommandManager.literal("progress").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Double> progressProgressNode = ClientCommandManager.argument("progress", DoubleArgumentType.doubleArg(0, 100)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -124,10 +124,10 @@ public class DurabilityNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -166,10 +166,10 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> maxSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> maxSetDurabilityNode = ClientCommandManager.argument("durability", IntegerArgumentType.integer(1)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -188,10 +188,10 @@ public class DurabilityNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> maxResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }

@@ -37,7 +37,7 @@ public class EditorUtil {
 
     public static void setSecondaryStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
         if (getSecondaryStack(source) == stack) {
-            SimpleItemEditor.LOGGER.warn("Using setSecondaryStack without clonning result of getSecondaryStack (If you see it report to github pls)");
+            SimpleItemEditor.LOGGER.warn("Using setSecondaryStack without clonning result of getSecondaryStack (If you see this, report to github)");
         }
         if (!hasCreative(source)) {
             throw NOT_CREATIVE_EXCEPTION;
@@ -53,7 +53,7 @@ public class EditorUtil {
 
     public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
         if (getStack(source) == stack) {
-            SimpleItemEditor.LOGGER.warn("Using setStack without clonning result of getStack (If you see it report to github pls)");
+            SimpleItemEditor.LOGGER.warn("Using setStack without clonning result of getStack (If you see this, report to github)");
         }
         if (!hasCreative(source)) {
             throw NOT_CREATIVE_EXCEPTION;

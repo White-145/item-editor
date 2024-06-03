@@ -7,7 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -23,7 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
-    public static final SimpleCommandExceptionType INVALID_ENTRY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.registryargument.error.invalidentry"));
+    private static final SimpleCommandExceptionType INVALID_ENTRY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.registryargument.error.invalidentry"));
     private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
     private final CommandRegistryAccess registryAccess;
     private final RegistryKey<? extends Registry<T>> registry;
@@ -38,7 +37,7 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getRegistryEntry(CommandContext<FabricClientCommandSource> context, String name, RegistryKey<? extends Registry<T>> registry) throws CommandSyntaxException {
+    public static <T> T getRegistryEntry(CommandContext<?> context, String name, RegistryKey<? extends Registry<T>> registry) throws CommandSyntaxException {
         RegistryEntry.Reference<?> reference = context.getArgument(name, RegistryEntry.Reference.class);
         RegistryKey<?> registryKey = reference.registryKey();
         if (!registryKey.getRegistry().equals(registry.getValue())) {

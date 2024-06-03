@@ -16,10 +16,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class UnbreakableNode implements Node {
-    public static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.isntdamagable")).create();
-    public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.alreadyis")).create();
-    public static final CommandSyntaxException NOT_UNBREAKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.notunbreakable")).create();
-    public static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.tooltipalreadyis")).create();
+    private static final CommandSyntaxException ISNT_DAMAGABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.isntdamagable")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.alreadyis")).create();
+    private static final CommandSyntaxException NOT_UNBREAKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.notunbreakable")).create();
+    private static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.unbreakable.error.tooltipalreadyis")).create();
     private static final String OUTPUT_GET_ENABLED = "commands.edit.unbreakable.getenabled";
     private static final String OUTPUT_GET_DISABLED = "commands.edit.unbreakable.getdisabled";
     private static final String OUTPUT_ENABLE = "commands.edit.unbreakable.enable";
@@ -77,10 +77,10 @@ public class UnbreakableNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setUnbreakableNode = ClientCommandManager.argument("unbreakable", BoolArgumentType.bool()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
@@ -117,10 +117,10 @@ public class UnbreakableNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> tooltipSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> tooltipSetShowNode = ClientCommandManager.argument("show", BoolArgumentType.bool()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
+            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
