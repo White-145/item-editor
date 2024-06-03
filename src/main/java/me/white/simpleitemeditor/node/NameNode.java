@@ -23,10 +23,10 @@ public class NameNode implements Node {
     public static final CommandSyntaxException CUSTOM_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.customalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.name.get";
     private static final String OUTPUT_SET = "commands.edit.name.set";
-    private static final String OUTPUT_REMOVE = "commands.edit.name.remove";
+    private static final String OUTPUT_RESET = "commands.edit.name.reset";
     private static final String OUTPUT_CUSTOM_GET = "commands.edit.name.getcustom";
     private static final String OUTPUT_CUSTOM_SET = "commands.edit.name.setcustom";
-    private static final String OUTPUT_CUSTOM_REMOVE = "commands.edit.name.removecustom";
+    private static final String OUTPUT_CUSTOM_RESET = "commands.edit.name.resetcustom";
 
     private static boolean hasName(ItemStack stack) {
         return stack.contains(DataComponentTypes.ITEM_NAME);
@@ -120,7 +120,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -134,7 +134,7 @@ public class NameNode implements Node {
             setName(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -191,7 +191,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> customRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> customResetNode = ClientCommandManager.literal("reset").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
@@ -205,7 +205,7 @@ public class NameNode implements Node {
             setCustomName(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CUSTOM_REMOVE));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_CUSTOM_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -218,8 +218,8 @@ public class NameNode implements Node {
         node.addChild(setNode);
         setNode.addChild(setNameNode);
 
-        // ... remove
-        node.addChild(removeNode);
+        // ... reset
+        node.addChild(resetNode);
 
         // ... custom ...
         node.addChild(customNode);
@@ -228,7 +228,7 @@ public class NameNode implements Node {
         // ... set [<name>]
         customNode.addChild(customSetNode);
         customSetNode.addChild(customSetNameNode);
-        // ... remove
-        customNode.addChild(customRemoveNode);
+        // ... reset
+        customNode.addChild(customResetNode);
     }
 }

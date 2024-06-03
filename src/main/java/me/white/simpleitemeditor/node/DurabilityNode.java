@@ -49,7 +49,7 @@ public class DurabilityNode implements Node {
         stack.set(DataComponentTypes.MAX_DAMAGE, maxDamage);
     }
 
-    private static void removeMaxDamage(ItemStack stack) {
+    private static void resetMaxDamage(ItemStack stack) {
         stack.remove(DataComponentTypes.MAX_DAMAGE);
     }
 
@@ -201,7 +201,7 @@ public class DurabilityNode implements Node {
             if (!hasMaxDamage(stack)) {
                 throw NO_MAX_EXCEPTION;
             }
-            removeMaxDamage(stack);
+            resetMaxDamage(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
             context.getSource().sendFeedback(Text.translatable(OUTPUT_MAX_RESET));

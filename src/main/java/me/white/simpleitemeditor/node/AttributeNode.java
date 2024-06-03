@@ -2,13 +2,14 @@ package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.DoubleArgumentType;
 import me.white.simpleitemeditor.argument.EnumArgumentType;
+import me.white.simpleitemeditor.argument.AlternativeArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -26,9 +27,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class AttributeNode implements Node {
     public static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
@@ -45,6 +44,12 @@ public class AttributeNode implements Node {
     private static final String OUTPUT_TOOLTIP_GET_DISABLED = "commands.edit.attribute.tooltipgetdisabled";
     private static final String OUTPUT_TOOLTIP_ENABLE = "commands.edit.attribute.tooltipenable";
     private static final String OUTPUT_TOOLTIP_DISABLE = "commands.edit.attribute.tooltipdisable";
+    private static final Map<String, Double> VALUE_CONSTS = new HashMap<>();
+
+    static {
+        VALUE_CONSTS.put("infinity", Double.POSITIVE_INFINITY);
+        VALUE_CONSTS.put("-infinity", Double.NEGATIVE_INFINITY);
+    }
 
     private static String operationFormatter(EntityAttributeModifier.Operation operation) {
         return switch (operation) {
@@ -172,7 +177,7 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<EntityAttribute>> setNameAttributeNode = ClientCommandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Double> setNameAttributeAmountNode = ClientCommandManager.argument("amount", DoubleArgumentType.doubleArg(true, false)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, Double> setNameAttributeAmountNode = ClientCommandManager.argument("amount", AlternativeArgumentType.argument(DoubleArgumentType.doubleArg(), VALUE_CONSTS)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;

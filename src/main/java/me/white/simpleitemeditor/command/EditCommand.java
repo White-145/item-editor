@@ -27,6 +27,7 @@ public class EditCommand {
                 new LoreNode(),
                 new MaterialNode(),
                 new NameNode(),
+                new PotionNode(),
                 new RarityNode(),
                 new TrimNode(),
                 new UnbreakableNode()
@@ -43,8 +44,6 @@ public class EditCommand {
         // ... script ... - store/execute list of actions to perform. Possibly parameters
         // some way to prevent `/edit` server command to be overriden
 
-//        if (dispatcher.getRoot().getChild("edit") == null) {
-            dispatcher.getRoot().addChild(node);
-//        }
+        dispatcher.getRoot().addChild(node);
     }
 }

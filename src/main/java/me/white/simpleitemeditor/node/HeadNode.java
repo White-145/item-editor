@@ -1,5 +1,29 @@
 package me.white.simpleitemeditor.node;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import me.white.simpleitemeditor.util.EditorUtil;
+import me.white.simpleitemeditor.util.TextUtil;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.text.Text;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,31 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-
-import me.white.simpleitemeditor.util.EditorUtil;
-import me.white.simpleitemeditor.util.TextUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-
 public class HeadNode implements Node {
     public static final CommandSyntaxException ISNT_HEAD_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.isnthead")).create();
     public static final CommandSyntaxException NO_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.notexture")).create();
@@ -51,7 +50,7 @@ public class HeadNode implements Node {
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
-    private static final String OUTPUT_TEXTURE_REMOVE = "commands.edit.head.textureremove";
+    private static final String OUTPUT_TEXTURE_RESET = "commands.edit.head.texturereset";
     private static final String OUTPUT_TEXTURE_SET = "commands.edit.head.textureset";
     private static final String OUTPUT_TEXTURE_CUSTOM_SET = "commands.edit.head.texturecustomset";
     private static final String OUTPUT_TEXTURE_CUSTOM_OK = "commands.edit.head.texturecustomok";
@@ -95,7 +94,7 @@ public class HeadNode implements Node {
         stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.of(owner), Optional.empty(), new PropertyMap()));
     }
 
-    private static void removeProfile(ItemStack stack) {
+    private static void resetProfile(ItemStack stack) {
         stack.remove(DataComponentTypes.PROFILE);
     }
 
@@ -263,7 +262,7 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -277,10 +276,10 @@ public class HeadNode implements Node {
             if (!hasProfile(stack)) {
                 throw NO_TEXTURE_EXCEPTION;
             }
-            removeProfile(stack);
+            resetProfile(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -298,7 +297,7 @@ public class HeadNode implements Node {
         setNode.addChild(setTextureNode);
         setTextureNode.addChild(setTextureTextureNode);
 
-        // ... remove
-        node.addChild(removeNode);
+        // ... reset
+        node.addChild(resetNode);
     }
 }

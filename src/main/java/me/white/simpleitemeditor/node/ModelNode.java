@@ -21,7 +21,7 @@ public class ModelNode implements Node {
     public static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.model.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.model.get";
     private static final String OUTPUT_SET = "commands.edit.model.set";
-    private static final String OUTPUT_REMOVE = "commands.edit.model.remove";
+    private static final String OUTPUT_RESET = "commands.edit.model.reset";
 
     private static boolean hasModel(ItemStack stack) {
         return stack.contains(DataComponentTypes.CUSTOM_MODEL_DATA);
@@ -80,7 +80,7 @@ public class ModelNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeModelNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -94,7 +94,7 @@ public class ModelNode implements Node {
             setModel(stack, 0);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -107,7 +107,7 @@ public class ModelNode implements Node {
         node.addChild(setNode);
         setNode.addChild(setModelNode);
 
-        // ... remove
-        node.addChild(removeModelNode);
+        // ... reset
+        node.addChild(resetNode);
     }
 }

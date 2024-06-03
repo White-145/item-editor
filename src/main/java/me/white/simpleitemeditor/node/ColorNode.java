@@ -25,7 +25,7 @@ public class ColorNode implements Node {
     public static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.tooltipalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.color.get";
     private static final String OUTPUT_SET = "commands.edit.color.set";
-    private static final String OUTPUT_REMOVE = "commands.edit.color.remove";
+    private static final String OUTPUT_RESET = "commands.edit.color.reset";
     private static final String OUTPUT_TOOLTIP_GET_ENABLED = "commands.edit.color.tooltipgetenabled";
     private static final String OUTPUT_TOOLTIP_GET_DISABLED = "commands.edit.color.tooltipgetdisabled";
     private static final String OUTPUT_TOOLTIP_ENABLE = "commands.edit.color.tooltipenable";
@@ -46,7 +46,7 @@ public class ColorNode implements Node {
         return stack.get(DataComponentTypes.DYED_COLOR).rgb();
     }
 
-    private static void removeColor(ItemStack stack) {
+    private static void resetColor(ItemStack stack) {
         stack.remove(DataComponentTypes.DYED_COLOR);
     }
 
@@ -110,7 +110,7 @@ public class ColorNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -124,10 +124,10 @@ public class ColorNode implements Node {
             if (!hasColor(stack)) {
                 throw NO_COLOR_EXCEPTION;
             }
-            removeColor(stack);
+            resetColor(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -180,8 +180,8 @@ public class ColorNode implements Node {
         node.addChild(setNode);
         setNode.addChild(setColorNode);
 
-        // ... remove
-        node.addChild(removeNode);
+        // ... reset
+        node.addChild(resetNode);
 
         // ... tooltip ...
         node.addChild(tooltipNode);
