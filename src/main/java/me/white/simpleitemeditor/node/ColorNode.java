@@ -25,7 +25,7 @@ public class ColorNode implements Node {
     private static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.color.error.tooltipalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.color.get";
     private static final String OUTPUT_SET = "commands.edit.color.set";
-    private static final String OUTPUT_RESET = "commands.edit.color.reset";
+    private static final String OUTPUT_REMOVE = "commands.edit.color.remove";
     private static final String OUTPUT_TOOLTIP_GET_ENABLED = "commands.edit.color.tooltipgetenabled";
     private static final String OUTPUT_TOOLTIP_GET_DISABLED = "commands.edit.color.tooltipgetdisabled";
     private static final String OUTPUT_TOOLTIP_ENABLE = "commands.edit.color.tooltipenable";
@@ -110,7 +110,7 @@ public class ColorNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -127,7 +127,7 @@ public class ColorNode implements Node {
             resetColor(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_RESET));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -180,8 +180,8 @@ public class ColorNode implements Node {
         node.addChild(setNode);
         setNode.addChild(setColorNode);
 
-        // ... reset
-        node.addChild(resetNode);
+        // ... remove
+        node.addChild(removeNode);
 
         // ... tooltip ...
         node.addChild(tooltipNode);

@@ -52,7 +52,7 @@ public class PotionNode implements Node {
     private static final String OUTPUT_CLEAR = "commands.edit.potion.clear";
     private static final String OUTPUT_COLOR_GET = "commands.edit.potion.getcolor";
     private static final String OUTPUT_COLOR_SET = "commands.edit.potion.setcolor";
-    private static final String OUTPUT_COLOR_RESET = "commands.edit.potion.resetcolor";
+    private static final String OUTPUT_COLOR_REMOVE = "commands.edit.potion.removecolor";
     private static final String OUTPUT_EFFECT = "commands.edit.potion.effect";
     private static final Map<String, Integer> DURATION_CONSTS = new HashMap<>();
 
@@ -399,7 +399,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> colorResetNode = ClientCommandManager.literal("reset").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> colorRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -413,7 +413,7 @@ public class PotionNode implements Node {
             removeColor(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_COLOR_RESET));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_COLOR_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -511,7 +511,7 @@ public class PotionNode implements Node {
         // ... set <color>
         colorNode.addChild(colorSetNode);
         colorSetNode.addChild(colorSetColorNode);
-        // ... reset
-        colorNode.addChild(colorResetNode);
+        // ... remove
+        colorNode.addChild(colorRemoveNode);
     }
 }

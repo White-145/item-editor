@@ -50,7 +50,7 @@ public class HeadNode implements Node {
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
-    private static final String OUTPUT_TEXTURE_RESET = "commands.edit.head.texturereset";
+    private static final String OUTPUT_TEXTURE_REMOVE = "commands.edit.head.textureremove";
     private static final String OUTPUT_TEXTURE_SET = "commands.edit.head.textureset";
     private static final String OUTPUT_TEXTURE_CUSTOM_SET = "commands.edit.head.texturecustomset";
     private static final String OUTPUT_TEXTURE_CUSTOM_OK = "commands.edit.head.texturecustomok";
@@ -262,7 +262,7 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -279,7 +279,7 @@ public class HeadNode implements Node {
             resetProfile(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_RESET));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -297,7 +297,7 @@ public class HeadNode implements Node {
         setNode.addChild(setTextureNode);
         setTextureNode.addChild(setTextureTextureNode);
 
-        // ... reset
-        node.addChild(resetNode);
+        // ... remove
+        node.addChild(removeNode);
     }
 }

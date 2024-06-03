@@ -16,6 +16,7 @@ public class EditCommand {
         for (Node editNode : new Node[]{
                 new AttributeNode(),
                 new BannerNode(),
+                new ComponentNode(),
                 new ColorNode(),
                 new CountNode(),
                 new DataNode(),
@@ -40,7 +41,6 @@ public class EditCommand {
         }
 
         // TODO:
-        // ... block ... - edit block data (lectern book, items, metadata)
         // ... script ... - store/execute list of actions to perform. Possibly parameters
         // some way to prevent `/edit` server command to be overriden
 
