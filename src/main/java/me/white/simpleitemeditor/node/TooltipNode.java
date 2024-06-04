@@ -33,9 +33,9 @@ public class TooltipNode implements Node {
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("tooltip").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, TooltipPart> partNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).build();
+        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").build();
 
-        LiteralCommandNode<FabricClientCommandSource> partGetNode = ClientCommandManager.literal("get").executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, TooltipPart> getPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -47,9 +47,11 @@ public class TooltipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> partSetNode = ClientCommandManager.literal("set").build();
+        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> partSetTooltipNode = ClientCommandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, TooltipPart> setPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).build();
+
+        ArgumentCommandNode<FabricClientCommandSource, Boolean> setPartTooltipNode = ClientCommandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -72,13 +74,14 @@ public class TooltipNode implements Node {
 
         rootNode.addChild(node);
 
-        // ... <part> ...
-        node.addChild(partNode);
-        // ... get
-        partNode.addChild(partGetNode);
-        // ... set <tooltip>
-        partNode.addChild(partSetNode);
-        partSetNode.addChild(partSetTooltipNode);
+        // ... get <part>
+        node.addChild(getNode);
+        getNode.addChild(getPartNode);
+
+        // ... set <part> <tooltip>
+        node.addChild(setNode);
+        setNode.addChild(setPartNode);
+        setPartNode.addChild(setPartTooltipNode);
     }
 
     public enum TooltipPart {
