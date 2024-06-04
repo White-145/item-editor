@@ -92,7 +92,7 @@ public class LoreNode implements Node {
             }
             Text line = lore.get(index);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, index, TextUtil.copyable(line)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LINE, TextUtil.copyable(line)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -123,7 +123,7 @@ public class LoreNode implements Node {
             setLore(stack, lore);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, ""));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, ""));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -153,7 +153,7 @@ public class LoreNode implements Node {
             setLore(stack, lore);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, TextUtil.copyable(line)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(line)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -179,7 +179,7 @@ public class LoreNode implements Node {
             setLore(stack, lore);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -240,7 +240,7 @@ public class LoreNode implements Node {
             setLore(stack, lore);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, "", index));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, ""));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -265,7 +265,7 @@ public class LoreNode implements Node {
             setLore(stack, lore);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(line), index));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(line)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

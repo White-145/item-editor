@@ -14,16 +14,24 @@ public class SimpleItemEditor implements ClientModInitializer {
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(EditCommand::register);
     }
-    // ~ fixed `/edit model remove`
-    // - moved `/edit color` for potions and maps to their respective nodes
-    // ~ removed ambiguous syntax for removing a component (e.g. `/edit trim set`)
-    // ~ fixed various bugs with argument types
+    // + added ability to set potion type for potions and change icon visibility and ambient
+    // + `/edit component` for manual component control
+    // + data sources for `/edit data`
+    // + ability to completely remove tooltip
+    // + `/edit rarity`
+    // + more duration control in `/edit potion`
+    // + negative infinity option in attributes
+    // + `/edit count max`
+    // + `/edit durability max`
     // ~ heavily revised and re-tested code
-    // - removed `/edit whitelist`, `/edit book`, and `/edit firework` for now
+    // ~ fixed various bugs with argument types
+    // ~ removed ambiguous syntax for removing a component (e.g. `/edit trim set`)
     // ~ reworked `/edit attribute`
+    // ~ split `/edit name` and `... name custom`
     // ~ renamed `/edit durability percent` to `... progress`
     // ~ replaced `... toggle` commands with `... set <bool>`
-    // ~ moved visbility flags to their respective nodes
-    // + added ability to set potion type for potions and change icon visibility and ambient
+    // ~ renamed `/edit flag` to `... tooltip`
     // ~ reworked `/edit data` for new nbt components
+    // ~ moved `/edit color` for potions to its respective node
+    // - removed few problematic nodes for a while
 }

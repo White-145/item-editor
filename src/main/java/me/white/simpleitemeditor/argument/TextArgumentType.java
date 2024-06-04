@@ -29,12 +29,12 @@ public class TextArgumentType implements ArgumentType<Text> {
     private static final SimpleCommandExceptionType INVALID_PLACEHOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.invalidplaceholder"));
     private static final SimpleCommandExceptionType UNCLOSED_KEYBIND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedkeybind"));
     private static final SimpleCommandExceptionType UNCLOSED_TRANSLATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.text.error.unclosedtranslation"));
-    private static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
     private static final String SUGGESTION_RESET = "argument.text.suggestionreset";
     private static final String SUGGESTION_HEX = "argument.text.suggestionhex";
     private static final String SUGGESTION_SPACE = "argument.text.suggestionspace";
     private static final String SUGGESTION_KEYBIND = "argument.text.suggestionkeybind";
     private static final String SUGGESTION_TRANSLATION = "argument.text.suggestiontranslation";
+    private static final Style EMPTY_STYLE = Style.EMPTY.withObfuscated(false).withBold(false).withStrikethrough(false).withUnderline(false).withItalic(false);
 
     public static TextArgumentType text() {
         return new TextArgumentType();
