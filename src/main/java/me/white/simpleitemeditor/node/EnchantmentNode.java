@@ -27,26 +27,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EnchantmentNode implements Node {
-    private static final CommandSyntaxException ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyexists")).create();
-    private static final CommandSyntaxException DOESNT_EXIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.doesntexist")).create();
+    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.alreadyis")).create();
+    private static final CommandSyntaxException NO_SUCH_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.nosuchenchantments")).create();
     private static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
     private static final CommandSyntaxException NO_GLINT_OVERRIDE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noglintoverride")).create();
     private static final CommandSyntaxException GLINT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.glintalreadyis")).create();
-    private static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.tooltipalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.enchantment.get";
     private static final String OUTPUT_GET_ENCHANTMENT = "commands.edit.enchantment.getenchantment";
     private static final String OUTPUT_SET = "commands.edit.enchantment.set";
     private static final String OUTPUT_REMOVE = "commands.edit.enchantment.remove";
     private static final String OUTPUT_GLINT_GET_ENABLED = "commands.edit.enchantment.getglintenabled";
-    private static final String OUTPUT_GLINT_GET_DISABLED = "commands.edit.enchantment.getglintdisable";
+    private static final String OUTPUT_GLINT_GET_DISABLED = "commands.edit.enchantment.getglintdisabled";
     private static final String OUTPUT_GLINT_ENABLE = "commands.edit.enchantment.glintenable";
     private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
     private static final String OUTPUT_GLINT_RESET = "commands.edit.enchantment.glintreset";
     private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
-    private static final String OUTPUT_TOOLTIP_GET_ENABLED = "commands.edit.enchantment.tooltipgetenabled";
-    private static final String OUTPUT_TOOLTIP_GET_DISABLED = "commands.edit.enchantment.tooltipgetdisabled";
-    private static final String OUTPUT_TOOLTIP_ENABLE = "commands.edit.enchantment.tooltipenable";
-    private static final String OUTPUT_TOOLTIP_DISABLE = "commands.edit.enchantment.tooltipdisable";
 
     private static boolean hasEnchantments(ItemStack stack) {
         if (!stack.contains(DataComponentTypes.ENCHANTMENTS)) {
@@ -75,7 +70,7 @@ public class EnchantmentNode implements Node {
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 builder.set(entry.getKey(), entry.getValue());
             }
-            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build().withShowInTooltip(hasTooltip(stack)));
+            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build().withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack)));
         }
     }
 
@@ -96,15 +91,6 @@ public class EnchantmentNode implements Node {
 
     private static void removeGlintOverride(ItemStack stack) {
         stack.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
-    }
-
-    private static boolean hasTooltip(ItemStack stack) {
-        return !stack.contains(DataComponentTypes.ENCHANTMENTS) || stack.get(DataComponentTypes.ENCHANTMENTS).showInTooltip;
-    }
-
-    private static void setTooltip(ItemStack stack, boolean showTooltip) {
-        ItemEnchantmentsComponent component = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.ENCHANTMENTS, component.withShowInTooltip(showTooltip));
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -138,7 +124,7 @@ public class EnchantmentNode implements Node {
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = getEnchantments(stack);
             if (!enchantments.containsKey(enchantment)) {
-                throw DOESNT_EXIST_EXCEPTION;
+                throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
 
             context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, enchantment.getName(enchantments.get(enchantment))));
@@ -158,7 +144,7 @@ public class EnchantmentNode implements Node {
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == 1) {
-                throw ALREADY_EXISTS_EXCEPTION;
+                throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, 1);
             setEnchantments(stack, enchantments);
@@ -180,7 +166,7 @@ public class EnchantmentNode implements Node {
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             int level = IntegerArgumentType.getInteger(context, "level");
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == level) {
-                throw ALREADY_EXISTS_EXCEPTION;
+                throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, level);
             setEnchantments(stack, enchantments);
@@ -206,7 +192,7 @@ public class EnchantmentNode implements Node {
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (!enchantments.containsKey(enchantment)) {
-                throw DOESNT_EXIST_EXCEPTION;
+                throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
             enchantments.remove(enchantment);
             setEnchantments(stack, enchantments);
@@ -287,40 +273,6 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> tooltipNode = ClientCommandManager.literal("tooltip").build();
-
-        LiteralCommandNode<FabricClientCommandSource> tooltipGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
-            boolean showTooltip = hasTooltip(stack);
-
-            context.getSource().sendFeedback(Text.translatable(showTooltip ? OUTPUT_TOOLTIP_GET_ENABLED : OUTPUT_TOOLTIP_GET_DISABLED));
-            return Command.SINGLE_SUCCESS;
-        }).build();
-
-        LiteralCommandNode<FabricClientCommandSource> tooltipSetNode = ClientCommandManager.literal("set").build();
-
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> tooltipSetShowNode = ClientCommandManager.argument("show", BoolArgumentType.bool()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
-            boolean showTooltip = BoolArgumentType.getBool(context, "show");
-            if (showTooltip == hasTooltip(stack)) {
-                throw TOOLTIP_ALREADY_IS_EXCEPTION;
-            }
-            setTooltip(stack, showTooltip);
-
-            EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(showTooltip ? OUTPUT_TOOLTIP_ENABLE : OUTPUT_TOOLTIP_DISABLE));
-            return Command.SINGLE_SUCCESS;
-        }).build();
-
         rootNode.addChild(node);
 
         // ... get [<enchantment>]
@@ -348,13 +300,5 @@ public class EnchantmentNode implements Node {
 
         // ... clear
         node.addChild(clearNode);
-
-        // ... tooltip ...
-        node.addChild(tooltipNode);
-        // ... get
-        tooltipNode.addChild(tooltipGetNode);
-        // ... set <show>
-        tooltipNode.addChild(tooltipSetNode);
-        tooltipSetNode.addChild(tooltipSetShowNode);
     }
 }

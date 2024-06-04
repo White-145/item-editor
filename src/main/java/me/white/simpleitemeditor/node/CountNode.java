@@ -78,7 +78,7 @@ public class CountNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             int count = IntegerArgumentType.getInteger(context, "count");
-            if (count > stack.getMaxCount()) {
+            if (count > 99) {
                 throw OVERFLOW_EXCEPTION;
             }
             if (stack.getCount() == count) {
@@ -128,7 +128,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
+        LiteralCommandNode<FabricClientCommandSource> takeNode = ClientCommandManager.literal("take").executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -147,7 +147,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> removeCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(-126, 126)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, Integer> takeCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(-126, 126)).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -228,7 +228,7 @@ public class CountNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
             if (stack.getCount() == stack.getMaxCount()) {
-                throw ALREADY_IS_EXCEPTION;
+                throw MAX_ALREADY_IS_EXCEPTION;
             }
             stack.setCount(stack.getMaxCount());
 
@@ -250,9 +250,9 @@ public class CountNode implements Node {
         node.addChild(addNode);
         addNode.addChild(addCountNode);
 
-        // ... remove [<count>]
-        node.addChild(removeNode);
-        removeNode.addChild(removeCountNode);
+        // ... take [<count>]
+        node.addChild(takeNode);
+        takeNode.addChild(takeCountNode);
 
         // ... max ...
         node.addChild(maxNode);

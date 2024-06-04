@@ -1,15 +1,14 @@
 package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.argument.AlternativeArgumentType;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -32,18 +31,13 @@ import java.util.*;
 public class AttributeNode implements Node {
     private static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
     private static final CommandSyntaxException NO_SUCH_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.nosuchattributes")).create();
-    private static final CommandSyntaxException TOOLTIP_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.tooltipalreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.attribute.get";
     private static final String OUTPUT_GET_ATTRIBUTE = "commands.edit.attribute.getattribute";
-    private static final String OUTPUT_SET = "commands.edit.attribute.add";
+    private static final String OUTPUT_SET = "commands.edit.attribute.set";
     private static final String OUTPUT_REMOVE = "commands.edit.attribute.remove";
     private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
     private static final String OUTPUT_ATTRIBUTE = "commands.edit.attribute.attribute";
     private static final String OUTPUT_ATTRIBUTE_SLOT = "commands.edit.attribute.attributeslot";
-    private static final String OUTPUT_TOOLTIP_GET_ENABLED = "commands.edit.attribute.tooltipgetenabled";
-    private static final String OUTPUT_TOOLTIP_GET_DISABLED = "commands.edit.attribute.tooltipgetdisabled";
-    private static final String OUTPUT_TOOLTIP_ENABLE = "commands.edit.attribute.tooltipenable";
-    private static final String OUTPUT_TOOLTIP_DISABLE = "commands.edit.attribute.tooltipdisable";
     private static final Map<String, Double> VALUE_CONSTS = new HashMap<>();
 
     static {
@@ -89,6 +83,9 @@ public class AttributeNode implements Node {
     }
 
     private static List<AttributeModifiersComponent.Entry> getAttributes(ItemStack stack) {
+        if (!stack.contains(DataComponentTypes.ATTRIBUTE_MODIFIERS)) {
+            return List.of();
+        }
         return stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS).modifiers();
     }
 
@@ -96,17 +93,8 @@ public class AttributeNode implements Node {
         if (attributes == null || attributes.isEmpty()) {
             stack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         } else {
-            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, hasTooltip(stack)));
+            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode.TooltipPart.ATTRIBUTE.get(stack)));
         }
-    }
-
-    private static boolean hasTooltip(ItemStack stack) {
-        return !stack.contains(DataComponentTypes.ATTRIBUTE_MODIFIERS) || stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS).showInTooltip();
-    }
-
-    private static void setTooltip(ItemStack stack, boolean showTooltip) {
-        AttributeModifiersComponent component = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-        stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, component.withShowInTooltip(showTooltip));
     }
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
@@ -292,40 +280,6 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> tooltipNode = ClientCommandManager.literal("tooltip").build();
-
-        LiteralCommandNode<FabricClientCommandSource> tooltipGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
-            boolean showTooltip = hasTooltip(stack);
-
-            context.getSource().sendFeedback(Text.translatable(showTooltip ? OUTPUT_TOOLTIP_GET_ENABLED : OUTPUT_TOOLTIP_GET_DISABLED));
-            return Command.SINGLE_SUCCESS;
-        }).build();
-
-        LiteralCommandNode<FabricClientCommandSource> tooltipSetNode = ClientCommandManager.literal("set").build();
-
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> tooltipSetShowNode = ClientCommandManager.argument("show", BoolArgumentType.bool()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
-            boolean showTooltip = BoolArgumentType.getBool(context, "show");
-            if (showTooltip == hasTooltip(stack)) {
-                throw TOOLTIP_ALREADY_IS_EXCEPTION;
-            }
-            setTooltip(stack, showTooltip);
-
-            EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(showTooltip ? OUTPUT_TOOLTIP_ENABLE : OUTPUT_TOOLTIP_DISABLE));
-            return Command.SINGLE_SUCCESS;
-        }).build();
-
         rootNode.addChild(node);
 
         // ... attribute get [<name>]
@@ -346,13 +300,5 @@ public class AttributeNode implements Node {
 
         // ... attribute clear
         node.addChild(clearNode);
-
-        // ... tooltip ...
-        node.addChild(tooltipNode);
-        // ... get
-        tooltipNode.addChild(tooltipGetNode);
-        // ... set <show>
-        tooltipNode.addChild(tooltipSetNode);
-        tooltipSetNode.addChild(tooltipSetShowNode);
     }
 }

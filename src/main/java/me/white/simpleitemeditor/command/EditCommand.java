@@ -27,11 +27,12 @@ public class EditCommand {
                 new HeadNode(),
                 new LoreNode(),
                 new MaterialNode(),
+                new ModelNode(),
                 new NameNode(),
                 new PotionNode(),
                 new RarityNode(),
-                new TrimNode(),
-                new UnbreakableNode()
+                new TooltipNode(),
+                new TrimNode()
         }) {
             try {
                 editNode.register(node, registryAccess);

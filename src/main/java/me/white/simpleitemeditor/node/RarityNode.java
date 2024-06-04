@@ -19,6 +19,19 @@ public class RarityNode implements Node {
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.rarity.error.alreadyis")).create();
     private static final String OUTPUT_GET = "commands.edit.rarity.get";
     private static final String OUTPUT_SET = "commands.edit.rarity.set";
+    private static final String RARITY_COMMON = "rarity.minecraft.common";
+    private static final String RARITY_UNCOMMON = "rarity.minecraft.uncommon";
+    private static final String RARITY_RARE = "rarity.minecraft.rare";
+    private static final String RARITY_EPIC = "rarity.minecraft.epic";
+
+    private static Text getTranslation(Rarity rarity) {
+        return switch(rarity) {
+            case COMMON -> Text.translatable(RARITY_COMMON);
+            case UNCOMMON -> Text.translatable(RARITY_UNCOMMON);
+            case RARE -> Text.translatable(RARITY_RARE);
+            case EPIC -> Text.translatable(RARITY_EPIC);
+        };
+    }
 
     private static Rarity getRarity(ItemStack stack) {
         return stack.getOrDefault(DataComponentTypes.RARITY, Rarity.COMMON);
@@ -39,7 +52,7 @@ public class RarityNode implements Node {
             }
             Rarity rarity = getRarity(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, rarity.asString()));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, getTranslation(rarity)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -60,7 +73,7 @@ public class RarityNode implements Node {
             setRarity(stack, rarity);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, rarity.asString()));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(rarity)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

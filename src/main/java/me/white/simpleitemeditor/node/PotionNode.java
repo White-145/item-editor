@@ -34,7 +34,7 @@ import net.minecraft.util.Formatting;
 import java.util.*;
 
 public class PotionNode implements Node {
-    private static final CommandSyntaxException ISNT_POTION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.cannotedit")).create();
+    private static final CommandSyntaxException ISNT_POTION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.isntpotion")).create();
     private static final CommandSyntaxException NO_EFFECTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.noeffects")).create();
     private static final CommandSyntaxException NO_SUCH_EFFECT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.nosucheffect")).create();
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.potion.error.alreadyis")).create();
@@ -65,7 +65,7 @@ public class PotionNode implements Node {
     }
 
     private static Text getTranslation(ItemStack stack, Potion potion) {
-        return Text.translatable(Potion.finishTranslationKey(Optional.of(RegistryEntry.of(potion)), stack.getTranslationKey() + ".effect."));
+        return Text.translatable(Potion.finishTranslationKey(Optional.of(RegistryEntry.of(potion)), stack.getItem().getTranslationKey() + ".effect."));
     }
 
     private static boolean isPotion(ItemStack stack) {
@@ -162,6 +162,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             if (!hasEffects(stack)) {
                 throw NO_EFFECTS_EXCEPTION;
             }
@@ -178,6 +181,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource());
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             if (!hasEffects(stack)) {
                 throw NO_EFFECTS_EXCEPTION;
@@ -211,6 +217,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
             int duration = DurationArgumentType.getDuration(context, "duration");
             List<StatusEffectInstance> effects = new ArrayList<>(getEffects(stack));
@@ -230,6 +239,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
             int duration = DurationArgumentType.getDuration(context, "duration");
@@ -251,6 +263,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
             int duration = DurationArgumentType.getDuration(context, "duration");
@@ -274,6 +289,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
             int duration = DurationArgumentType.getDuration(context, "duration");
             int amplifier = IntegerArgumentType.getInteger(context, "amplifier");
@@ -296,6 +314,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
             int duration = DurationArgumentType.getDuration(context, "duration");
@@ -323,24 +344,32 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             if (!hasEffects(stack)) {
                 throw NO_EFFECTS_EXCEPTION;
             }
             StatusEffect effect = RegistryArgumentType.getRegistryEntry(context, "effect", RegistryKeys.STATUS_EFFECT);
+            boolean wasSuccessful = false;
             List<StatusEffectInstance> effects = new ArrayList<>(getEffects(stack));
             if (hasEffects(stack)) {
                 Iterator<StatusEffectInstance> iterator = effects.iterator();
                 while (iterator.hasNext()) {
                     StatusEffectInstance instance = iterator.next();
                     if (instance.getEffectType().value() == effect) {
+                        wasSuccessful = true;
                         iterator.remove();
                     }
                 }
             }
+            if (!wasSuccessful) {
+                throw NO_SUCH_EFFECT_EXCEPTION;
+            }
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, effect.getName()));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -351,6 +380,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             if (!hasEffects(stack)) {
                 throw NO_EFFECTS_EXCEPTION;
@@ -368,6 +400,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource());
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             if (!hasColor(stack)) {
                 throw NO_COLOR_EXCEPTION;
@@ -388,6 +423,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             int color = ColorArgumentType.getColor(context, "color");
             if (hasColor(stack) && color == getColor(stack)) {
                 throw COLOR_ALREADY_IS_EXCEPTION;
@@ -407,6 +445,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             if (!hasColor(stack)) {
                 throw NO_COLOR_EXCEPTION;
             }
@@ -423,6 +464,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource());
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             if (!hasType(stack)) {
                 throw NO_TYPE_EXCEPTION;
@@ -443,6 +487,9 @@ public class PotionNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
+            }
             Potion potion = RegistryArgumentType.getRegistryEntry(context, "type", RegistryKeys.POTION);
             if (hasType(stack) && potion == getType(stack)) {
                 throw TYPE_ALREADY_IS_EXCEPTION;
@@ -461,6 +508,9 @@ public class PotionNode implements Node {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!isPotion(stack)) {
+                throw ISNT_POTION_EXCEPTION;
             }
             if (!hasType(stack)) {
                 throw NO_TYPE_EXCEPTION;

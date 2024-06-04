@@ -106,7 +106,10 @@ public class HeadNode implements Node {
         if (textures.isEmpty()) {
             return null;
         }
-        return textures.get(0).value();
+        String texture = textures.get(0).value();
+        String json = new String(Base64.getDecoder().decode(texture));
+        JsonObject object = new Gson().fromJson(json, JsonObject.class);
+        return object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
     }
 
     public static void setFromUrl(String url, FabricClientCommandSource source) {
@@ -191,10 +194,8 @@ public class HeadNode implements Node {
             }
             GameProfile profile = getProfile(stack);
             String texture = getTexture(profile);
-            String json = new String(Base64.getDecoder().decode(texture));
-            JsonObject object = new Gson().fromJson(json, JsonObject.class);
-            String url = object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.url(url)));
+
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.url(texture)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

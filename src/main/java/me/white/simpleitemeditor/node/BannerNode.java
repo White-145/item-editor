@@ -34,6 +34,7 @@ public class BannerNode implements Node {
     private static final CommandSyntaxException ISNT_BANNER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.isntbanner")).create();
     private static final CommandSyntaxException NO_LAYERS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nolayers")).create();
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.alreadyis")).create();
+    private static final CommandSyntaxException NO_BASE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.nobase")).create();
     private static final CommandSyntaxException BASE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.basealreadyis")).create();
     private static final CommandSyntaxException ISNT_SHIELD_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.banner.error.isntshield")).create();
     private static final String OUTPUT_GET = "commands.edit.banner.get";
@@ -265,7 +266,7 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, index, translation(layer)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -287,7 +288,7 @@ public class BannerNode implements Node {
             }
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
             int index = IntegerArgumentType.getInteger(context, "index");
-            if (index <= layers.size()) {
+            if (index >= layers.size()) {
                 throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, layers.size());
             }
             layers.remove(index);
@@ -357,7 +358,7 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, translation(layer), index));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -370,6 +371,9 @@ public class BannerNode implements Node {
             }
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
+            }
+            if (!hasBaseColor(stack)) {
+                throw NO_BASE_EXCEPTION;
             }
             DyeColor color = getBaseColor(stack);
 

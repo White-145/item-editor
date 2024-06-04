@@ -52,7 +52,7 @@ public class NameNode implements Node {
     }
 
     private static Text getCustomName(ItemStack stack) {
-        if (!hasName(stack)) {
+        if (!hasCustomName(stack)) {
             return null;
         }
         return stack.get(DataComponentTypes.CUSTOM_NAME);
