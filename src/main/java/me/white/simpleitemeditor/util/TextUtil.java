@@ -1,14 +1,21 @@
 package me.white.simpleitemeditor.util;
 
-import net.minecraft.command.CommandRegistryAccess;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import me.white.simpleitemeditor.node.ComponentNode;
+import net.minecraft.component.Component;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TextUtil {
     private static final String SUGGESTION_COPY = "chat.copyable.copy";
@@ -17,34 +24,41 @@ public class TextUtil {
         return Text.empty().append(text).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(SUGGESTION_COPY))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copy)).withInsertion(copy));
     }
 
-    public static MutableText copyable(ItemStack stack, CommandRegistryAccess registryAccess) {
-//        ItemStack defaultStack = stack.getItem().getDefaultStack();
-//        Map<Identifier, NbtElement> components = new HashMap<>();
-//        for (Component<?> component : stack.getComponents()) {
-//            DataComponentType<?> componentType = component.type();
-//            Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
-//            NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryAccess);
-//            if (!defaultStack.contains(componentType)) {
-//                components.put(id, element);
-//            } else {
-//                NbtElement defaultElement = ComponentNode.getFromComponent(defaultStack, componentType, registryAccess);
-//                if (!element.equals(defaultElement)) {
-//                    components.put(id, element);
-//                }
-//            }
-//        }
-//        if (!components.isEmpty()) {
-//            builder.append("[");
-//            for (Map.Entry<Identifier, NbtElement> entry : components.entrySet()) {
-//                builder.append(entry.getKey());
-//                builder.append("=");
-//                builder.append(entry.getValue().toString());
-//                builder.append(",");
-//            }
-//            builder.deleteCharAt(builder.length() - 1);
-//            builder.append("]");
-//        }
+    public static MutableText copyable(ItemStack stack) {
         String copied = Registries.ITEM.getId(stack.getItem()).toString();
+
+        return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copied)).withInsertion(copied));
+    }
+
+    public static MutableText copyable(ItemStack stack, DynamicRegistryManager registryManager) throws CommandSyntaxException {
+        StringBuilder builder = new StringBuilder(Registries.ITEM.getId(stack.getItem()).toString());
+        ItemStack defaultStack = stack.getItem().getDefaultStack();
+        Map<Identifier, NbtElement> components = new HashMap<>();
+        for (Component<?> component : stack.getComponents()) {
+            DataComponentType<?> componentType = component.type();
+            Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
+            NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryManager);
+            if (!defaultStack.contains(componentType)) {
+                components.put(id, element);
+            } else {
+                NbtElement defaultElement = ComponentNode.getFromComponent(defaultStack, componentType, registryManager);
+                if (!element.equals(defaultElement)) {
+                    components.put(id, element);
+                }
+            }
+        }
+        if (!components.isEmpty()) {
+            builder.append("[");
+            for (Map.Entry<Identifier, NbtElement> entry : components.entrySet()) {
+                builder.append(entry.getKey());
+                builder.append("=");
+                builder.append(entry.getValue().toString());
+                builder.append(",");
+            }
+            builder.deleteCharAt(builder.length() - 1);
+            builder.append("]");
+        }
+        String copied = builder.toString();
 
         return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copied)).withInsertion(copied));
     }

@@ -29,7 +29,7 @@ public class GetNode implements Node {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, registryAccess)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -43,7 +43,7 @@ public class GetNode implements Node {
             ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, TextUtil.copyable(stack, registryAccess)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -58,7 +58,7 @@ public class GetNode implements Node {
             ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, true);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, TextUtil.copyable(stack, registryAccess)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
