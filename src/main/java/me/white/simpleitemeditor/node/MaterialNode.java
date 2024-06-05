@@ -59,10 +59,10 @@ public class MaterialNode implements Node {
 
         rootNode.addChild(node);
 
-        // ... material get
+        // ... get
         node.addChild(getNode);
 
-        // ... material set <material>
+        // ... set <material>
         node.addChild(setNode);
         setNode.addChild(setMaterialNode);
     }

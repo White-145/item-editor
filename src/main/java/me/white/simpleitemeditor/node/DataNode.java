@@ -426,16 +426,16 @@ public class DataNode implements Node {
         // ... get [<path>]
         sourceNode.addChild(sourceGetNode);
         sourceGetNode.addChild(sourceGetPathNode);
-        // ... append <value>
+        // ... append <path> <value>
         sourceNode.addChild(sourceAppendNode);
         sourceAppendNode.addChild(sourceAppendPathNode);
         sourceAppendPathNode.addChild(sourceAppendPathValueNode);
-        // ... insert <index> <value>
+        // ... insert <path> <index> <value>
         sourceNode.addChild(sourceInsertNode);
         sourceInsertNode.addChild(sourceInsertPathNode);
         sourceInsertPathNode.addChild(sourceInsertPathIndexNode);
         sourceInsertPathIndexNode.addChild(sourceInsertPathIndexValueNode);
-        // ... prepend <value>
+        // ... prepend <path> <value>
         sourceNode.addChild(sourcePrependNode);
         sourcePrependNode.addChild(sourcePrependPathNode);
         sourcePrependPathNode.addChild(sourcePrependPathValueNode);

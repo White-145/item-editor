@@ -282,11 +282,11 @@ public class AttributeNode implements Node {
 
         rootNode.addChild(node);
 
-        // ... attribute get [<name>]
+        // ... get [<name>]
         node.addChild(getNode);
         getNode.addChild(getNameNode);
 
-        // ... attribute set <name> <attribute> <amount> [<operation>] [<slot>]
+        // ... set <name> <attribute> <amount> [<operation>] [<slot>]
         node.addChild(setNode);
         setNode.addChild(setNameNode);
         setNameNode.addChild(setNameAttributeNode);
@@ -294,11 +294,11 @@ public class AttributeNode implements Node {
         setNameAttributeAmountNode.addChild(setNameAttributeAmountOperationNode);
         setNameAttributeAmountOperationNode.addChild(setNameAttributeAmountOperationSlotNode);
 
-        // ... attribute remove <name>
+        // ... remove <name>
         node.addChild(removeNode);
         removeNode.addChild(removeNameNode);
 
-        // ... attribute clear
+        // ... clear
         node.addChild(clearNode);
     }
 }

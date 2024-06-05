@@ -544,10 +544,11 @@ public class BannerNode implements Node {
 
         // ... clear
         node.addChild(clearNode);
-        // ... [before] <index>
+
+        // ... clear before <index>
         clearNode.addChild(clearBeforeNode);
         clearBeforeNode.addChild(clearBeforeIndexNode);
-        // ... [after] <index>
+        // ... clear after <index>
         clearNode.addChild(clearAfterNode);
         clearAfterNode.addChild(clearAfterIndexNode);
     }
