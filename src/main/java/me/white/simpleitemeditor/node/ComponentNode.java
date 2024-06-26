@@ -14,7 +14,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.NbtElementArgumentType;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
@@ -32,7 +32,7 @@ public class ComponentNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.component.set";
     private static final String OUTPUT_REMOVE = "commands.edit.component.remove";
 
-    public static <T> void setFromNbt(ItemStack stack, DataComponentType<T> component, NbtElement element, DynamicRegistryManager registryManager) throws CommandSyntaxException {
+    public static <T> void setFromNbt(ItemStack stack, ComponentType<T> component, NbtElement element, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         DataResult<T> value = component.getCodecOrThrow().parse(registryManager.getOps(NbtOps.INSTANCE), element);
         if (value.isError()) {
             throw MALFORMED_COMPONENT_EXCEPTION.create(value.error().orElseThrow().message());
@@ -40,7 +40,7 @@ public class ComponentNode implements Node {
         stack.set(component, value.getOrThrow());
     }
 
-    public static <T> NbtElement getFromComponent(ItemStack stack, DataComponentType<T> component, DynamicRegistryManager registryManager) throws CommandSyntaxException {
+    public static <T> NbtElement getFromComponent(ItemStack stack, ComponentType<T> component, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         DataResult<NbtElement> element = component.getCodecOrThrow().encodeStart(registryManager.getOps(NbtOps.INSTANCE), stack.get(component));
         if (element.isError()) {
             throw BROKEN_COMPONENT_EXCEPTION.create(element.error().orElseThrow().message());
@@ -54,12 +54,12 @@ public class ComponentNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<DataComponentType<?>>> getComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> getComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            DataComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
             }
@@ -72,7 +72,7 @@ public class ComponentNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<DataComponentType<?>>> setComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).build();
+        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> setComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> setComponentValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
@@ -82,7 +82,7 @@ public class ComponentNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            DataComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
             setFromNbt(stack, component, element, context.getSource().getRegistryManager());
 
@@ -93,7 +93,7 @@ public class ComponentNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<DataComponentType<?>>> removeComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> removeComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -101,7 +101,7 @@ public class ComponentNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            DataComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
             }

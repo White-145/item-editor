@@ -2,13 +2,13 @@ package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.white.simpleitemeditor.argument.AlternativeArgumentType;
 import me.white.simpleitemeditor.argument.EnumArgumentType;
+import me.white.simpleitemeditor.argument.IdentifierArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -20,11 +20,13 @@ import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
 import java.util.*;
 
@@ -59,20 +61,22 @@ public class AttributeNode implements Node {
         return attribute.slot() == AttributeModifierSlot.ANY ? Text.translatable(OUTPUT_ATTRIBUTE, name, value) : Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.slot().asString());
     }
 
-    private static boolean removeName(List<AttributeModifiersComponent.Entry> attributes, String name) {
+    private static boolean removeName(List<AttributeModifiersComponent.Entry> attributes, Identifier id) {
         Iterator<AttributeModifiersComponent.Entry> iterator = attributes.iterator();
         boolean wasSuccessful = false;
         while (iterator.hasNext()) {
             AttributeModifiersComponent.Entry attributeEntry = iterator.next();
-            if (!attributeEntry.modifier().name().isEmpty()) {
-                String attributeName = attributeEntry.modifier().name();
-                if (attributeName.equals(name)) {
-                    iterator.remove();
-                    wasSuccessful = true;
-                }
+            Identifier attributeId = attributeEntry.modifier().id();
+            if (attributeId.equals(id)) {
+                iterator.remove();
+                wasSuccessful = true;
             }
         }
         return wasSuccessful;
+    }
+
+    private static RegistryEntry<EntityAttribute> entryOf(DynamicRegistryManager registryManager, EntityAttribute attribute) {
+        return registryManager.get(RegistryKeys.ATTRIBUTE).getEntry(attribute);
     }
 
     private static boolean hasAttributes(ItemStack stack) {
@@ -111,9 +115,9 @@ public class AttributeNode implements Node {
             List<AttributeModifiersComponent.Entry> attributes = getAttributes(stack);
             context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
             for (AttributeModifiersComponent.Entry entry : attributes) {
-                String name = entry.modifier().name().isEmpty() ? "???" : entry.modifier().name();
+                Identifier id = entry.modifier().id();
                 context.getSource().sendFeedback(Text.empty()
-                        .append(Text.literal(name).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+                        .append(Text.literal(id.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                         .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
                         .append(translate(entry))
                 );
@@ -121,7 +125,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, String> getNameNode = ClientCommandManager.argument("name", StringArgumentType.greedyString()).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, Identifier> getIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
@@ -129,15 +133,13 @@ public class AttributeNode implements Node {
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
-            String name = StringArgumentType.getString(context, "name");
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             List<AttributeModifiersComponent.Entry> attributes = getAttributes(stack);
             List<AttributeModifiersComponent.Entry> matching = new ArrayList<>();
             for (AttributeModifiersComponent.Entry entry : attributes) {
-                if (!entry.modifier().name().isEmpty()) {
-                    String attributeName = entry.modifier().name();
-                    if (attributeName.equals(name)) {
-                        matching.add(entry);
-                    }
+                Identifier attributeId = entry.modifier().id();
+                if (attributeId.equals(id)) {
+                    matching.add(entry);
                 }
             }
             if (matching.isEmpty()) {
@@ -148,9 +150,9 @@ public class AttributeNode implements Node {
             } else {
                 context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
                 for (AttributeModifiersComponent.Entry entry : matching) {
-                    String attributeName = entry.modifier().name().isEmpty() ? "???" : entry.modifier().name();
+                    Identifier attributeId = entry.modifier().id();
                     context.getSource().sendFeedback(Text.empty()
-                            .append(Text.literal(attributeName).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+                            .append(Text.literal(attributeId.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                             .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
                             .append(translate(entry))
                     );
@@ -161,11 +163,11 @@ public class AttributeNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, String> setNameNode = ClientCommandManager.argument("name", StringArgumentType.string()).build();
+        ArgumentCommandNode<FabricClientCommandSource, Identifier> setIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<EntityAttribute>> setNameAttributeNode = ClientCommandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
+        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<EntityAttribute>> setIdAttributeNode = ClientCommandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Double> setNameAttributeAmountNode = ClientCommandManager.argument("amount", AlternativeArgumentType.argument(DoubleArgumentType.doubleArg(), VALUE_CONSTS)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, Double> setIdentifierAttributeAmountNode = ClientCommandManager.argument("amount", AlternativeArgumentType.argument(DoubleArgumentType.doubleArg(), VALUE_CONSTS)).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -173,13 +175,13 @@ public class AttributeNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            String name = StringArgumentType.getString(context, "name");
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
-            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, EntityAttributeModifier.Operation.ADD_VALUE);
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(RegistryEntry.of(attribute), modifier, AttributeModifierSlot.ANY);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, name);
+            removeName(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -188,7 +190,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setNameAttributeAmountOperationNode = ClientCommandManager.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter)).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setIdAttributeAmountOperationNode = ClientCommandManager.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter)).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -196,14 +198,14 @@ public class AttributeNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            String name = StringArgumentType.getString(context, "name");
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(RegistryEntry.of(attribute), modifier, AttributeModifierSlot.ANY);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, name);
+            removeName(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -220,15 +222,15 @@ public class AttributeNode implements Node {
             if (!EditorUtil.hasItem(stack)) {
                 throw EditorUtil.NO_ITEM_EXCEPTION;
             }
-            String name = StringArgumentType.getString(context, "name");
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
             AttributeModifierSlot slot = EnumArgumentType.getEnum(context, "slot", AttributeModifierSlot.class);
-            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(RegistryEntry.of(attribute), modifier, slot);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, slot);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, name);
+            removeName(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -239,7 +241,7 @@ public class AttributeNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, String> removeNameNode = ClientCommandManager.argument("name", StringArgumentType.greedyString()).executes(context -> {
+        ArgumentCommandNode<FabricClientCommandSource, Identifier> removeIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
             if (!EditorUtil.hasCreative(context.getSource())) {
                 throw EditorUtil.NOT_CREATIVE_EXCEPTION;
             }
@@ -250,9 +252,9 @@ public class AttributeNode implements Node {
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
-            String name = StringArgumentType.getString(context, "name");
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            if (!removeName(attributes, name)) {
+            if (!removeName(attributes, id)) {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;
             }
             setAttributes(stack, attributes);
@@ -284,19 +286,19 @@ public class AttributeNode implements Node {
 
         // ... get [<name>]
         node.addChild(getNode);
-        getNode.addChild(getNameNode);
+        getNode.addChild(getIdNode);
 
         // ... set <name> <attribute> <amount> [<operation>] [<slot>]
         node.addChild(setNode);
-        setNode.addChild(setNameNode);
-        setNameNode.addChild(setNameAttributeNode);
-        setNameAttributeNode.addChild(setNameAttributeAmountNode);
-        setNameAttributeAmountNode.addChild(setNameAttributeAmountOperationNode);
-        setNameAttributeAmountOperationNode.addChild(setNameAttributeAmountOperationSlotNode);
+        setNode.addChild(setIdNode);
+        setIdNode.addChild(setIdAttributeNode);
+        setIdAttributeNode.addChild(setIdentifierAttributeAmountNode);
+        setIdentifierAttributeAmountNode.addChild(setIdAttributeAmountOperationNode);
+        setIdAttributeAmountOperationNode.addChild(setNameAttributeAmountOperationSlotNode);
 
         // ... remove <name>
         node.addChild(removeNode);
-        removeNode.addChild(removeNameNode);
+        removeNode.addChild(removeIdNode);
 
         // ... clear
         node.addChild(clearNode);

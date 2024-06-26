@@ -3,7 +3,7 @@ package me.white.simpleitemeditor.util;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.white.simpleitemeditor.node.ComponentNode;
 import net.minecraft.component.Component;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
@@ -35,7 +35,7 @@ public class TextUtil {
         ItemStack defaultStack = stack.getItem().getDefaultStack();
         Map<Identifier, NbtElement> components = new HashMap<>();
         for (Component<?> component : stack.getComponents()) {
-            DataComponentType<?> componentType = component.type();
+            ComponentType<?> componentType = component.type();
             Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
             NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryManager);
             if (!defaultStack.contains(componentType)) {

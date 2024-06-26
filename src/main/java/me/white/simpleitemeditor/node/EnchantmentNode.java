@@ -17,6 +17,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
@@ -43,6 +44,10 @@ public class EnchantmentNode implements Node {
     private static final String OUTPUT_GLINT_RESET = "commands.edit.enchantment.glintreset";
     private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
 
+    private static RegistryEntry<Enchantment> entryOf(DynamicRegistryManager registryManager, Enchantment enchantment) {
+        return registryManager.get(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
+    }
+
     private static boolean hasEnchantments(ItemStack stack) {
         if (!stack.contains(DataComponentTypes.ENCHANTMENTS)) {
             return false;
@@ -56,19 +61,19 @@ public class EnchantmentNode implements Node {
         }
         ItemEnchantmentsComponent component = stack.get(DataComponentTypes.ENCHANTMENTS);
         Map<Enchantment, Integer> enchantments = new HashMap<>();
-        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> enchantmentEntry : component.getEnchantmentsMap()) {
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> enchantmentEntry : component.getEnchantmentEntries()) {
             enchantments.put(enchantmentEntry.getKey().value(), enchantmentEntry.getIntValue());
         }
         return enchantments;
     }
 
-    private static void setEnchantments(ItemStack stack, Map<Enchantment, Integer> enchantments) {
+    private static void setEnchantments(DynamicRegistryManager registryManager, ItemStack stack, Map<Enchantment, Integer> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             stack.remove(DataComponentTypes.ENCHANTMENTS);
         } else {
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                builder.set(entry.getKey(), entry.getValue());
+                builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
             }
             stack.set(DataComponentTypes.ENCHANTMENTS, builder.build().withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack)));
         }
@@ -108,7 +113,7 @@ public class EnchantmentNode implements Node {
 
             context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                context.getSource().sendFeedback(Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(entry.getKey().getName(entry.getValue())));
+                context.getSource().sendFeedback(Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
@@ -127,7 +132,7 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, enchantment.getName(enchantments.get(enchantment))));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -147,10 +152,10 @@ public class EnchantmentNode implements Node {
                 throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, 1);
-            setEnchantments(stack, enchantments);
+            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getName(1)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -169,10 +174,10 @@ public class EnchantmentNode implements Node {
                 throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, level);
-            setEnchantments(stack, enchantments);
+            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, enchantment.getName(level)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), level)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -195,10 +200,10 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
             enchantments.remove(enchantment);
-            setEnchantments(stack, enchantments);
+            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, Text.translatable(enchantment.getTranslationKey())));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, enchantment.description().copy()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -266,7 +271,7 @@ public class EnchantmentNode implements Node {
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
-            setEnchantments(stack, null);
+            setEnchantments(context.getSource().getRegistryManager(), stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
             context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));

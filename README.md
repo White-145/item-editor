@@ -6,9 +6,9 @@ Simple item editor is a minecraft mod for item editing using client commands.
 
 ### `/edit` command:
 - `... attribute ...`
-- - `... get [<name>]`
-- - `... set <name> <attribute> <amount> [<operation>] [<slot>]`
-- - `... remove <name>`
+- - `... get [<id>]`
+- - `... set <id> <attribute> <amount> [<operation>] [<slot>]`
+- - `... remove <id>`
 - - `... clear`
 - `... banner ...`
 - - `... get [<index>]`
