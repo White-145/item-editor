@@ -61,7 +61,7 @@ public class AttributeNode implements Node {
         return attribute.slot() == AttributeModifierSlot.ANY ? Text.translatable(OUTPUT_ATTRIBUTE, name, value) : Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.slot().asString());
     }
 
-    private static boolean removeName(List<AttributeModifiersComponent.Entry> attributes, Identifier id) {
+    private static boolean removeId(List<AttributeModifiersComponent.Entry> attributes, Identifier id) {
         Iterator<AttributeModifiersComponent.Entry> iterator = attributes.iterator();
         boolean wasSuccessful = false;
         while (iterator.hasNext()) {
@@ -106,9 +106,7 @@ public class AttributeNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
@@ -127,9 +125,7 @@ public class AttributeNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, Identifier> getIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
@@ -168,20 +164,16 @@ public class AttributeNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<EntityAttribute>> setIdAttributeNode = ClientCommandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Double> setIdentifierAttributeAmountNode = ClientCommandManager.argument("amount", AlternativeArgumentType.argument(DoubleArgumentType.doubleArg(), VALUE_CONSTS)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, id);
+            removeId(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -191,13 +183,9 @@ public class AttributeNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setIdAttributeAmountOperationNode = ClientCommandManager.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
@@ -205,7 +193,7 @@ public class AttributeNode implements Node {
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, id);
+            removeId(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -215,13 +203,9 @@ public class AttributeNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, AttributeModifierSlot> setNameAttributeAmountOperationSlotNode = ClientCommandManager.argument("slot", EnumArgumentType.enumArgument(AttributeModifierSlot.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = DoubleArgumentType.getDouble(context, "amount");
@@ -230,7 +214,7 @@ public class AttributeNode implements Node {
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, slot);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            removeName(attributes, id);
+            removeId(attributes, id);
             attributes.add(entry);
             setAttributes(stack, attributes);
 
@@ -242,19 +226,15 @@ public class AttributeNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Identifier> removeIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
-            if (!removeName(attributes, id)) {
+            if (!removeId(attributes, id)) {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;
             }
             setAttributes(stack, attributes);
@@ -265,13 +245,9 @@ public class AttributeNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }

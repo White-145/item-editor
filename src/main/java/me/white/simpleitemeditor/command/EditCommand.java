@@ -37,7 +37,7 @@ public class EditCommand {
             try {
                 editNode.register(node, registryAccess);
             } catch (IllegalStateException e) {
-                SimpleItemEditor.LOGGER.error("Failed to register " + editNode.getClass().getName() + ": " + e);
+                SimpleItemEditor.LOGGER.error("Failed to register {}: {}", editNode.getClass().getName(), e);
             }
         }
 

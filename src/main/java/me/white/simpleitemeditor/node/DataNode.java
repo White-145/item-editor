@@ -61,9 +61,7 @@ public class DataNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> sourceGetNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
@@ -78,9 +76,7 @@ public class DataNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> sourceGetPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
@@ -113,13 +109,9 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceAppendPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceAppendPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -161,13 +153,9 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, Integer> sourceInsertPathIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceInsertPathIndexValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -202,7 +190,7 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(element)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(element), index));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -211,13 +199,9 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourcePrependPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourcePrependPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -257,13 +241,9 @@ public class DataNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceSetPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceSetPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -292,13 +272,9 @@ public class DataNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> sourceMergeNode = ClientCommandManager.literal("merge").build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtCompound> sourceMergeValueNode = ClientCommandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
 
@@ -319,13 +295,9 @@ public class DataNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceMergeValuePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
@@ -368,13 +340,9 @@ public class DataNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> sourceRemoveNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceRemovePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
 
@@ -397,13 +365,9 @@ public class DataNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> sourceClearNode = ClientCommandManager.literal("clear").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
@@ -530,7 +494,7 @@ public class DataNode implements Node {
             return stack.get(component).copyNbt();
         }
 
-        public void set(ItemStack stack, NbtCompound nbt) throws CommandSyntaxException {
+        public void set(ItemStack stack, NbtCompound nbt) {
             preprocess(stack, nbt);
             NbtComponent.set(component, stack, nbt);
         }

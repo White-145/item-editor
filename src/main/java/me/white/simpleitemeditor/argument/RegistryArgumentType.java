@@ -13,12 +13,14 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
@@ -43,13 +45,15 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
         if (!registryKey.getRegistry().equals(registry.getValue())) {
             throw INVALID_ENTRY_EXCEPTION.create();
         }
-        return (T) reference.value();
+        return (T)reference.value();
     }
 
     @Override
     public RegistryEntry<T> parse(StringReader stringReader) throws CommandSyntaxException {
         Identifier identifier = Identifier.fromCommandInput(stringReader);
-        return registryAccess.getWrapperOrThrow(registry).getOrThrow(RegistryKey.of(registry, identifier));
+        RegistryWrapper<T> wrapper = registryAccess.getWrapperOrThrow(registry);
+        Optional<RegistryEntry.Reference<T>> optional = wrapper.getOptional(RegistryKey.of(registry, identifier));
+        return optional.orElseThrow(INVALID_ENTRY_EXCEPTION::create);
     }
 
     @Override

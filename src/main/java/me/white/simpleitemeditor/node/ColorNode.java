@@ -53,9 +53,7 @@ public class ColorNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isColorable(stack)) {
                 throw ISNT_COLORABLE_EXCEPTION;
             }
@@ -71,13 +69,9 @@ public class ColorNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setColorNode = ClientCommandManager.argument("color", ColorArgumentType.color()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isColorable(stack)) {
                 throw ISNT_COLORABLE_EXCEPTION;
             }
@@ -93,13 +87,9 @@ public class ColorNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isColorable(stack)) {
                 throw ISNT_COLORABLE_EXCEPTION;
             }

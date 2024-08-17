@@ -37,9 +37,7 @@ public class TooltipNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, TooltipPart> getPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             TooltipPart part = EnumArgumentType.getEnum(context, "part", TooltipPart.class);
             boolean tooltip = part.get(stack);
 
@@ -52,13 +50,9 @@ public class TooltipNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, TooltipPart> setPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> setPartTooltipNode = ClientCommandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             TooltipPart part = EnumArgumentType.getEnum(context, "part", TooltipPart.class);
             boolean tooltip = BoolArgumentType.getBool(context, "tooltip");
             if (part.get(stack) == tooltip) {

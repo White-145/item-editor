@@ -1,7 +1,7 @@
 {
   "argument.color.error.invalidcolor": "Invalid hex color",
   "argument.duration.error.invalidunit": "Invalid unit",
-  "argument.duration.error.toolow": "Too low",
+  "argument.duration.error.toolow": "Duration of %s is lower than minimum allowed %s",
   "argument.duration.suggestionticks": "Ticks",
   "argument.duration.suggestionseconds": "Seconds",
   "argument.duration.suggestionminutes": "Minutes",

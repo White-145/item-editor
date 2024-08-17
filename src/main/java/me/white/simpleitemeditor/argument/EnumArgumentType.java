@@ -16,13 +16,10 @@ import java.util.function.Function;
 
 public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     private static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
-    private HashMap<String, T> suggestions;
+    private HashMap<String, T> suggestions = new HashMap<>();
 
     private EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
-        suggestions = new HashMap<>();
-
-        T[] constants = clazz.getEnumConstants();
-        for (T constant : constants) {
+        for (T constant : clazz.getEnumConstants()) {
             suggestions.put(formatter.apply(constant), constant);
         }
     }
@@ -43,10 +40,8 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     public T parse(StringReader reader) throws CommandSyntaxException {
         int cursor = reader.getCursor();
         String remaining = reader.readString();
-        for (String suggestion : suggestions.keySet()) {
-            if (suggestion.equals(remaining)) {
-                return suggestions.get(suggestion);
-            }
+        if (suggestions.containsKey(remaining)) {
+            return suggestions.get(remaining);
         }
         reader.setCursor(cursor);
         throw INVALID_ENUM_EXCEPTION.createWithContext(reader);

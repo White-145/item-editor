@@ -34,18 +34,12 @@ public class ComponentNode implements Node {
 
     public static <T> void setFromNbt(ItemStack stack, ComponentType<T> component, NbtElement element, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         DataResult<T> value = component.getCodecOrThrow().parse(registryManager.getOps(NbtOps.INSTANCE), element);
-        if (value.isError()) {
-            throw MALFORMED_COMPONENT_EXCEPTION.create(value.error().orElseThrow().message());
-        }
-        stack.set(component, value.getOrThrow());
+        stack.set(component, value.getOrThrow(MALFORMED_COMPONENT_EXCEPTION::create));
     }
 
     public static <T> NbtElement getFromComponent(ItemStack stack, ComponentType<T> component, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         DataResult<NbtElement> element = component.getCodecOrThrow().encodeStart(registryManager.getOps(NbtOps.INSTANCE), stack.get(component));
-        if (element.isError()) {
-            throw BROKEN_COMPONENT_EXCEPTION.create(element.error().orElseThrow().message());
-        }
-        return element.getOrThrow();
+        return element.getOrThrow(BROKEN_COMPONENT_EXCEPTION::create);
     }
 
     @Override
@@ -56,9 +50,7 @@ public class ComponentNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> getComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
@@ -66,7 +58,7 @@ public class ComponentNode implements Node {
             NbtElement element = getFromComponent(stack, component, context.getSource().getRegistryManager());
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
+            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -75,13 +67,9 @@ public class ComponentNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> setComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, NbtElement> setComponentValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
             setFromNbt(stack, component, element, context.getSource().getRegistryManager());
@@ -94,13 +82,9 @@ public class ComponentNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ComponentType<?>>> removeComponentNode = ClientCommandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;

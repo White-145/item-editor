@@ -28,9 +28,7 @@ public class MaterialNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
 
             context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(stack.getItem())));
             return Command.SINGLE_SUCCESS;
@@ -39,13 +37,9 @@ public class MaterialNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Item>> setMaterialNode = ClientCommandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.ITEM, registryAccess)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Item item = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.ITEM);
             if (stack.getItem() == item) {
                 throw ALREADY_IS_EXCEPTION;

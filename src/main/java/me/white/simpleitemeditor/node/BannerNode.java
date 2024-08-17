@@ -185,9 +185,7 @@ public class BannerNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -206,9 +204,7 @@ public class BannerNode implements Node {
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -233,13 +229,9 @@ public class BannerNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> setIndexPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, DyeColor> setIndexPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -273,13 +265,9 @@ public class BannerNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -304,13 +292,9 @@ public class BannerNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> addPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, DyeColor> addPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -333,13 +317,9 @@ public class BannerNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> insertIndexPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, DyeColor> insertIndexPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -366,9 +346,7 @@ public class BannerNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> baseGetNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -384,13 +362,9 @@ public class BannerNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> baseSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, DyeColor> baseSetColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -406,13 +380,9 @@ public class BannerNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> baseRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (stack.getItem() != Items.SHIELD) {
                 throw ISNT_SHIELD_EXCEPTION;
             }
@@ -427,13 +397,9 @@ public class BannerNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -450,13 +416,9 @@ public class BannerNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> clearBeforeNode = ClientCommandManager.literal("before").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -479,13 +441,9 @@ public class BannerNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> clearAfterNode = ClientCommandManager.literal("after").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }

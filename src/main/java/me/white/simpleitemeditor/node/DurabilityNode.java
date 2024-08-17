@@ -79,9 +79,7 @@ public class DurabilityNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }
@@ -94,13 +92,9 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> setDurabilityNode = ClientCommandManager.argument("durability", IntegerArgumentType.integer(0)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }
@@ -122,13 +116,9 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> progressNode = ClientCommandManager.literal("progress").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Double> progressProgressNode = ClientCommandManager.argument("progress", DoubleArgumentType.doubleArg(0, 100)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }
@@ -145,13 +135,9 @@ public class DurabilityNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> resetNode = ClientCommandManager.literal("reset").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }
@@ -169,9 +155,7 @@ public class DurabilityNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> maxGetNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isUnstackable(stack)) {
                 throw STACKABLE_EXCEPTION;
             }
@@ -187,13 +171,9 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> maxSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> maxSetDurabilityNode = ClientCommandManager.argument("durability", IntegerArgumentType.integer(1)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isUnstackable(stack)) {
                 throw STACKABLE_EXCEPTION;
             }
@@ -209,13 +189,9 @@ public class DurabilityNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> maxRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isUnstackable(stack)) {
                 throw STACKABLE_EXCEPTION;
             }
@@ -230,13 +206,9 @@ public class DurabilityNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> maxResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isUnstackable(stack)) {
                 throw STACKABLE_EXCEPTION;
             }
@@ -258,9 +230,7 @@ public class DurabilityNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> unbreakableGetNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }
@@ -273,13 +243,9 @@ public class DurabilityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> unbreakableSetNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Boolean> unbreakableSetunbreakableNode = ClientCommandManager.argument("unbreakable", BoolArgumentType.bool()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
             }

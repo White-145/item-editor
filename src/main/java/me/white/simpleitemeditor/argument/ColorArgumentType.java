@@ -14,6 +14,8 @@ public class ColorArgumentType implements ArgumentType<Integer> {
     private static final SimpleCommandExceptionType INVALID_COLOR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.color.error.invalidcolor"));
     private static final Collection<String> EXAMPLES = List.of("#FF0000", "#00bb88", "#b8b8b8");
 
+    private ColorArgumentType() { }
+
     public static ColorArgumentType color() {
         return new ColorArgumentType();
     }
@@ -28,20 +30,19 @@ public class ColorArgumentType implements ArgumentType<Integer> {
             throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
         }
         reader.skip();
-        int rgb = 0;
         if (!reader.canRead(6)) {
             throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
         }
         int cursor = reader.getCursor();
+        int rgb = 0;
         for (int i = 0; i < 6; ++i) {
             char ch = Character.toLowerCase(reader.read());
-            if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))) {
+            if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z')) {
                 reader.setCursor(cursor);
                 throw INVALID_COLOR_EXCEPTION.createWithContext(reader);
-            } else {
-                rgb <<= 4;
-                rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
             }
+            rgb <<= 4;
+            rgb += ch <= '9' ? ch - '0' : ch - 'a' + 10;
         }
         return rgb;
     }

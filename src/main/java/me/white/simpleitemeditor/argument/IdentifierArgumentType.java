@@ -12,6 +12,8 @@ import java.util.Collection;
 public class IdentifierArgumentType implements ArgumentType<Identifier> {
     private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
 
+    private IdentifierArgumentType() { }
+
     public static IdentifierArgumentType identifier() {
         return new IdentifierArgumentType();
     }

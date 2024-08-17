@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class DurationArgumentType implements ArgumentType<Integer> {
     private static final Collection<String> EXAMPLES = Arrays.asList("0m", "0s", "0t", "0");
     private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.duration.error.invalidunit"));
-    private static final Dynamic2CommandExceptionType DURATION_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.stringifiedTranslatable("argument.duration.error.toolow", minimum, value));
+    private static final Dynamic2CommandExceptionType DURATION_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.translatable("argument.duration.error.toolow", minimum, value));
     private static final String SUGGESTION_TICKS = "argument.duration.suggestionticks";
     private static final String SUGGESTION_SECONDS = "argument.duration.suggestionseconds";
     private static final String SUGGESTION_MINUTES = "argument.duration.suggestionminutes";
@@ -64,7 +64,7 @@ public class DurationArgumentType implements ArgumentType<Integer> {
         try {
             stringReader.readFloat();
         } catch (CommandSyntaxException commandSyntaxException) {
-            return builder.buildFuture();
+            return Suggestions.empty();
         }
         if (stringReader.readUnquotedString().isEmpty()) {
             for (Unit unit : Unit.values()) {

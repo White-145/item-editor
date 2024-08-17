@@ -183,9 +183,7 @@ public class HeadNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -204,13 +202,9 @@ public class HeadNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setOwnerNode = ClientCommandManager.literal("owner").build();
 
         ArgumentCommandNode<FabricClientCommandSource, String> setOwnerOwnerNode = ClientCommandManager.argument("owner", StringArgumentType.word()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -231,13 +225,9 @@ public class HeadNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setTextureNode = ClientCommandManager.literal("texture").build();
 
         ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager.argument("texture", StringArgumentType.greedyString()).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -264,13 +254,9 @@ public class HeadNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }

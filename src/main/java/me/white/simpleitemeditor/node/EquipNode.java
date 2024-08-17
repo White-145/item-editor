@@ -19,13 +19,9 @@ public class EquipNode implements Node {
 
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("equip").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             ExclusiveSlot slot = ExclusiveSlot.HEAD;
             PlayerInventory inventory = context.getSource().getPlayer().getInventory();
             ItemStack equippedStack = inventory.getArmorStack(slot.armorSlot).copy();
@@ -38,13 +34,9 @@ public class EquipNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, ExclusiveSlot> slotNode = ClientCommandManager.argument("slot", EnumArgumentType.enumArgument(ExclusiveSlot.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             ExclusiveSlot slot = EnumArgumentType.getEnum(context, "slot", ExclusiveSlot.class);
             PlayerInventory inventory = context.getSource().getPlayer().getInventory();
             ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.offHand.get(0).copy() : inventory.getArmorStack(slot.armorSlot).copy();

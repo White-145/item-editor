@@ -57,9 +57,7 @@ public class TrimNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
@@ -79,13 +77,9 @@ public class TrimNode implements Node {
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ArmorTrimPattern>> setPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_PATTERN, registryAccess)).build();
 
         ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ArmorTrimMaterial>> setPatternMaterialNode = ClientCommandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_MATERIAL, registryAccess)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
@@ -107,13 +101,9 @@ public class TrimNode implements Node {
         }).build();
 
         LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }

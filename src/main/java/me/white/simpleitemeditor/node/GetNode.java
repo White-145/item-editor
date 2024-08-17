@@ -25,18 +25,14 @@ public class GetNode implements Node {
     public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
 
             context.getSource().sendFeedback(Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager.argument("item", ItemStackArgumentType.itemStack(registryAccess)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
             }
@@ -48,9 +44,7 @@ public class GetNode implements Node {
         }).build();
 
         ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
             }

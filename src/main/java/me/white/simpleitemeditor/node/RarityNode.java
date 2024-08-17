@@ -47,9 +47,7 @@ public class RarityNode implements Node {
 
         LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getStack(context.getSource());
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Rarity rarity = getRarity(stack);
 
             context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, getTranslation(rarity)));
@@ -59,13 +57,9 @@ public class RarityNode implements Node {
         LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
 
         ArgumentCommandNode<FabricClientCommandSource, Rarity> setRarityNode = ClientCommandManager.argument("rarity", EnumArgumentType.enumArgument(Rarity.class)).executes(context -> {
-            if (!EditorUtil.hasCreative(context.getSource())) {
-                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-            }
+            EditorUtil.checkHasCreative(context.getSource());
             ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            if (!EditorUtil.hasItem(stack)) {
-                throw EditorUtil.NO_ITEM_EXCEPTION;
-            }
+            EditorUtil.checkHasItem(stack);
             Rarity rarity = EnumArgumentType.getEnum(context, "rarity", Rarity.class);
             if (getRarity(stack) == rarity) {
                 throw ALREADY_IS_EXCEPTION;

@@ -30,6 +30,18 @@ public class EditorUtil {
         return client.interactionManager.getCurrentGameMode().isCreative();
     }
 
+    public static void checkHasItem(ItemStack stack) throws CommandSyntaxException {
+        if (!hasItem(stack)) {
+            throw NO_ITEM_EXCEPTION;
+        }
+    }
+
+    public static void checkHasCreative(FabricClientCommandSource source) throws CommandSyntaxException {
+        if (!hasCreative(source)) {
+            throw NOT_CREATIVE_EXCEPTION;
+        }
+    }
+
     public static ItemStack getSecondaryStack(FabricClientCommandSource source) {
         return source.getPlayer().getOffHandStack();
     }
@@ -83,7 +95,9 @@ public class EditorUtil {
         StringBuilder result = new StringBuilder();
         Style[] prevStyle = new Style[]{ Style.EMPTY };
         text.visit((style, literal) -> {
-            if (literal.isEmpty()) return Optional.empty();
+            if (literal.isEmpty()) {
+                return Optional.empty();
+            }
             if (style != null) {
                 TextColor color = style.getColor();
 
