@@ -1,50 +1,61 @@
 package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.enums.ExclusiveSlotArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
 public class EquipNode implements Node {
     private static final String OUTPUT = "commands.edit.equip";
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("equip").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            ExclusiveSlot slot = ExclusiveSlot.HEAD;
-            PlayerInventory inventory = context.getSource().getPlayer().getInventory();
-            ItemStack equippedStack = inventory.getArmorStack(slot.armorSlot).copy();
+    private PlayerInventory getInventory(CommandSource source) {
+        if (source instanceof FabricClientCommandSource) {
+            return ((FabricClientCommandSource)source).getPlayer().getInventory();
+        }
+        if (source instanceof ServerCommandSource) {
+            return ((ServerCommandSource)source).getPlayer().getInventory();
+        }
+        throw EditorUtil.UNKNOWN_SOURCE_EXCEPTION.apply(source);
+    }
 
-            EditorUtil.setStack(context.getSource(), equippedStack);
-            inventory.setStack(slot.mainSlot, stack);
-            context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(slot.packetSlot, stack));
-            context.getSource().sendFeedback(Text.translatable(OUTPUT));
+    private void equip(CommandSource source, ItemStack stack, ExclusiveSlot slot) throws CommandSyntaxException {
+        PlayerInventory inventory = getInventory(source);
+        ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.offHand.get(0).copy() : inventory.getArmorStack(slot.armorSlot).copy();
+        EditorUtil.setStack(source, equippedStack);
+        inventory.setStack(slot.mainSlot, stack);
+        if (source instanceof FabricClientCommandSource) {
+            ((FabricClientCommandSource)source).getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(slot.packetSlot, stack));
+        }
+        // should send to client if serverside?
+    }
+
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("equip").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            equip(context.getSource(), stack, ExclusiveSlot.HEAD);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, ExclusiveSlot> slotNode = ClientCommandManager.argument("slot", EnumArgumentType.enumArgument(ExclusiveSlot.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            ExclusiveSlot slot = EnumArgumentType.getEnum(context, "slot", ExclusiveSlot.class);
-            PlayerInventory inventory = context.getSource().getPlayer().getInventory();
-            ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.offHand.get(0).copy() : inventory.getArmorStack(slot.armorSlot).copy();
-
-            EditorUtil.setStack(context.getSource(), equippedStack);
-            inventory.setStack(slot.mainSlot, stack);
-            context.getSource().getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(slot.packetSlot, stack));
-            context.getSource().sendFeedback(Text.translatable(OUTPUT));
+        CommandNode<CommandSource> slotNode = commandManager.argument("slot", ExclusiveSlotArgumentType.exclusiveSlot()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            ExclusiveSlot slot = ExclusiveSlotArgumentType.getExclusiveSlot(context, "slot");
+            equip(context.getSource(), stack, slot);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -54,7 +65,7 @@ public class EquipNode implements Node {
         node.addChild(slotNode);
     }
 
-    private enum ExclusiveSlot {
+    public enum ExclusiveSlot {
         OFFHAND(-1, 40, 45),
         HEAD(3, 39, 5),
         CHEST(2, 38, 6),

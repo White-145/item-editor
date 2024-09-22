@@ -4,15 +4,13 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.ItemStackArgument;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -22,29 +20,29 @@ public class GetNode implements Node {
     private static final String OUTPUT_ITEM = "commands.edit.get.item";
     private static final String OUTPUT_GET = "commands.edit.get.get";
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, ItemStackArgument> itemNode = ClientCommandManager.argument("item", ItemStackArgumentType.itemStack(registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
+        CommandNode<CommandSource> itemNode = commandManager.argument("item", ItemStackArgumentType.itemStack(registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
             }
             ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, 1, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, 1, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> itemCountNode = ClientCommandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
+        CommandNode<CommandSource> itemCountNode = commandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
             }
@@ -52,7 +50,7 @@ public class GetNode implements Node {
             ItemStack stack = ItemStackArgumentType.getItemStackArgument(context, "item").createStack(count, true);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, count, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, count, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 

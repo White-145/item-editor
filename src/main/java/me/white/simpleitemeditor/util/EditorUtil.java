@@ -4,30 +4,46 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.simpleitemeditor.SimpleItemEditor;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public class EditorUtil {
     public static final CommandSyntaxException NOT_CREATIVE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.notcreative")).create();
     public static final CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
     public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.outofbounds", index, size));
+    public static final Function<CommandSource, IllegalArgumentException> UNKNOWN_SOURCE_EXCEPTION = source -> new IllegalArgumentException("Unknown command source '" + source.getClass().getName() + "'.");
+
+    private static boolean isClientSource(CommandSource source) {
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && source instanceof FabricClientCommandSource;
+    }
 
     public static boolean hasItem(ItemStack stack) {
         return stack != null && !stack.isEmpty();
     }
 
-    public static boolean hasCreative(FabricClientCommandSource source) {
-        MinecraftClient client = source.getClient();
-        return client.interactionManager.getCurrentGameMode().isCreative();
+    public static boolean canEdit(CommandSource source) {
+        if (isClientSource(source)) {
+            MinecraftClient client = ((FabricClientCommandSource)source).getClient();
+            return client.interactionManager.getCurrentGameMode().isCreative();
+        }
+        if (source instanceof ServerCommandSource) {
+            return ((ServerCommandSource)source).getPlayer().interactionManager.getGameMode().isCreative();
+        }
+        throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
     }
 
     public static void checkHasItem(ItemStack stack) throws CommandSyntaxException {
@@ -36,43 +52,68 @@ public class EditorUtil {
         }
     }
 
-    public static void checkHasCreative(FabricClientCommandSource source) throws CommandSyntaxException {
-        if (!hasCreative(source)) {
+    public static ItemStack getCheckedStack(CommandSource source) throws CommandSyntaxException {
+        ItemStack stack = getStack(source);
+        checkHasItem(stack);
+        return stack;
+    }
+
+    public static void checkCanEdit(CommandSource source) throws CommandSyntaxException {
+        if (!canEdit(source)) {
             throw NOT_CREATIVE_EXCEPTION;
         }
     }
 
-    public static ItemStack getSecondaryStack(FabricClientCommandSource source) {
-        return source.getPlayer().getOffHandStack();
-    }
-
-    public static void setSecondaryStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
-        if (getSecondaryStack(source) == stack) {
-            SimpleItemEditor.LOGGER.warn("Using setSecondaryStack without clonning result of getSecondaryStack (If you see this, report to github)");
+    public static ItemStack getStack(CommandSource source) {
+        if (isClientSource(source)) {
+            return ((FabricClientCommandSource)source).getPlayer().getMainHandStack();
         }
-        if (!hasCreative(source)) {
-            throw NOT_CREATIVE_EXCEPTION;
+        if (source instanceof ServerCommandSource) {
+            return ((ServerCommandSource)source).getPlayer().getMainHandStack();
         }
-        PlayerInventory inventory = source.getPlayer().getInventory();
-        inventory.setStack(40, stack);
-        source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(45, stack));
+        throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
     }
 
-    public static ItemStack getStack(FabricClientCommandSource source) {
-        return source.getPlayer().getMainHandStack();
-    }
-
-    public static void setStack(FabricClientCommandSource source, ItemStack stack) throws CommandSyntaxException {
+    public static void setStack(CommandSource source, ItemStack stack) throws CommandSyntaxException {
         if (getStack(source) == stack) {
             SimpleItemEditor.LOGGER.warn("Using setStack without clonning result of getStack (If you see this, report to github)");
         }
-        if (!hasCreative(source)) {
+        if (!canEdit(source)) {
             throw NOT_CREATIVE_EXCEPTION;
         }
-        PlayerInventory inventory = source.getPlayer().getInventory();
+        PlayerInventory inventory;
+        if (isClientSource(source)) {
+            inventory = ((FabricClientCommandSource)source).getPlayer().getInventory();
+        } else if (source instanceof ServerCommandSource) {
+            inventory = ((ServerCommandSource)source).getPlayer().getInventory();
+        } else {
+            throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
+        }
         int slot = inventory.selectedSlot;
         inventory.setStack(slot, stack);
-        source.getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));
+        if (isClientSource(source)) {
+            ((FabricClientCommandSource)source).getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));
+        }
+    }
+
+    public static void sendFeedback(CommandSource source, Text message) {
+        if (isClientSource(source)) {
+            ((FabricClientCommandSource)source).sendFeedback(message);
+        } else if (source instanceof ServerCommandSource) {
+            ((ServerCommandSource)source).sendFeedback(() -> message, false);
+        } else {
+            throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
+        }
+    }
+
+    public static void sendError(CommandSource source, Text message) {
+        if (isClientSource(source)) {
+            ((FabricClientCommandSource)source).sendError(message);
+        } else if (source instanceof ServerCommandSource) {
+            ((ServerCommandSource)source).sendError(message);
+        } else {
+            throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
+        }
     }
 
     public static String formatColor(int color) {

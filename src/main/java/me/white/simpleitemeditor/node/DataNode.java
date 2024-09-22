@@ -4,16 +4,16 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.enums.DataSourceArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.command.argument.NbtElementArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;
@@ -54,15 +54,15 @@ public class DataNode implements Node {
     private static final String OUTPUT_REMOVE = "commands.edit.data.remove";
     private static final String OUTPUT_CLEAR = "commands.edit.data.clear";
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("data").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("data").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, DataSource> sourceNode = ClientCommandManager.argument("source", EnumArgumentType.enumArgument(DataSource.class)).build();
+        CommandNode<CommandSource> sourceNode = commandManager.argument("source", DataSourceArgumentType.dataSource()).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -70,14 +70,13 @@ public class DataNode implements Node {
                 throw NO_NBT_EXCEPTION;
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, TextUtil.copyable(source.get(stack))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, TextUtil.copyable(source.get(stack))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPathArgumentType.NbtPath> sourceGetPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceGetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -100,19 +99,18 @@ public class DataNode implements Node {
                 }
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, output));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, output));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceAppendNode = ClientCommandManager.literal("append").build();
+        CommandNode<CommandSource> sourceAppendNode = commandManager.literal("append").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceAppendPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<CommandSource> sourceAppendPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceAppendPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceAppendPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -142,21 +140,20 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_APPEND, TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_APPEND, TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceInsertNode = ClientCommandManager.literal("insert").build();
+        CommandNode<CommandSource> sourceInsertNode = commandManager.literal("insert").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceInsertPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<CommandSource> sourceInsertPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> sourceInsertPathIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).build();
+        CommandNode<CommandSource> sourceInsertPathIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceInsertPathIndexValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceInsertPathIndexValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
             int index = IntegerArgumentType.getInteger(context, "index");
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -190,19 +187,18 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, TextUtil.copyable(element), index));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_INSERT, TextUtil.copyable(element), index));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourcePrependNode = ClientCommandManager.literal("prepend").build();
+        CommandNode<CommandSource> sourcePrependNode = commandManager.literal("prepend").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourcePrependPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<CommandSource> sourcePrependPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourcePrependPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourcePrependPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -232,19 +228,18 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_PREPEND, TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_PREPEND, TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceSetNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> sourceSetNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceSetPathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<CommandSource> sourceSetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtElement> sourceSetPathValueNode = ClientCommandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceSetPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -265,17 +260,16 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceMergeNode = ClientCommandManager.literal("merge").build();
+        CommandNode<CommandSource> sourceMergeNode = commandManager.literal("merge").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtCompound> sourceMergeValueNode = ClientCommandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceMergeValueNode = commandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
 
             if (!source.isApplicable(stack)) {
@@ -290,15 +284,14 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_MERGE, TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_MERGE, TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceMergeValuePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceMergeValuePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
 
@@ -333,17 +326,16 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_MERGE_PATH, TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_MERGE_PATH, TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceRemoveNode = ClientCommandManager.literal("remove").build();
+        CommandNode<CommandSource> sourceRemoveNode = commandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, NbtPath> sourceRemovePathNode = ClientCommandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceRemovePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             NbtPath path = context.getArgument("path", NbtPath.class);
 
             if (!source.isApplicable(stack)) {
@@ -360,15 +352,14 @@ public class DataNode implements Node {
             source.set(stack, nbt);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> sourceClearNode = ClientCommandManager.literal("clear").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            DataSource source = EnumArgumentType.getEnum(context, "source", DataSource.class);
+        CommandNode<CommandSource> sourceClearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -378,7 +369,7 @@ public class DataNode implements Node {
             source.set(stack, new NbtCompound());
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -417,7 +408,7 @@ public class DataNode implements Node {
         sourceNode.addChild(sourceClearNode);
     }
 
-    private enum DataSource {
+    public enum DataSource {
         CUSTOM(DataComponentTypes.CUSTOM_DATA),
         ENTITY(DataComponentTypes.ENTITY_DATA) {
             @Override

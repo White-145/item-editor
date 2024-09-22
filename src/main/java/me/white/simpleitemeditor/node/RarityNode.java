@@ -3,13 +3,13 @@ package me.white.simpleitemeditor.node;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.enums.RarityArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -42,32 +42,30 @@ public class RarityNode implements Node {
     }
 
     @Override
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("rarity").build();
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("rarity").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             Rarity rarity = getRarity(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, getTranslation(rarity)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, getTranslation(rarity)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Rarity> setRarityNode = ClientCommandManager.argument("rarity", EnumArgumentType.enumArgument(Rarity.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            Rarity rarity = EnumArgumentType.getEnum(context, "rarity", Rarity.class);
+        CommandNode<CommandSource> setRarityNode = commandManager.argument("rarity", RarityArgumentType.rarity()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            Rarity rarity = RarityArgumentType.getRarity(context, "rarity");
             if (getRarity(stack) == rarity) {
                 throw ALREADY_IS_EXCEPTION;
             }
             setRarity(stack, rarity);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(rarity)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(rarity)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

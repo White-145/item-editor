@@ -3,13 +3,13 @@ package me.white.simpleitemeditor.node;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
@@ -52,12 +52,12 @@ public class TrimNode implements Node {
         stack.set(DataComponentTypes.TRIM, trim.withShowInTooltip(TooltipNode.TooltipPart.TRIM.get(stack)));
     }
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("trim").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("trim").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
@@ -68,18 +68,17 @@ public class TrimNode implements Node {
             ArmorTrimPattern pattern = trim.getPattern().value();
             ArmorTrimMaterial material = trim.getMaterial().value();
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET, pattern.description(), material.description()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, pattern.description(), material.description()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ArmorTrimPattern>> setPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_PATTERN, registryAccess)).build();
+        CommandNode<CommandSource> setPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_PATTERN, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<ArmorTrimMaterial>> setPatternMaterialNode = ClientCommandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_MATERIAL, registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setPatternMaterialNode = commandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.TRIM_MATERIAL, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
@@ -96,14 +95,13 @@ public class TrimNode implements Node {
             setTrim(stack, trim);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, pattern.description(), material.description()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, pattern.description(), material.description()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isArmor(stack)) {
                 throw ISNT_ARMOR_EXCEPTION;
             }
@@ -113,7 +111,7 @@ public class TrimNode implements Node {
             removeTrim(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 

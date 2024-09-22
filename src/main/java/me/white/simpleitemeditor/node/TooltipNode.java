@@ -4,13 +4,13 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.enums.TooltipPartArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.DyedColorComponent;
@@ -30,30 +30,28 @@ public class TooltipNode implements Node {
     private static final String OUTPUT_DISABLE = "commands.edit.tooltip.disable";
 
     @Override
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("tooltip").build();
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("tooltip").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").build();
+        CommandNode<CommandSource> getNode = commandManager.literal("get").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, TooltipPart> getPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
-            TooltipPart part = EnumArgumentType.getEnum(context, "part", TooltipPart.class);
+        CommandNode<CommandSource> getPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            TooltipPart part = TooltipPartArgumentType.getTooltipPart(context, "part");
             boolean tooltip = part.get(stack);
 
-            context.getSource().sendFeedback(Text.translatable(tooltip ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(tooltip ? OUTPUT_GET_ENABLED : OUTPUT_GET_DISABLED));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, TooltipPart> setPartNode = ClientCommandManager.argument("part", EnumArgumentType.enumArgument(TooltipPart.class)).build();
+        CommandNode<CommandSource> setPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> setPartTooltipNode = ClientCommandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
-            TooltipPart part = EnumArgumentType.getEnum(context, "part", TooltipPart.class);
+        CommandNode<CommandSource> setPartTooltipNode = commandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            TooltipPart part = TooltipPartArgumentType.getTooltipPart(context, "part");
             boolean tooltip = BoolArgumentType.getBool(context, "tooltip");
             if (part.get(stack) == tooltip) {
                 throw ALREADY_IS_EXCEPTION;
@@ -62,7 +60,7 @@ public class TooltipNode implements Node {
             part.set(stack, tooltip);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(tooltip ? OUTPUT_ENABLE : OUTPUT_DISABLE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(tooltip ? OUTPUT_ENABLE : OUTPUT_DISABLE));
             return Command.SINGLE_SUCCESS;
         }).build();
 

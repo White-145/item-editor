@@ -5,14 +5,14 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
@@ -98,27 +98,26 @@ public class EnchantmentNode implements Node {
         stack.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
     }
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("enchantment").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("enchantment").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
             Map<Enchantment, Integer> enchantments = getEnchantments(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                context.getSource().sendFeedback(Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Enchantment>> getEnchantmentNode = ClientCommandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
@@ -128,16 +127,15 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Enchantment>> setEnchantmentNode = ClientCommandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == 1) {
@@ -147,14 +145,13 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setEnchantmentLevelNode = ClientCommandManager.argument("level", IntegerArgumentType.integer(0, 255)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEnchantmentLevelNode = commandManager.argument("level", IntegerArgumentType.integer(0, 255)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
             Map<Enchantment, Integer> enchantments = new HashMap<>(getEnchantments(stack));
             int level = IntegerArgumentType.getInteger(context, "level");
@@ -165,16 +162,15 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), level)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), level)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Enchantment>> removeEnchantmentNode = ClientCommandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
@@ -187,28 +183,26 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, enchantment.description().copy()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE, enchantment.description().copy()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> glintNode = ClientCommandManager.literal("glint").build();
+        CommandNode<CommandSource> glintNode = commandManager.literal("glint").build();
 
-        LiteralCommandNode<FabricClientCommandSource> glintGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> glintGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasGlintOverride(stack)) {
                 throw NO_GLINT_OVERRIDE_EXCEPTION;
             }
-            context.getSource().sendFeedback(Text.translatable(getGlintOverride(stack) ? OUTPUT_GLINT_GET_ENABLED : OUTPUT_GLINT_GET_DISABLED));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(getGlintOverride(stack) ? OUTPUT_GLINT_GET_ENABLED : OUTPUT_GLINT_GET_DISABLED));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> glintSetNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> glintSetNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> glintSetGlintNode = ClientCommandManager.argument("glint", BoolArgumentType.bool()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> glintSetGlintNode = commandManager.argument("glint", BoolArgumentType.bool()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             boolean glint = BoolArgumentType.getBool(context, "glint");
             if (hasGlintOverride(stack) && glint == getGlintOverride(stack)) {
                 throw GLINT_ALREADY_IS_EXCEPTION;
@@ -216,35 +210,33 @@ public class EnchantmentNode implements Node {
             setGlint(stack, glint);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(glint ? OUTPUT_GLINT_ENABLE : OUTPUT_GLINT_DISABLE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(glint ? OUTPUT_GLINT_ENABLE : OUTPUT_GLINT_DISABLE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> glintResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> glintResetNode = commandManager.literal("reset").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasGlintOverride(stack)) {
                 throw NO_GLINT_OVERRIDE_EXCEPTION;
             }
             removeGlintOverride(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GLINT_RESET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GLINT_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
             setEnchantments(context.getSource().getRegistryManager(), stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
 

@@ -10,13 +10,13 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.item.Item;
@@ -112,19 +112,20 @@ public class HeadNode implements Node {
         return object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
     }
 
-    public static void setFromUrl(String url, FabricClientCommandSource source) {
+    private static HttpURLConnection connect() throws IOException {
+        HttpURLConnection connection = (HttpURLConnection)MINESKIN_API.openConnection();
+        connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
+        connection.setConnectTimeout(30000);
+        connection.addRequestProperty("Content-Type", "application/json");
+        connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+        return connection;
+    }
+
+    public static void setFromUrl(String url, CommandSource source) {
         try {
             JsonObject body = new JsonObject();
-            body.addProperty("url", url);
-            body.addProperty("visibility", 1);
-
-            HttpURLConnection connection = (HttpURLConnection) MINESKIN_API.openConnection();
-            connection.addRequestProperty("User-Agent", "ItemEditor-HeadGenerator");
-            connection.setConnectTimeout(30000);
-            connection.addRequestProperty("Content-Type", "application/json");
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-
+            HttpURLConnection connection = connect();
             try (OutputStream output = connection.getOutputStream()) {
                 byte[] input = body.toString().getBytes(StandardCharsets.UTF_8);
                 output.write(input, 0, input.length);
@@ -146,11 +147,11 @@ public class HeadNode implements Node {
                     String value = texture.get("value").getAsString();
                     String signature = texture.get("signature").getAsString();
 
-                    ItemStack stack = EditorUtil.getStack(source).copy();
+                    ItemStack stack = EditorUtil.getCheckedStack(source).copy();
                     if (!EditorUtil.hasItem(stack)) {
                         throw EditorUtil.NO_ITEM_EXCEPTION;
                     }
-                    if (!EditorUtil.hasCreative(source)) {
+                    if (!EditorUtil.canEdit(source)) {
                         throw EditorUtil.NOT_CREATIVE_EXCEPTION;
                     }
                     if (!isHead(stack)) {
@@ -159,7 +160,7 @@ public class HeadNode implements Node {
                     setProfile(stack, value, signature);
 
                     EditorUtil.setStack(source, stack);
-                    source.sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
+                    EditorUtil.sendFeedback(source, Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
                 }
                 case (HttpURLConnection.HTTP_BAD_REQUEST) -> {
                     throw BAD_CUSTOM_TEXTURE_EXCEPTION;
@@ -174,16 +175,16 @@ public class HeadNode implements Node {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (CommandSyntaxException e) {
-            source.sendError(Text.literal(e.getMessage()));
+            EditorUtil.sendError(source, Text.literal(e.getMessage()));
         }
     }
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("head").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("head").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -193,18 +194,17 @@ public class HeadNode implements Node {
             GameProfile profile = getProfile(stack);
             String texture = getTexture(profile);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.url(texture)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_GET, TextUtil.url(texture)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        LiteralCommandNode<FabricClientCommandSource> setOwnerNode = ClientCommandManager.literal("owner").build();
+        CommandNode<CommandSource> setOwnerNode = commandManager.literal("owner").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, String> setOwnerOwnerNode = ClientCommandManager.argument("owner", StringArgumentType.word()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setOwnerOwnerNode = commandManager.argument("owner", StringArgumentType.word()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -218,16 +218,15 @@ public class HeadNode implements Node {
             setProfile(stack, owner);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_OWNER_SET, owner));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_OWNER_SET, owner));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setTextureNode = ClientCommandManager.literal("texture").build();
+        CommandNode<CommandSource> setTextureNode = commandManager.literal("texture").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, String> setTextureTextureNode = ClientCommandManager.argument("texture", StringArgumentType.greedyString()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setTextureTextureNode = commandManager.argument("texture", StringArgumentType.greedyString()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -242,9 +241,9 @@ public class HeadNode implements Node {
                     String value = new String(Base64.getEncoder().encode(("{\"textures\":{\"SKIN\":{\"url\":\"" + texture + "\"}}}").getBytes()));
                     setProfile(stack, value, null);
                     EditorUtil.setStack(context.getSource(), stack);
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(texture)));
+                    EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(texture)));
                 } else {
-                    context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_CUSTOM_SET, TextUtil.url(texture)));
+                    EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_CUSTOM_SET, TextUtil.url(texture)));
                     CompletableFuture.runAsync(() -> setFromUrl(texture, context.getSource()));
                 }
             } catch (MalformedURLException | URISyntaxException ignored) {
@@ -253,10 +252,9 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
@@ -266,7 +264,7 @@ public class HeadNode implements Node {
             resetProfile(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TEXTURE_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 

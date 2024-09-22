@@ -4,15 +4,15 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
+import me.white.simpleitemeditor.argument.enums.DyeColorArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.item.Item;
@@ -180,12 +180,12 @@ public class BannerNode implements Node {
         return Text.translatable(string + "." + layer.color().getName());
     }
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("banner").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("banner").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -194,17 +194,16 @@ public class BannerNode implements Node {
             }
             List<BannerPatternsComponent.Layer> layers = getBannerLayers(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (int i = 0; i < layers.size(); ++i) {
                 BannerPatternsComponent.Layer pattern = layers.get(i);
-                context.getSource().sendFeedback(Text.empty().append(Text.literal(i + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(translation(pattern)));
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal(i + ". ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(translation(pattern)));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> getIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -218,20 +217,19 @@ public class BannerNode implements Node {
             }
             BannerPatternsComponent.Layer layer = layers.get(index);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_LAYER, translation(layer)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_LAYER, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).build();
+        CommandNode<CommandSource> setIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> setIndexPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<CommandSource> setIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, DyeColor> setIndexPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -241,7 +239,7 @@ public class BannerNode implements Node {
                 throw NO_LAYERS_EXCEPTION;
             }
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
+            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             if (layers.size() < index) {
                 throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, layers.size());
@@ -258,16 +256,15 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, translation(layer)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> removeIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -283,43 +280,41 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE, index));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE, index));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> addNode = ClientCommandManager.literal("add").build();
+        CommandNode<CommandSource> addNode = commandManager.literal("add").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> addPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<CommandSource> addPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, DyeColor> addPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> addPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
+            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
             layers.add(layer);
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_ADD, translation(layer)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ADD, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> insertNode = ClientCommandManager.literal("insert").build();
+        CommandNode<CommandSource> insertNode = commandManager.literal("insert").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> insertIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0, 255)).build();
+        CommandNode<CommandSource> insertIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<BannerPattern>> insertIndexPatternNode = ClientCommandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<CommandSource> insertIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, DyeColor> insertIndexPatternColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> insertIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -328,7 +323,7 @@ public class BannerNode implements Node {
             }
             int index = IntegerArgumentType.getInteger(context, "index");
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
+            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
             if (index >= layers.size()) {
@@ -338,15 +333,14 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_INSERT, translation(layer)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_INSERT, translation(layer)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> baseNode = ClientCommandManager.literal("base").build();
+        CommandNode<CommandSource> baseNode = commandManager.literal("base").build();
 
-        LiteralCommandNode<FabricClientCommandSource> baseGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> baseGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -355,34 +349,32 @@ public class BannerNode implements Node {
             }
             DyeColor color = getBaseColor(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_GET, color.getName()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_GET, color.getName()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> baseSetNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> baseSetNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, DyeColor> baseSetColorNode = ClientCommandManager.argument("color", EnumArgumentType.enumArgument(DyeColor.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> baseSetColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
-            DyeColor color = EnumArgumentType.getEnum(context, "color", DyeColor.class);
+            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
             if (hasBaseColor(stack) && getBaseColor(stack) == color) {
                 throw BASE_ALREADY_IS_EXCEPTION;
             }
             ItemStack newStack = setBaseColor(stack, color);
 
             EditorUtil.setStack(context.getSource(), newStack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_SET, color.getName()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_SET, color.getName()));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> baseRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> baseRemoveNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (stack.getItem() != Items.SHIELD) {
                 throw ISNT_SHIELD_EXCEPTION;
             }
@@ -392,14 +384,13 @@ public class BannerNode implements Node {
             ItemStack newStack = setBaseColor(stack, null);
 
             EditorUtil.setStack(context.getSource(), newStack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_BASE_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -409,16 +400,15 @@ public class BannerNode implements Node {
             setBannerLayers(stack, List.of());
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearBeforeNode = ClientCommandManager.literal("before").build();
+        CommandNode<CommandSource> clearBeforeNode = commandManager.literal("before").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> clearBeforeIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearBeforeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -434,16 +424,15 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_BEFORE, index));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR_BEFORE, index));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearAfterNode = ClientCommandManager.literal("after").build();
+        CommandNode<CommandSource> clearAfterNode = commandManager.literal("after").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> clearAfterIndexNode = ClientCommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearAfterIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
@@ -459,7 +448,7 @@ public class BannerNode implements Node {
             setBannerLayers(stack, layers);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR_AFTER, index));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR_AFTER, index));
             return Command.SINGLE_SUCCESS;
         }).build();
 

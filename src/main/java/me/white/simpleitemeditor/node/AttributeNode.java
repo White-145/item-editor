@@ -1,19 +1,19 @@
 package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.AlternativeArgumentType;
-import me.white.simpleitemeditor.argument.EnumArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.IdentifierArgumentType;
+import me.white.simpleitemeditor.argument.InfiniteDoubleArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
+import me.white.simpleitemeditor.argument.enums.AttributeOperationArgumentType;
+import me.white.simpleitemeditor.argument.enums.AttributeSlotArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -28,7 +28,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class AttributeNode implements Node {
     private static final CommandSyntaxException NO_ATTRIBUTES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.attribute.error.noattributes")).create();
@@ -40,20 +42,6 @@ public class AttributeNode implements Node {
     private static final String OUTPUT_CLEAR = "commands.edit.attribute.clear";
     private static final String OUTPUT_ATTRIBUTE = "commands.edit.attribute.attribute";
     private static final String OUTPUT_ATTRIBUTE_SLOT = "commands.edit.attribute.attributeslot";
-    private static final Map<String, Double> VALUE_CONSTS = new HashMap<>();
-
-    static {
-        VALUE_CONSTS.put("infinity", Double.POSITIVE_INFINITY);
-        VALUE_CONSTS.put("-infinity", Double.NEGATIVE_INFINITY);
-    }
-
-    private static String operationFormatter(EntityAttributeModifier.Operation operation) {
-        return switch (operation) {
-            case ADD_VALUE -> "add";
-            case ADD_MULTIPLIED_BASE -> "mult_base";
-            case ADD_MULTIPLIED_TOTAL -> "mult_total";
-        };
-    }
 
     private static Text translate(AttributeModifiersComponent.Entry attribute) {
         Text name = Text.translatable(attribute.attribute().value().getTranslationKey());
@@ -100,21 +88,20 @@ public class AttributeNode implements Node {
             stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode.TooltipPart.ATTRIBUTE.get(stack)));
         }
     }
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("attribute").build();
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("attribute").build();
-
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
             List<AttributeModifiersComponent.Entry> attributes = getAttributes(stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (AttributeModifiersComponent.Entry entry : attributes) {
                 Identifier id = entry.modifier().id();
-                context.getSource().sendFeedback(Text.empty()
+                EditorUtil.sendFeedback(context.getSource(), Text.empty()
                         .append(Text.literal(id.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                         .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
                         .append(translate(entry))
@@ -123,9 +110,8 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Identifier> getIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
@@ -142,12 +128,12 @@ public class AttributeNode implements Node {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;
             }
             if (matching.size() == 1) {
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(matching.get(0))));
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(matching.get(0))));
             } else {
-                context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
                 for (AttributeModifiersComponent.Entry entry : matching) {
                     Identifier attributeId = entry.modifier().id();
-                    context.getSource().sendFeedback(Text.empty()
+                    EditorUtil.sendFeedback(context.getSource(), Text.empty()
                             .append(Text.literal(attributeId.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                             .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
                             .append(translate(entry))
@@ -157,19 +143,18 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Identifier> setIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).build();
+        CommandNode<CommandSource> setIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<EntityAttribute>> setIdAttributeNode = ClientCommandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
+        CommandNode<CommandSource> setIdAttributeNode = commandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Double> setIdentifierAttributeAmountNode = ClientCommandManager.argument("amount", AlternativeArgumentType.argument(DoubleArgumentType.doubleArg(), VALUE_CONSTS)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setIdentifierAttributeAmountNode = commandManager.argument("amount", InfiniteDoubleArgumentType.infiniteDouble()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
-            double amount = DoubleArgumentType.getDouble(context, "amount");
+            double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
@@ -178,18 +163,17 @@ public class AttributeNode implements Node {
             setAttributes(stack, attributes);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, translate(entry)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, translate(entry)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, EntityAttributeModifier.Operation> setIdAttributeAmountOperationNode = ClientCommandManager.argument("operation", EnumArgumentType.enumArgument(EntityAttributeModifier.Operation.class, AttributeNode::operationFormatter)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setIdAttributeAmountOperationNode = commandManager.argument("operation", AttributeOperationArgumentType.attributeOperation()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
-            double amount = DoubleArgumentType.getDouble(context, "amount");
-            EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
+            double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
+            EntityAttributeModifier.Operation operation = AttributeOperationArgumentType.getAttributeOperation(context, "operation");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
@@ -198,19 +182,18 @@ public class AttributeNode implements Node {
             setAttributes(stack, attributes);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, translate(entry)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, translate(entry)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, AttributeModifierSlot> setNameAttributeAmountOperationSlotNode = ClientCommandManager.argument("slot", EnumArgumentType.enumArgument(AttributeModifierSlot.class)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setNameAttributeAmountOperationSlotNode = commandManager.argument("slot", AttributeSlotArgumentType.attributeSlot()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
-            double amount = DoubleArgumentType.getDouble(context, "amount");
-            EntityAttributeModifier.Operation operation = EnumArgumentType.getEnum(context, "operation", EntityAttributeModifier.Operation.class);
-            AttributeModifierSlot slot = EnumArgumentType.getEnum(context, "slot", AttributeModifierSlot.class);
+            double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
+            EntityAttributeModifier.Operation operation = AttributeOperationArgumentType.getAttributeOperation(context, "operation");
+            AttributeModifierSlot slot = AttributeSlotArgumentType.getSlot(context, "slot");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, slot);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
@@ -219,16 +202,15 @@ public class AttributeNode implements Node {
             setAttributes(stack, attributes);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, translate(entry)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, translate(entry)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Identifier> removeIdNode = ClientCommandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
@@ -240,21 +222,20 @@ public class AttributeNode implements Node {
             setAttributes(stack, attributes);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
             setAttributes(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
 

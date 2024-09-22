@@ -5,17 +5,16 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import me.white.simpleitemeditor.argument.AlternativeArgumentType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.ColorArgumentType;
-import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.argument.DurationArgumentType;
+import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffect;
@@ -54,11 +53,6 @@ public class PotionNode implements Node {
     private static final String OUTPUT_COLOR_SET = "commands.edit.potion.setcolor";
     private static final String OUTPUT_COLOR_REMOVE = "commands.edit.potion.removecolor";
     private static final String OUTPUT_EFFECT = "commands.edit.potion.effect";
-    private static final Map<String, Integer> DURATION_CONSTS = new HashMap<>();
-
-    static {
-        DURATION_CONSTS.put("infinity", -1);
-    }
 
     private static Text getTranslation(StatusEffectInstance effect) {
         return Text.translatable(OUTPUT_EFFECT, effect.getEffectType().value().getName(), effect.getAmplifier() + 1, effect.getDuration() < 0 ? "Infinity" : effect.getDuration());
@@ -154,12 +148,12 @@ public class PotionNode implements Node {
         effects.add(effect);
     }
 
-    public void register(LiteralCommandNode<FabricClientCommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> node = ClientCommandManager.literal("potion").build();
+    @Override
+    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
+        CommandNode<CommandSource> node = commandManager.literal("potion").build();
 
-        LiteralCommandNode<FabricClientCommandSource> getNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -168,16 +162,15 @@ public class PotionNode implements Node {
             }
             List<StatusEffectInstance> effects = getEffects(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (StatusEffectInstance instance : effects) {
-                context.getSource().sendFeedback(Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))).append(getTranslation(instance)));
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))).append(getTranslation(instance)));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<StatusEffect>> getEffectNode = ClientCommandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> getEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -197,18 +190,17 @@ public class PotionNode implements Node {
                 throw NO_SUCH_EFFECT_EXCEPTION;
             }
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_GET_EFFECT, getTranslation(matching)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_EFFECT, getTranslation(matching)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> setNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<StatusEffect>> setEffectNode = ClientCommandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).build();
+        CommandNode<CommandSource> setEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectDurationNode = ClientCommandManager.argument("duration", AlternativeArgumentType.argument(DurationArgumentType.duration(), DURATION_CONSTS)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEffectDurationNode = commandManager.argument("duration", DurationArgumentType.duration()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -220,14 +212,13 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(instance)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(instance)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> setEffectDurationAmplifierNode = ClientCommandManager.argument("amplifier", IntegerArgumentType.integer(StatusEffectInstance.MIN_AMPLIFIER, StatusEffectInstance.MAX_AMPLIFIER)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEffectDurationAmplifierNode = commandManager.argument("amplifier", IntegerArgumentType.integer(StatusEffectInstance.MIN_AMPLIFIER, StatusEffectInstance.MAX_AMPLIFIER)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -240,14 +231,13 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(instance)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(instance)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesNode = ClientCommandManager.argument("particles", BoolArgumentType.bool()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEffectDurationAmplifierParticlesNode = commandManager.argument("particles", BoolArgumentType.bool()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -261,14 +251,13 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(instance)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(instance)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesIconNode = ClientCommandManager.argument("icon", BoolArgumentType.bool()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEffectDurationAmplifierParticlesIconNode = commandManager.argument("icon", BoolArgumentType.bool()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -283,14 +272,13 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(instance)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(instance)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Boolean> setEffectDurationAmplifierParticlesIconAmbientNode = ClientCommandManager.argument("ambient", BoolArgumentType.bool()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> setEffectDurationAmplifierParticlesIconAmbientNode = commandManager.argument("ambient", BoolArgumentType.bool()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -306,16 +294,15 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_SET, getTranslation(instance)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getTranslation(instance)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> removeNode = ClientCommandManager.literal("remove").build();
+        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<StatusEffect>> removeEffectNode = ClientCommandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> removeEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -341,14 +328,13 @@ public class PotionNode implements Node {
             setEffects(stack, effects);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> clearNode = ClientCommandManager.literal("clear").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -358,15 +344,14 @@ public class PotionNode implements Node {
             setEffects(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_CLEAR));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> colorNode = ClientCommandManager.literal("color").build();
+        CommandNode<CommandSource> colorNode = commandManager.literal("color").build();
 
-        LiteralCommandNode<FabricClientCommandSource> colorGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> colorGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -375,16 +360,15 @@ public class PotionNode implements Node {
             }
             int color = getColor(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_COLOR_GET, TextUtil.copyable(EditorUtil.formatColor(color))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_COLOR_GET, TextUtil.copyable(EditorUtil.formatColor(color))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> colorSetNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> colorSetNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, Integer> colorSetColorNode = ClientCommandManager.argument("color", ColorArgumentType.color()).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> colorSetColorNode = commandManager.argument("color", ColorArgumentType.color()).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -395,14 +379,13 @@ public class PotionNode implements Node {
             setColor(stack, color);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_COLOR_SET, TextUtil.copyable(EditorUtil.formatColor(color))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_COLOR_SET, TextUtil.copyable(EditorUtil.formatColor(color))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> colorRemoveNode = ClientCommandManager.literal("remove").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> colorRemoveNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -412,15 +395,14 @@ public class PotionNode implements Node {
             removeColor(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_COLOR_REMOVE));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_COLOR_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> typeNode = ClientCommandManager.literal("type").build();
+        CommandNode<CommandSource> typeNode = commandManager.literal("type").build();
 
-        LiteralCommandNode<FabricClientCommandSource> typeGetNode = ClientCommandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getStack(context.getSource());
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> typeGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -429,16 +411,15 @@ public class PotionNode implements Node {
             }
             Potion potion = getType(stack);
 
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TYPE_GET, getTranslation(stack, potion)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TYPE_GET, getTranslation(stack, potion)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> typeSetNode = ClientCommandManager.literal("set").build();
+        CommandNode<CommandSource> typeSetNode = commandManager.literal("set").build();
 
-        ArgumentCommandNode<FabricClientCommandSource, RegistryEntry<Potion>> typeSetTypeNode = ClientCommandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.POTION, registryAccess)).executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> typeSetTypeNode = commandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.POTION, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -449,14 +430,13 @@ public class PotionNode implements Node {
             setType(stack, potion);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TYPE_SET, getTranslation(stack, potion)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TYPE_SET, getTranslation(stack, potion)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        LiteralCommandNode<FabricClientCommandSource> typeResetNode = ClientCommandManager.literal("reset").executes(context -> {
-            EditorUtil.checkHasCreative(context.getSource());
-            ItemStack stack = EditorUtil.getStack(context.getSource()).copy();
-            EditorUtil.checkHasItem(stack);
+        CommandNode<CommandSource> typeResetNode = commandManager.literal("reset").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
             }
@@ -466,7 +446,7 @@ public class PotionNode implements Node {
             setType(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            context.getSource().sendFeedback(Text.translatable(OUTPUT_TYPE_RESET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TYPE_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
