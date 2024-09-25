@@ -1,10 +1,13 @@
 package me.white.simpleitemeditor.mixin;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.command.EditCommand;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.network.packet.s2c.play.CommandTreeS2CPacket;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.featuretoggle.FeatureSet;
@@ -19,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow
-    private CommandDispatcher<?> commandDispatcher;
+    private CommandDispatcher<CommandSource> commandDispatcher;
     @Final
     @Shadow
     private FeatureSet enabledFeatures;
@@ -27,10 +30,14 @@ public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow
     private DynamicRegistryManager.Immutable combinedDynamicRegistries;
 
+    @SuppressWarnings("unchecked")
     @Inject(method = "onCommandTree(Lnet/minecraft/network/packet/s2c/play/CommandTreeS2CPacket;)V", at = @At("RETURN"))
     public void onCommandTree(CommandTreeS2CPacket packet, CallbackInfo ci) {
         SimpleItemEditor.clientCommandDispatcher = new CommandDispatcher<>();
-        EditCommand.PROVIDER.register(SimpleItemEditor.clientCommandDispatcher, CommandRegistryAccess.of(this.combinedDynamicRegistries, this.enabledFeatures));
+        CommandNode<FabricClientCommandSource> node = EditCommand.PROVIDER.register(commandDispatcher, CommandRegistryAccess.of(this.combinedDynamicRegistries, this.enabledFeatures));
+
+        SimpleItemEditor.clientCommandDispatcher.getRoot().addChild(node);
+        commandDispatcher.getRoot().addChild((CommandNode<CommandSource>)(CommandNode<? extends CommandSource>)node);
     }
 
     @Inject(method = "sendCommand(Ljava/lang/String;)Z", at = @At("HEAD"), cancellable = true)

@@ -15,13 +15,12 @@ public class ClientCommand {
         this.nodeProvider = nodeProvider;
     }
 
-    public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+    public CommandNode<FabricClientCommandSource> register(CommandDispatcher<?> dispatcher, CommandRegistryAccess registryAccess) {
         String name = id.getPath();
         if (dispatcher.getRoot().getChild(name) != null) {
             name = id.toString();
         }
-        CommandNode<FabricClientCommandSource> node = nodeProvider.provide(name, registryAccess);
-        dispatcher.getRoot().addChild(node);
+        return nodeProvider.provide(name, registryAccess);
     }
 
     @FunctionalInterface
