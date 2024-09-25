@@ -22,19 +22,19 @@ public class MaterialNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.material.set";
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("material").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("material").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, TextUtil.copyable(stack.getItem())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setMaterialNode = commandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.ITEM, registryAccess)).executes(context -> {
+        CommandNode<S> setMaterialNode = commandManager.argument("material", RegistryArgumentType.registryEntry(RegistryKeys.ITEM, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             Item item = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.ITEM);
@@ -48,13 +48,13 @@ public class MaterialNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get
         node.addChild(getNode);
 
         // ... set <material>
         node.addChild(setNode);
         setNode.addChild(setMaterialNode);
+
+        return node;
     }
 }

@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
+public abstract class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     private static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
     private Class<T> clazz;
     private List<String> suggestions;

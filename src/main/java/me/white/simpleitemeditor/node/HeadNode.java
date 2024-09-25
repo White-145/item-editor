@@ -180,10 +180,10 @@ public class HeadNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("head").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("head").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
@@ -198,11 +198,11 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setOwnerNode = commandManager.literal("owner").build();
+        CommandNode<S> setOwnerNode = commandManager.literal("owner").build();
 
-        CommandNode<CommandSource> setOwnerOwnerNode = commandManager.argument("owner", StringArgumentType.word()).executes(context -> {
+        CommandNode<S> setOwnerOwnerNode = commandManager.argument("owner", StringArgumentType.word()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
@@ -222,9 +222,9 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setTextureNode = commandManager.literal("texture").build();
+        CommandNode<S> setTextureNode = commandManager.literal("texture").build();
 
-        CommandNode<CommandSource> setTextureTextureNode = commandManager.argument("texture", StringArgumentType.greedyString()).executes(context -> {
+        CommandNode<S> setTextureTextureNode = commandManager.argument("texture", StringArgumentType.greedyString()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
@@ -252,7 +252,7 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").executes(context -> {
+        CommandNode<S> removeNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isHead(stack)) {
@@ -268,8 +268,6 @@ public class HeadNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get
         node.addChild(getNode);
 
@@ -284,5 +282,7 @@ public class HeadNode implements Node {
 
         // ... remove
         node.addChild(removeNode);
+
+        return node;
     }
 }

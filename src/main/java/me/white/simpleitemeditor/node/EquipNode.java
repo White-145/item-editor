@@ -20,7 +20,7 @@ public class EquipNode implements Node {
     private static final String OUTPUT = "commands.edit.equip";
 
     private PlayerInventory getInventory(CommandSource source) {
-        if (source instanceof FabricClientCommandSource) {
+        if (EditorUtil.isClientSource(source)) {
             return ((FabricClientCommandSource)source).getPlayer().getInventory();
         }
         if (source instanceof ServerCommandSource) {
@@ -34,15 +34,15 @@ public class EquipNode implements Node {
         ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.offHand.get(0).copy() : inventory.getArmorStack(slot.armorSlot).copy();
         EditorUtil.setStack(source, equippedStack);
         inventory.setStack(slot.mainSlot, stack);
-        if (source instanceof FabricClientCommandSource) {
+        if (EditorUtil.isClientSource(source)) {
             ((FabricClientCommandSource)source).getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(slot.packetSlot, stack));
         }
-        // should send to client if serverside?
+        // should it send packets to client if serverside? we'll never know...
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("equip").executes(context -> {
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("equip").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             equip(context.getSource(), stack, ExclusiveSlot.HEAD);
@@ -50,7 +50,8 @@ public class EquipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> slotNode = commandManager.argument("slot", ExclusiveSlotArgumentType.exclusiveSlot()).executes(context -> {
+        ExclusiveSlotArgumentType argumentType = ExclusiveSlotArgumentType.exclusiveSlot();
+        CommandNode<S> slotNode = commandManager.argument("slot", ExclusiveSlotArgumentType.exclusiveSlot()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             ExclusiveSlot slot = ExclusiveSlotArgumentType.getExclusiveSlot(context, "slot");
@@ -59,10 +60,10 @@ public class EquipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... [<slot>]
         node.addChild(slotNode);
+
+        return node;
     }
 
     public enum ExclusiveSlot {

@@ -6,12 +6,9 @@ import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.white.simpleitemeditor.argument.*;
 import me.white.simpleitemeditor.argument.enums.*;
-import me.white.simpleitemeditor.command.EditCommand;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.text.Text;
@@ -20,7 +17,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleItemEditor implements ClientModInitializer, DedicatedServerModInitializer {
+public class SimpleItemEditor implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("item-editor");
     public static CommandDispatcher<FabricClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
 
@@ -52,6 +49,7 @@ public class SimpleItemEditor implements ClientModInitializer, DedicatedServerMo
         return true;
     }
 
+    // intellij doesnt show it, but code does not compile without this weird generics cast
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void registerArgumentTypes() {
         ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "color"), ColorArgumentType.class, ConstantArgumentSerializer.of(ColorArgumentType::color));
@@ -71,13 +69,5 @@ public class SimpleItemEditor implements ClientModInitializer, DedicatedServerMo
     }
 
     @Override
-    public void onInitializeClient() {
-        registerArgumentTypes();
-    }
-
-    @Override
-    public void onInitializeServer() {
-        registerArgumentTypes();
-        CommandRegistrationCallback.EVENT.register(EditCommand::registerServer);
-    }
+    public void onInitializeClient() { }
 }

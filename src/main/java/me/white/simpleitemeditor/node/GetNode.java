@@ -21,15 +21,15 @@ public class GetNode implements Node {
     private static final String OUTPUT_GET = "commands.edit.get.get";
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("get").executes(context -> {
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM, TextUtil.copyable(stack, context.getSource().getRegistryManager())));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> itemNode = commandManager.argument("item", ItemStackArgumentType.itemStack(registryAccess)).executes(context -> {
+        CommandNode<S> itemNode = commandManager.argument("item", ItemStackArgumentType.itemStack(registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
@@ -41,7 +41,7 @@ public class GetNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> itemCountNode = commandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
+        CommandNode<S> itemCountNode = commandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             if (EditorUtil.hasItem(EditorUtil.getStack(context.getSource()))) {
                 throw HAS_ITEM_EXCEPTION;
@@ -54,10 +54,10 @@ public class GetNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... [<item>] [<count>]
         node.addChild(itemNode);
         itemNode.addChild(itemCountNode);
+
+        return node;
     }
 }

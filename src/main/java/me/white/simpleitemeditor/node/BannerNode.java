@@ -181,10 +181,10 @@ public class BannerNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("banner").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("banner").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
@@ -202,7 +202,7 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> getIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> getIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
@@ -221,13 +221,13 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
+        CommandNode<S> setIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
-        CommandNode<CommandSource> setIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<S> setIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<CommandSource> setIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> setIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -260,9 +260,9 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> removeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -284,11 +284,11 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> addNode = commandManager.literal("add").build();
+        CommandNode<S> addNode = commandManager.literal("add").build();
 
-        CommandNode<CommandSource> addPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<S> addPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<CommandSource> addPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> addPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -306,13 +306,13 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> insertNode = commandManager.literal("insert").build();
+        CommandNode<S> insertNode = commandManager.literal("insert").build();
 
-        CommandNode<CommandSource> insertIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).build();
+        CommandNode<S> insertIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).build();
 
-        CommandNode<CommandSource> insertIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
+        CommandNode<S> insertIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<CommandSource> insertIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> insertIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -337,9 +337,9 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> baseNode = commandManager.literal("base").build();
+        CommandNode<S> baseNode = commandManager.literal("base").build();
 
-        CommandNode<CommandSource> baseGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> baseGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
@@ -353,9 +353,9 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> baseSetNode = commandManager.literal("set").build();
+        CommandNode<S> baseSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> baseSetColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> baseSetColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -372,7 +372,7 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> baseRemoveNode = commandManager.literal("remove").executes(context -> {
+        CommandNode<S> baseRemoveNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (stack.getItem() != Items.SHIELD) {
@@ -388,7 +388,7 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> clearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -404,9 +404,9 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearBeforeNode = commandManager.literal("before").build();
+        CommandNode<S> clearBeforeNode = commandManager.literal("before").build();
 
-        CommandNode<CommandSource> clearBeforeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> clearBeforeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -428,9 +428,9 @@ public class BannerNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearAfterNode = commandManager.literal("after").build();
+        CommandNode<S> clearAfterNode = commandManager.literal("after").build();
 
-        CommandNode<CommandSource> clearAfterIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> clearAfterIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -451,8 +451,6 @@ public class BannerNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR_AFTER, index));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get [<index>]
         node.addChild(getNode);
@@ -498,5 +496,7 @@ public class BannerNode implements Node {
         // ... clear after <index>
         clearNode.addChild(clearAfterNode);
         clearAfterNode.addChild(clearAfterIndexNode);
+
+        return node;
     }
 }

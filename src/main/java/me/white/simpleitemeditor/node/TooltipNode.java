@@ -30,12 +30,12 @@ public class TooltipNode implements Node {
     private static final String OUTPUT_DISABLE = "commands.edit.tooltip.disable";
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("tooltip").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("tooltip").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").build();
+        CommandNode<S> getNode = commandManager.literal("get").build();
 
-        CommandNode<CommandSource> getPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).executes(context -> {
+        CommandNode<S> getPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             TooltipPart part = TooltipPartArgumentType.getTooltipPart(context, "part");
             boolean tooltip = part.get(stack);
@@ -44,11 +44,11 @@ public class TooltipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).build();
+        CommandNode<S> setPartNode = commandManager.argument("part", TooltipPartArgumentType.tooltipPart()).build();
 
-        CommandNode<CommandSource> setPartTooltipNode = commandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> setPartTooltipNode = commandManager.argument("tooltip", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             TooltipPart part = TooltipPartArgumentType.getTooltipPart(context, "part");
@@ -64,8 +64,6 @@ public class TooltipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get <part>
         node.addChild(getNode);
         getNode.addChild(getPartNode);
@@ -74,6 +72,8 @@ public class TooltipNode implements Node {
         node.addChild(setNode);
         setNode.addChild(setPartNode);
         setPartNode.addChild(setPartTooltipNode);
+
+        return node;
     }
 
     public enum TooltipPart {

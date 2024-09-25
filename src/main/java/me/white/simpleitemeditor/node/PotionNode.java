@@ -149,10 +149,10 @@ public class PotionNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("potion").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("potion").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
@@ -169,7 +169,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> getEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
+        CommandNode<S> getEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
@@ -194,11 +194,11 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).build();
+        CommandNode<S> setEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).build();
 
-        CommandNode<CommandSource> setEffectDurationNode = commandManager.argument("duration", DurationArgumentType.duration()).executes(context -> {
+        CommandNode<S> setEffectDurationNode = commandManager.argument("duration", DurationArgumentType.duration()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -216,7 +216,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setEffectDurationAmplifierNode = commandManager.argument("amplifier", IntegerArgumentType.integer(StatusEffectInstance.MIN_AMPLIFIER, StatusEffectInstance.MAX_AMPLIFIER)).executes(context -> {
+        CommandNode<S> setEffectDurationAmplifierNode = commandManager.argument("amplifier", IntegerArgumentType.integer(StatusEffectInstance.MIN_AMPLIFIER, StatusEffectInstance.MAX_AMPLIFIER)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -235,7 +235,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setEffectDurationAmplifierParticlesNode = commandManager.argument("particles", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> setEffectDurationAmplifierParticlesNode = commandManager.argument("particles", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -255,7 +255,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setEffectDurationAmplifierParticlesIconNode = commandManager.argument("icon", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> setEffectDurationAmplifierParticlesIconNode = commandManager.argument("icon", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -276,7 +276,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setEffectDurationAmplifierParticlesIconAmbientNode = commandManager.argument("ambient", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> setEffectDurationAmplifierParticlesIconAmbientNode = commandManager.argument("ambient", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -298,9 +298,9 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
+        CommandNode<S> removeEffectNode = commandManager.argument("effect", RegistryArgumentType.registryEntry(RegistryKeys.STATUS_EFFECT, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -332,7 +332,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> clearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -348,9 +348,9 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> colorNode = commandManager.literal("color").build();
+        CommandNode<S> colorNode = commandManager.literal("color").build();
 
-        CommandNode<CommandSource> colorGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> colorGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
@@ -364,9 +364,9 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> colorSetNode = commandManager.literal("set").build();
+        CommandNode<S> colorSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> colorSetColorNode = commandManager.argument("color", ColorArgumentType.color()).executes(context -> {
+        CommandNode<S> colorSetColorNode = commandManager.argument("color", ColorArgumentType.color()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -383,7 +383,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> colorRemoveNode = commandManager.literal("remove").executes(context -> {
+        CommandNode<S> colorRemoveNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -399,9 +399,9 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> typeNode = commandManager.literal("type").build();
+        CommandNode<S> typeNode = commandManager.literal("type").build();
 
-        CommandNode<CommandSource> typeGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> typeGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isPotion(stack)) {
                 throw ISNT_POTION_EXCEPTION;
@@ -415,9 +415,9 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> typeSetNode = commandManager.literal("set").build();
+        CommandNode<S> typeSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> typeSetTypeNode = commandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.POTION, registryAccess)).executes(context -> {
+        CommandNode<S> typeSetTypeNode = commandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.POTION, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -434,7 +434,7 @@ public class PotionNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> typeResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> typeResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isPotion(stack)) {
@@ -449,8 +449,6 @@ public class PotionNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TYPE_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get [<effect>]
         node.addChild(getNode);
@@ -491,5 +489,7 @@ public class PotionNode implements Node {
         colorSetNode.addChild(colorSetColorNode);
         // ... remove
         colorNode.addChild(colorRemoveNode);
+
+        return node;
     }
 }

@@ -42,10 +42,10 @@ public class RarityNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("rarity").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("rarity").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             Rarity rarity = getRarity(stack);
 
@@ -53,9 +53,9 @@ public class RarityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setRarityNode = commandManager.argument("rarity", RarityArgumentType.rarity()).executes(context -> {
+        CommandNode<S> setRarityNode = commandManager.argument("rarity", RarityArgumentType.rarity()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Rarity rarity = RarityArgumentType.getRarity(context, "rarity");
@@ -69,13 +69,13 @@ public class RarityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get
         node.addChild(getNode);
 
         // ... set <rarity>
         node.addChild(setNode);
         setNode.addChild(setRarityNode);
+
+        return node;
     }
 }

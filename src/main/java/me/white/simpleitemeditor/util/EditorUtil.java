@@ -27,7 +27,7 @@ public class EditorUtil {
     public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.outofbounds", index, size));
     public static final Function<CommandSource, IllegalArgumentException> UNKNOWN_SOURCE_EXCEPTION = source -> new IllegalArgumentException("Unknown command source '" + source.getClass().getName() + "'.");
 
-    private static boolean isClientSource(CommandSource source) {
+    public static boolean isClientSource(CommandSource source) {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && source instanceof FabricClientCommandSource;
     }
 

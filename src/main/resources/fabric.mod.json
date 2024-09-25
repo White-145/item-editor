@@ -15,12 +15,9 @@
 	"license": "MIT",
 	"icon": "assets/simple-item-editor/icon.png",
 	"accessWidener": "simple-item-editor.accesswidener",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"me.white.simpleitemeditor.SimpleItemEditor"
-		],
-		"server": [
 			"me.white.simpleitemeditor.SimpleItemEditor"
 		]
 	},

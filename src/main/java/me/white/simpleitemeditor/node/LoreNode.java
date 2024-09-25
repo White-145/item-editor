@@ -58,10 +58,10 @@ public class LoreNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("lore").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("lore").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasLore(stack)) {
                 throw NO_LORE_EXCEPTION;
@@ -75,7 +75,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> getIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> getIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             int index = IntegerArgumentType.getInteger(context, "index");
             if (!hasLore(stack)) {
@@ -91,9 +91,9 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).executes(context -> {
+        CommandNode<S> setIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -117,7 +117,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setIndexLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> setIndexLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -142,9 +142,9 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> removeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -163,7 +163,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> addNode = commandManager.literal("add").executes(context -> {
+        CommandNode<S> addNode = commandManager.literal("add").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             List<Text> lore = new ArrayList<>(getLore(stack));
@@ -175,7 +175,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> addLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> addLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Text line = LegacyTextArgumentType.getText(context, "line");
@@ -188,9 +188,9 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> insertNode = commandManager.literal("insert").build();
+        CommandNode<S> insertNode = commandManager.literal("insert").build();
 
-        CommandNode<CommandSource> insertIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).executes(context -> {
+        CommandNode<S> insertIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0, 255)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -209,7 +209,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> insertIndexLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> insertIndexLineNode = commandManager.argument("line", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -229,7 +229,7 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> clearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasLore(stack)) {
@@ -242,9 +242,9 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearBeforeNode = commandManager.literal("before").build();
+        CommandNode<S> clearBeforeNode = commandManager.literal("before").build();
 
-        CommandNode<CommandSource> clearBeforeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> clearBeforeIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -263,9 +263,9 @@ public class LoreNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearAfterNode = commandManager.literal("after").build();
+        CommandNode<S> clearAfterNode = commandManager.literal("after").build();
 
-        CommandNode<CommandSource> clearAfterIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> clearAfterIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int index = IntegerArgumentType.getInteger(context, "index");
@@ -283,8 +283,6 @@ public class LoreNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR_AFTER, index));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get [<index>]
         node.addChild(getNode);
@@ -318,5 +316,7 @@ public class LoreNode implements Node {
         // ... clear after <index>
         clearNode.addChild(clearAfterNode);
         clearAfterNode.addChild(clearAfterIndexNode);
+
+        return node;
     }
 }

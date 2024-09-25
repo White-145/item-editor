@@ -55,12 +55,12 @@ public class DataNode implements Node {
     private static final String OUTPUT_CLEAR = "commands.edit.data.clear";
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("data").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("data").build();
 
-        CommandNode<CommandSource> sourceNode = commandManager.argument("source", DataSourceArgumentType.dataSource()).build();
+        CommandNode<S> sourceNode = commandManager.argument("source", DataSourceArgumentType.dataSource()).build();
 
-        CommandNode<CommandSource> sourceGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> sourceGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             if (!source.isApplicable(stack)) {
@@ -74,7 +74,7 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceGetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+        CommandNode<S> sourceGetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
             if (!source.isApplicable(stack)) {
@@ -103,11 +103,11 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceAppendNode = commandManager.literal("append").build();
+        CommandNode<S> sourceAppendNode = commandManager.literal("append").build();
 
-        CommandNode<CommandSource> sourceAppendPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<S> sourceAppendPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        CommandNode<CommandSource> sourceAppendPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+        CommandNode<S> sourceAppendPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -144,13 +144,13 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceInsertNode = commandManager.literal("insert").build();
+        CommandNode<S> sourceInsertNode = commandManager.literal("insert").build();
 
-        CommandNode<CommandSource> sourceInsertPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<S> sourceInsertPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        CommandNode<CommandSource> sourceInsertPathIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
+        CommandNode<S> sourceInsertPathIndexNode = commandManager.argument("index", IntegerArgumentType.integer(0)).build();
 
-        CommandNode<CommandSource> sourceInsertPathIndexValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+        CommandNode<S> sourceInsertPathIndexValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -191,11 +191,11 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourcePrependNode = commandManager.literal("prepend").build();
+        CommandNode<S> sourcePrependNode = commandManager.literal("prepend").build();
 
-        CommandNode<CommandSource> sourcePrependPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<S> sourcePrependPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        CommandNode<CommandSource> sourcePrependPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+        CommandNode<S> sourcePrependPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -232,11 +232,11 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceSetNode = commandManager.literal("set").build();
+        CommandNode<S> sourceSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> sourceSetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
+        CommandNode<S> sourceSetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).build();
 
-        CommandNode<CommandSource> sourceSetPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+        CommandNode<S> sourceSetPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -264,9 +264,9 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceMergeNode = commandManager.literal("merge").build();
+        CommandNode<S> sourceMergeNode = commandManager.literal("merge").build();
 
-        CommandNode<CommandSource> sourceMergeValueNode = commandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
+        CommandNode<S> sourceMergeValueNode = commandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -288,7 +288,7 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceMergeValuePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+        CommandNode<S> sourceMergeValuePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -330,9 +330,9 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceRemoveNode = commandManager.literal("remove").build();
+        CommandNode<S> sourceRemoveNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> sourceRemovePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
+        CommandNode<S> sourceRemovePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -356,7 +356,7 @@ public class DataNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> sourceClearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> sourceClearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             DataSource source = DataSourceArgumentType.getDataSource(context, "source");
@@ -372,8 +372,6 @@ public class DataNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... <source> ...
         node.addChild(sourceNode);
@@ -406,6 +404,8 @@ public class DataNode implements Node {
         sourceRemoveNode.addChild(sourceRemovePathNode);
         // ... clear
         sourceNode.addChild(sourceClearNode);
+
+        return node;
     }
 
     public enum DataSource {

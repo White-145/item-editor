@@ -7,7 +7,7 @@
   "argument.duration.suggestionminutes": "Minutes",
   "argument.duration.suggestionhours": "Hours",
   "argument.enum.error.invalidenum": "Invalid Enum",
-  "argument.registryargument.error.invalidentry": "Invalid registry entry",
+  "argument.registry.error.invalidentry": "Invalid registry entry",
   "argument.text.error.invalidhex": "Invalid hex sequence",
   "argument.text.error.invalidunicode": "Invalid unicode sequence",
   "argument.text.error.invalidescape": "Invalid escape sequence",

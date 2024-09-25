@@ -42,10 +42,10 @@ public class ModelNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("model").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("model").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasModel(stack)) {
                 throw NO_MODEL_EXCEPTION;
@@ -56,9 +56,9 @@ public class ModelNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setModelNode = commandManager.argument("model", IntegerArgumentType.integer(1)).executes(context -> {
+        CommandNode<S> setModelNode = commandManager.argument("model", IntegerArgumentType.integer(1)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int model = IntegerArgumentType.getInteger(context, "model");
@@ -72,7 +72,7 @@ public class ModelNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> resetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> resetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasModel(stack)) {
@@ -85,8 +85,6 @@ public class ModelNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get
         node.addChild(getNode);
 
@@ -96,5 +94,7 @@ public class ModelNode implements Node {
 
         // ... reset
         node.addChild(resetNode);
+
+        return node;
     }
 }

@@ -75,10 +75,10 @@ public class DurabilityNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("durability").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("durability").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
@@ -89,9 +89,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setDurabilityNode = commandManager.argument("durability", IntegerArgumentType.integer(0)).executes(context -> {
+        CommandNode<S> setDurabilityNode = commandManager.argument("durability", IntegerArgumentType.integer(0)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isDamagable(stack)) {
@@ -112,9 +112,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> progressNode = commandManager.literal("progress").build();
+        CommandNode<S> progressNode = commandManager.literal("progress").build();
 
-        CommandNode<CommandSource> progressProgressNode = commandManager.argument("progress", DoubleArgumentType.doubleArg(0, 100)).executes(context -> {
+        CommandNode<S> progressProgressNode = commandManager.argument("progress", DoubleArgumentType.doubleArg(0, 100)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isDamagable(stack)) {
@@ -132,7 +132,7 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> resetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> resetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isDamagable(stack)) {
@@ -148,9 +148,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxNode = commandManager.literal("max").build();
+        CommandNode<S> maxNode = commandManager.literal("max").build();
 
-        CommandNode<CommandSource> maxGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> maxGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isUnstackable(stack)) {
                 throw STACKABLE_EXCEPTION;
@@ -164,9 +164,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxSetNode = commandManager.literal("set").build();
+        CommandNode<S> maxSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> maxSetDurabilityNode = commandManager.argument("durability", IntegerArgumentType.integer(1)).executes(context -> {
+        CommandNode<S> maxSetDurabilityNode = commandManager.argument("durability", IntegerArgumentType.integer(1)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isUnstackable(stack)) {
@@ -183,7 +183,7 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxRemoveNode = commandManager.literal("remove").executes(context -> {
+        CommandNode<S> maxRemoveNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isUnstackable(stack)) {
@@ -199,7 +199,7 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> maxResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isUnstackable(stack)) {
@@ -219,9 +219,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> unbreakableNode = commandManager.literal("unbreakable").build();
+        CommandNode<S> unbreakableNode = commandManager.literal("unbreakable").build();
 
-        CommandNode<CommandSource> unbreakableGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> unbreakableGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isDamagable(stack)) {
                 throw ISNT_DAMAGEABLE_EXCEPTION;
@@ -232,9 +232,9 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> unbreakableSetNode = commandManager.literal("set").build();
+        CommandNode<S> unbreakableSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> unbreakableSetunbreakableNode = commandManager.argument("unbreakable", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> unbreakableSetunbreakableNode = commandManager.argument("unbreakable", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isDamagable(stack)) {
@@ -250,8 +250,6 @@ public class DurabilityNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(isUnbreakable ? OUTPUT_UNBREAKABLE_ENABLE : OUTPUT_UNBREAKABLE_DISABLE));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get
         node.addChild(getNode);
@@ -286,5 +284,7 @@ public class DurabilityNode implements Node {
         // ... set <unbreakable>
         unbreakableNode.addChild(unbreakableSetNode);
         unbreakableSetNode.addChild(unbreakableSetunbreakableNode);
+
+        return node;
     }
 }

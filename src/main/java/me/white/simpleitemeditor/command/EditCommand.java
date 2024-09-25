@@ -1,17 +1,13 @@
 package me.white.simpleitemeditor.command;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
-import me.white.simpleitemeditor.util.CommonCommandManager;
+import me.white.simpleitemeditor.ClientCommand;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.node.*;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 
 public class EditCommand {
     // TODO:
@@ -59,32 +55,14 @@ public class EditCommand {
             new TrimNode()
     };
 
-    @SuppressWarnings("unchecked")
-    private static void register(CommonCommandManager<? extends CommandSource> commandManager, CommandNode<? extends CommandSource> node, CommandRegistryAccess registryAccess) {
-        for (Node childNode : NODES) try {
-            childNode.register((CommonCommandManager<CommandSource>)commandManager, (CommandNode<CommandSource>)node, registryAccess);
-        } catch (IllegalStateException e) {
-            SimpleItemEditor.LOGGER.error("Failed to register {}: {}", childNode.getClass().getName(), e);
-        }
-    }
-
-    public static void registerClient(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandDispatcher<FabricClientCommandSource> activeDispatcher, CommandRegistryAccess registryAccess) {
-        boolean canOverride = dispatcher.getRoot().getChild("edit") == null;
-        String name = canOverride ? "edit" : "sie:edit";
-
-        CommandNode<FabricClientCommandSource> node = ClientCommandManager.literal(name).build();
+    public static final ClientCommand PROVIDER = new ClientCommand(Identifier.of("sie", "edit"), (name, registryAccess) -> {
         CommonCommandManager<FabricClientCommandSource> commandManager = new CommonCommandManager<>();
-        register(commandManager, node, registryAccess);
-
-        dispatcher.getRoot().addChild(node);
-        activeDispatcher.getRoot().addChild(node);
-    }
-
-    public static void registerServer(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
-        CommandNode<ServerCommandSource> node = CommandManager.literal("edit").build();
-        CommonCommandManager<ServerCommandSource> commandManager = new CommonCommandManager<>();
-        register(commandManager, node, registryAccess);
-
-        dispatcher.getRoot().addChild(node);
-    }
+        CommandNode<FabricClientCommandSource> node = commandManager.literal(name).build();
+        for (Node childNode : NODES) try {
+            node.addChild(childNode.register(commandManager, registryAccess));
+        } catch (IllegalStateException e) {
+            SimpleItemEditor.LOGGER.error("Failed to register {}", childNode.getClass().getName(), e);
+        }
+        return node;
+    });
 }

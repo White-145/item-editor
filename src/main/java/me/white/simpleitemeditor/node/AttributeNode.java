@@ -89,10 +89,10 @@ public class AttributeNode implements Node {
         }
     }
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("attribute").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("attribute").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
@@ -110,7 +110,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> getIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
+        CommandNode<S> getIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
@@ -143,13 +143,13 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).build();
+        CommandNode<S> setIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).build();
 
-        CommandNode<CommandSource> setIdAttributeNode = commandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
+        CommandNode<S> setIdAttributeNode = commandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
-        CommandNode<CommandSource> setIdentifierAttributeAmountNode = commandManager.argument("amount", InfiniteDoubleArgumentType.infiniteDouble()).executes(context -> {
+        CommandNode<S> setIdentifierAttributeAmountNode = commandManager.argument("amount", InfiniteDoubleArgumentType.infiniteDouble()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
@@ -167,7 +167,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setIdAttributeAmountOperationNode = commandManager.argument("operation", AttributeOperationArgumentType.attributeOperation()).executes(context -> {
+        CommandNode<S> setIdAttributeAmountOperationNode = commandManager.argument("operation", AttributeOperationArgumentType.attributeOperation()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
@@ -186,7 +186,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNameAttributeAmountOperationSlotNode = commandManager.argument("slot", AttributeSlotArgumentType.attributeSlot()).executes(context -> {
+        CommandNode<S> setNameAttributeAmountOperationSlotNode = commandManager.argument("slot", AttributeSlotArgumentType.attributeSlot()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
@@ -206,9 +206,9 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
+        CommandNode<S> removeIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasAttributes(stack)) {
@@ -226,7 +226,7 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> clearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasAttributes(stack)) {
@@ -238,8 +238,6 @@ public class AttributeNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get [<name>]
         node.addChild(getNode);
@@ -259,5 +257,7 @@ public class AttributeNode implements Node {
 
         // ... clear
         node.addChild(clearNode);
+
+        return node;
     }
 }

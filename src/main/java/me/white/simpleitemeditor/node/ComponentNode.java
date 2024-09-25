@@ -42,12 +42,12 @@ public class ComponentNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("component").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("component").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").build();
+        CommandNode<S> getNode = commandManager.literal("get").build();
 
-        CommandNode<CommandSource> getComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
+        CommandNode<S> getComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
@@ -60,11 +60,11 @@ public class ComponentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).build();
+        CommandNode<S> setComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).build();
 
-        CommandNode<CommandSource> setComponentValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
+        CommandNode<S> setComponentValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
@@ -76,9 +76,9 @@ public class ComponentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
+        CommandNode<S> removeComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
@@ -92,8 +92,6 @@ public class ComponentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get <component>
         node.addChild(getNode);
         getNode.addChild(getComponentNode);
@@ -106,5 +104,7 @@ public class ComponentNode implements Node {
         // ... remove <component>
         node.addChild(removeNode);
         removeNode.addChild(removeComponentNode);
+
+        return node;
     }
 }

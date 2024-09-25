@@ -66,10 +66,10 @@ public class NameNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("name").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("name").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasName(stack)) {
                 throw NO_NAME_EXCEPTION;
@@ -80,7 +80,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").executes(context -> {
+        CommandNode<S> setNode = commandManager.literal("set").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (hasName(stack) && Text.empty().equals(getName(stack))) {
@@ -93,7 +93,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> setNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Text name = LegacyTextArgumentType.getText(context, "name");
@@ -107,7 +107,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> resetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> resetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasName(stack)) {
@@ -120,9 +120,9 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> customNode = commandManager.literal("custom").build();
+        CommandNode<S> customNode = commandManager.literal("custom").build();
 
-        CommandNode<CommandSource> customGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> customGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasCustomName(stack)) {
                 throw NO_CUSTOM_NAME_EXCEPTION;
@@ -133,7 +133,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> customSetNode = commandManager.literal("set").executes(context -> {
+        CommandNode<S> customSetNode = commandManager.literal("set").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (hasCustomName(stack) && Text.empty().equals(getCustomName(stack))) {
@@ -146,7 +146,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> customSetNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> customSetNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Text name = LegacyTextArgumentType.getText(context, "name");
@@ -160,7 +160,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> customResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> customResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasCustomName(stack)) {
@@ -172,8 +172,6 @@ public class NameNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CUSTOM_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get
         node.addChild(getNode);
@@ -194,5 +192,7 @@ public class NameNode implements Node {
         customSetNode.addChild(customSetNameNode);
         // ... reset
         customNode.addChild(customResetNode);
+
+        return node;
     }
 }

@@ -99,10 +99,10 @@ public class EnchantmentNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("enchantment").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("enchantment").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
@@ -116,7 +116,7 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> getEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+        CommandNode<S> getEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
@@ -131,9 +131,9 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+        CommandNode<S> setEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
@@ -149,7 +149,7 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setEnchantmentLevelNode = commandManager.argument("level", IntegerArgumentType.integer(0, 255)).executes(context -> {
+        CommandNode<S> setEnchantmentLevelNode = commandManager.argument("level", IntegerArgumentType.integer(0, 255)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
@@ -166,9 +166,9 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").build();
+        CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<CommandSource> removeEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+        CommandNode<S> removeEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasEnchantments(stack)) {
@@ -187,9 +187,9 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> glintNode = commandManager.literal("glint").build();
+        CommandNode<S> glintNode = commandManager.literal("glint").build();
 
-        CommandNode<CommandSource> glintGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> glintGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!hasGlintOverride(stack)) {
                 throw NO_GLINT_OVERRIDE_EXCEPTION;
@@ -198,9 +198,9 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> glintSetNode = commandManager.literal("set").build();
+        CommandNode<S> glintSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> glintSetGlintNode = commandManager.argument("glint", BoolArgumentType.bool()).executes(context -> {
+        CommandNode<S> glintSetGlintNode = commandManager.argument("glint", BoolArgumentType.bool()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             boolean glint = BoolArgumentType.getBool(context, "glint");
@@ -214,7 +214,7 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> glintResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> glintResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasGlintOverride(stack)) {
@@ -227,7 +227,7 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> clearNode = commandManager.literal("clear").executes(context -> {
+        CommandNode<S> clearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasEnchantments(stack)) {
@@ -239,8 +239,6 @@ public class EnchantmentNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get [<enchantment>]
         node.addChild(getNode);
@@ -267,5 +265,7 @@ public class EnchantmentNode implements Node {
 
         // ... clear
         node.addChild(clearNode);
+
+        return node;
     }
 }

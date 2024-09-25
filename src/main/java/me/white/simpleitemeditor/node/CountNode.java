@@ -37,10 +37,10 @@ public class CountNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("count").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("count").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             int count = stack.getCount();
 
@@ -48,7 +48,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").executes(context -> {
+        CommandNode<S> setNode = commandManager.literal("set").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (stack.getCount() == 1) {
@@ -61,7 +61,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setCountNode = commandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
+        CommandNode<S> setCountNode = commandManager.argument("count", IntegerArgumentType.integer(0, 99)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = IntegerArgumentType.getInteger(context, "count");
@@ -78,7 +78,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> addNode = commandManager.literal("add").executes(context -> {
+        CommandNode<S> addNode = commandManager.literal("add").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = stack.getCount() + 1;
@@ -90,7 +90,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> addCountNode = commandManager.argument("count", IntegerArgumentType.integer(-98, 98)).executes(context -> {
+        CommandNode<S> addCountNode = commandManager.argument("count", IntegerArgumentType.integer(-98, 98)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = IntegerArgumentType.getInteger(context, "count");
@@ -105,7 +105,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> takeNode = commandManager.literal("take").executes(context -> {
+        CommandNode<S> takeNode = commandManager.literal("take").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = stack.getCount() - 1;
@@ -119,7 +119,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> takeCountNode = commandManager.argument("count", IntegerArgumentType.integer(-126, 126)).executes(context -> {
+        CommandNode<S> takeCountNode = commandManager.argument("count", IntegerArgumentType.integer(-126, 126)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = IntegerArgumentType.getInteger(context, "count");
@@ -134,9 +134,9 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxNode = commandManager.literal("max").build();
+        CommandNode<S> maxNode = commandManager.literal("max").build();
 
-        CommandNode<CommandSource> maxGetNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> maxGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             int count = stack.getMaxCount();
 
@@ -144,9 +144,9 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxSetNode = commandManager.literal("set").build();
+        CommandNode<S> maxSetNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> maxSetCountNode = commandManager.argument("count", IntegerArgumentType.integer(1, 99)).executes(context -> {
+        CommandNode<S> maxSetCountNode = commandManager.argument("count", IntegerArgumentType.integer(1, 99)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             int count = IntegerArgumentType.getInteger(context, "count");
@@ -160,7 +160,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> maxResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> maxResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!stack.contains(DataComponentTypes.MAX_STACK_SIZE)) {
@@ -173,7 +173,7 @@ public class CountNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> stackNode = commandManager.literal("stack").executes(context -> {
+        CommandNode<S> stackNode = commandManager.literal("stack").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (stack.getCount() == stack.getMaxCount()) {
@@ -185,8 +185,6 @@ public class CountNode implements Node {
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, stack.getMaxCount()));
             return Command.SINGLE_SUCCESS;
         }).build();
-
-        rootNode.addChild(node);
 
         // ... get
         node.addChild(getNode);
@@ -215,5 +213,7 @@ public class CountNode implements Node {
 
         // ... stack
         node.addChild(stackNode);
+
+        return node;
     }
 }

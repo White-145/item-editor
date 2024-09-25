@@ -49,10 +49,10 @@ public class ColorNode implements Node {
     }
 
     @Override
-    public void register(CommonCommandManager<CommandSource> commandManager, CommandNode<CommandSource> rootNode, CommandRegistryAccess registryAccess) {
-        CommandNode<CommandSource> node = commandManager.literal("color").build();
+    public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
+        CommandNode<S> node = commandManager.literal("color").build();
 
-        CommandNode<CommandSource> getNode = commandManager.literal("get").executes(context -> {
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             EditorUtil.checkHasItem(stack);
             if (!isColorable(stack)) {
@@ -67,9 +67,9 @@ public class ColorNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> setNode = commandManager.literal("set").build();
+        CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<CommandSource> setColorNode = commandManager.argument("color", ColorArgumentType.color()).executes(context -> {
+        CommandNode<S> setColorNode = commandManager.argument("color", ColorArgumentType.color()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             EditorUtil.checkHasItem(stack);
@@ -87,7 +87,7 @@ public class ColorNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<CommandSource> removeNode = commandManager.literal("remove").executes(context -> {
+        CommandNode<S> removeNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isColorable(stack)) {
@@ -103,8 +103,6 @@ public class ColorNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        rootNode.addChild(node);
-
         // ... get
         node.addChild(getNode);
 
@@ -114,5 +112,7 @@ public class ColorNode implements Node {
 
         // ... remove
         node.addChild(removeNode);
+
+        return node;
     }
 }

@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
-    private static final SimpleCommandExceptionType INVALID_ENTRY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.registryargument.error.invalidentry"));
+    private static final SimpleCommandExceptionType INVALID_ENTRY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.registry.error.invalidentry"));
     private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
     private final CommandRegistryAccess registryAccess;
     private final RegistryKey<? extends Registry<T>> registry;
