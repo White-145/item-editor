@@ -45,7 +45,7 @@ public class EnchantmentNode implements Node {
     private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
 
     private static RegistryEntry<Enchantment> entryOf(DynamicRegistryManager registryManager, Enchantment enchantment) {
-        return registryManager.get(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
+        return registryManager.getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
     }
 
     private static boolean hasEnchantments(ItemStack stack) {

@@ -12,9 +12,9 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.trim.ArmorTrim;
-import net.minecraft.item.trim.ArmorTrimMaterial;
-import net.minecraft.item.trim.ArmorTrimPattern;
+import net.minecraft.item.equipment.trim.ArmorTrim;
+import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
+import net.minecraft.item.equipment.trim.ArmorTrimPattern;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -65,8 +65,8 @@ public class TrimNode implements Node {
                 throw NO_TRIM_EXCEPTION;
             }
             ArmorTrim trim = getTrim(stack);
-            ArmorTrimPattern pattern = trim.getPattern().value();
-            ArmorTrimMaterial material = trim.getMaterial().value();
+            ArmorTrimPattern pattern = trim.pattern().value();
+            ArmorTrimMaterial material = trim.material().value();
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, pattern.description(), material.description()));
             return Command.SINGLE_SUCCESS;
@@ -84,8 +84,8 @@ public class TrimNode implements Node {
             }
             ArmorTrimPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.TRIM_PATTERN);
             ArmorTrimMaterial material = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.TRIM_MATERIAL);
-            Registry<ArmorTrimPattern> patternRegistry = context.getSource().getRegistryManager().get(RegistryKeys.TRIM_PATTERN);
-            Registry<ArmorTrimMaterial> materialRegistry = context.getSource().getRegistryManager().get(RegistryKeys.TRIM_MATERIAL);
+            Registry<ArmorTrimPattern> patternRegistry = context.getSource().getRegistryManager().getOrThrow(RegistryKeys.TRIM_PATTERN);
+            Registry<ArmorTrimMaterial> materialRegistry = context.getSource().getRegistryManager().getOrThrow(RegistryKeys.TRIM_MATERIAL);
             RegistryEntry<ArmorTrimPattern> patternEntry = patternRegistry.getEntry(pattern);
             RegistryEntry<ArmorTrimMaterial> materialEntry = materialRegistry.getEntry(material);
             ArmorTrim trim = new ArmorTrim(materialEntry, patternEntry);

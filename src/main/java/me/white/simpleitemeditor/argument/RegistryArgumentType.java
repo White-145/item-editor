@@ -16,7 +16,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -54,15 +53,14 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     @Override
     public RegistryEntry<T> parse(StringReader stringReader) throws CommandSyntaxException {
         Identifier identifier = Identifier.fromCommandInput(stringReader);
-        RegistryWrapper<T> wrapper = registryAccess.getWrapperOrThrow(registry);
-        Optional<RegistryEntry.Reference<T>> optional = wrapper.getOptional(RegistryKey.of(registry, identifier));
+        Optional<RegistryEntry.Reference<T>> optional = registryAccess.getOrThrow(registry).getOptional(RegistryKey.of(registry, identifier));
         return optional.orElseThrow(INVALID_ENTRY_EXCEPTION::create);
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         DynamicRegistryManager registryManager = MinecraftClient.getInstance().world.getRegistryManager();
-        CommandSource.suggestIdentifiers(registryManager.get(registry).getIds(), builder);
+        CommandSource.suggestIdentifiers(registryManager.getOrThrow(registry).getIds(), builder);
         return builder.buildFuture();
     }
 

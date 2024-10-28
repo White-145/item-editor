@@ -24,7 +24,6 @@ public class SimpleItemEditor implements ClientModInitializer {
     public static boolean executeCommand(String command) {
         MinecraftClient client = MinecraftClient.getInstance();
         FabricClientCommandSource commandSource = (FabricClientCommandSource)client.getNetworkHandler().getCommandSource();
-        client.getProfiler().push(command);
 
         try {
             clientCommandDispatcher.execute(command, commandSource);
@@ -43,8 +42,6 @@ public class SimpleItemEditor implements ClientModInitializer {
         } catch (Exception e) {
             LOGGER.warn("Error while executing client-sided command '{}'", command, e);
             commandSource.sendError(Text.of(e.getMessage()));
-        } finally {
-            client.getProfiler().pop();
         }
         return true;
     }

@@ -64,7 +64,7 @@ public class AttributeNode implements Node {
     }
 
     private static RegistryEntry<EntityAttribute> entryOf(DynamicRegistryManager registryManager, EntityAttribute attribute) {
-        return registryManager.get(RegistryKeys.ATTRIBUTE).getEntry(attribute);
+        return registryManager.getOrThrow(RegistryKeys.ATTRIBUTE).getEntry(attribute);
     }
 
     private static boolean hasAttributes(ItemStack stack) {

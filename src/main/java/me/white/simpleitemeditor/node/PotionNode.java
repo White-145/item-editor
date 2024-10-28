@@ -59,7 +59,7 @@ public class PotionNode implements Node {
     }
 
     private static Text getTranslation(ItemStack stack, Potion potion) {
-        return Text.translatable(Potion.finishTranslationKey(Optional.of(RegistryEntry.of(potion)), stack.getItem().getTranslationKey() + ".effect."));
+        return Text.translatable(stack.getItem().getTranslationKey() + ".effect." + potion.getBaseName());
     }
 
     private static boolean isPotion(ItemStack stack) {
@@ -87,7 +87,7 @@ public class PotionNode implements Node {
             effects = List.of();
         }
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), component.customColor(), effects));
+        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), component.customColor(), effects, Optional.empty()));
     }
 
     private static boolean hasType(ItemStack stack) {
@@ -107,7 +107,7 @@ public class PotionNode implements Node {
     private static void setType(ItemStack stack, Potion potion) {
         Optional<RegistryEntry<Potion>> componentPotion = potion == null ? Optional.empty() : Optional.of(RegistryEntry.of(potion));
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(componentPotion, component.customColor(), component.customEffects()));
+        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(componentPotion, component.customColor(), component.customEffects(), Optional.empty()));
     }
 
     private static boolean hasColor(ItemStack stack) {
@@ -126,12 +126,12 @@ public class PotionNode implements Node {
 
     private static void setColor(ItemStack stack, int color) {
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.of(color), component.customEffects()));
+        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.of(color), component.customEffects(), Optional.empty()));
     }
 
     private static void removeColor(ItemStack stack) {
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.empty(), component.customEffects()));
+        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.empty(), component.customEffects(), Optional.empty()));
     }
 
     private static void addEffect(List<StatusEffectInstance> effects, StatusEffectInstance effect) throws CommandSyntaxException {

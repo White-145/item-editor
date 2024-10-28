@@ -2,4 +2,4 @@ accessWidener v2 named
 
 accessible field net/minecraft/client/resource/language/TranslationStorage translations Ljava/util/Map;
 accessible field net/minecraft/component/type/ItemEnchantmentsComponent showInTooltip Z
-accessible field net/minecraft/item/trim/ArmorTrim showInTooltip Z
+accessible field net/minecraft/item/equipment/trim/ArmorTrim showInTooltip Z
