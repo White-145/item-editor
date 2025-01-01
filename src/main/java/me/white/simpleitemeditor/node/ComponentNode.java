@@ -6,9 +6,9 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.serialization.DataResult;
-import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
+import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.command.CommandRegistryAccess;
@@ -21,13 +21,19 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+
+import java.util.Map;
 
 public class ComponentNode implements Node {
     private static final DynamicCommandExceptionType MALFORMED_COMPONENT_EXCEPTION = new DynamicCommandExceptionType(error -> Text.translatable("commands.edit.component.error.malformedcomponent", error));
     private static final DynamicCommandExceptionType BROKEN_COMPONENT_EXCEPTION = new DynamicCommandExceptionType(error -> Text.translatable("commands.edit.component.error.brokencomponent", error));
     private static final CommandSyntaxException NO_COMPONENT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.component.error.nocomponent")).create();
     private static final String OUTPUT_GET = "commands.edit.component.get";
+    private static final String OUTPUT_GET_COMPONENT = "commands.edit.component.getcomponent";
     private static final String OUTPUT_SET = "commands.edit.component.set";
     private static final String OUTPUT_REMOVE = "commands.edit.component.remove";
 
@@ -45,18 +51,33 @@ public class ComponentNode implements Node {
     public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
         CommandNode<S> node = commandManager.literal("component").build();
 
-        CommandNode<S> getNode = commandManager.literal("get").build();
+        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            Map<Identifier, NbtElement> components = EditorUtil.getComponents(stack, context.getSource().getRegistryManager(), true);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
+            for (Map.Entry<Identifier, NbtElement> entry : components.entrySet()) {
+                if (entry.getValue() != null) {
+                    EditorUtil.sendFeedback(context.getSource(), Text.empty()
+                            .append(TextUtil.copyable(entry.getKey()))
+                            .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+                            .append(TextUtil.copyable(entry.getValue()))
+                    );
+                }
+            }
+            return Command.SINGLE_SUCCESS;
+        }).build();
 
         CommandNode<S> getComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
-            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
             }
             NbtElement element = getFromComponent(stack, component, context.getSource().getRegistryManager());
 
-            EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_COMPONENT, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -72,7 +93,7 @@ public class ComponentNode implements Node {
             setFromNbt(stack, component, element, context.getSource().getRegistryManager());
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, TextUtil.copyable(Registries.DATA_COMPONENT_TYPE.getId(component)), TextUtil.copyable(element)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

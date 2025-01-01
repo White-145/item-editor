@@ -1,9 +1,6 @@
 package me.white.simpleitemeditor.util;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import me.white.simpleitemeditor.node.ComponentNode;
-import net.minecraft.component.Component;
-import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
@@ -14,7 +11,6 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class TextUtil {
@@ -32,29 +28,21 @@ public class TextUtil {
 
     public static MutableText copyable(ItemStack stack, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         StringBuilder builder = new StringBuilder(Registries.ITEM.getId(stack.getItem()).toString());
-        ItemStack defaultStack = stack.getItem().getDefaultStack();
-        Map<Identifier, NbtElement> components = new HashMap<>();
-        for (Component<?> component : stack.getComponents()) {
-            ComponentType<?> componentType = component.type();
-            Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
-            NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryManager);
-            if (!defaultStack.contains(componentType)) {
-                components.put(id, element);
-            } else {
-                NbtElement defaultElement = ComponentNode.getFromComponent(defaultStack, componentType, registryManager);
-                if (!element.equals(defaultElement)) {
-                    components.put(id, element);
-                }
-            }
-        }
+        Map<Identifier, NbtElement> components = EditorUtil.getComponents(stack, registryManager, false);
         if (!components.isEmpty()) {
             builder.append("[");
             for (Map.Entry<Identifier, NbtElement> entry : components.entrySet()) {
-                builder.append(entry.getKey());
-                builder.append("=");
-                builder.append(entry.getValue().toString());
+                if (entry.getValue() != null) {
+                    builder.append(entry.getKey());
+                    builder.append("=");
+                    builder.append(entry.getValue().toString());
+                } else {
+                    builder.append("!");
+                    builder.append(entry.getKey());
+                }
                 builder.append(",");
             }
+            // sketchy join() parody
             builder.deleteCharAt(builder.length() - 1);
             builder.append("]");
         }

@@ -4,20 +4,29 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.white.simpleitemeditor.SimpleItemEditor;
+import me.white.simpleitemeditor.node.ComponentNode;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandSource;
+import net.minecraft.component.Component;
+import net.minecraft.component.ComponentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -174,5 +183,32 @@ public class EditorUtil {
             return Optional.empty();
         }, Style.EMPTY);
         return result.toString();
+    }
+
+    public static Map<Identifier, NbtElement> getComponents(ItemStack stack, DynamicRegistryManager registryManager, boolean includeDefault) throws CommandSyntaxException {
+        ItemStack defaultStack = stack.getItem().getDefaultStack();
+        Map<Identifier, NbtElement> components = new HashMap<>();
+        for (Component<?> component : stack.getComponents()) {
+            ComponentType<?> componentType = component.type();
+            Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
+            NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryManager);
+            if (includeDefault || !defaultStack.contains(componentType)) {
+                components.put(id, element);
+            } else {
+                NbtElement defaultElement = ComponentNode.getFromComponent(defaultStack, componentType, registryManager);
+                if (!element.equals(defaultElement)) {
+                    components.put(id, element);
+                }
+            }
+        }
+        // get removed components too
+        for (Component<?> defaultComponent : defaultStack.getComponents()) {
+            ComponentType<?> componentType = defaultComponent.type();
+            Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
+            if (!stack.contains(componentType)) {
+                components.put(id, null);
+            }
+        }
+        return components;
     }
 }

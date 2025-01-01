@@ -32,6 +32,7 @@ public class EditCommand {
     // ... tool ...
     // ... book ...
     // ... use ... - consumable, food, use_cooldown, use_remainder
+    // ... model ...
 
     private static Node[] NODES = new Node[]{
             new AttributeNode(),
@@ -47,7 +48,6 @@ public class EditCommand {
             new HeadNode(),
             new LoreNode(),
             new MaterialNode(),
-            new ModelNode(),
             new NameNode(),
             new PotionNode(),
             new RarityNode(),

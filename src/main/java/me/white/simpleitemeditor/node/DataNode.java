@@ -12,6 +12,7 @@ import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockWithEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
@@ -26,6 +27,7 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -424,7 +426,8 @@ public class DataNode implements Node {
                     if (!(item instanceof SpawnEggItem)) {
                         return;
                     }
-                    EntityType<?> entityType = ((SpawnEggItem)item).getEntityType(ItemStack.EMPTY);
+                    DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
+                    EntityType<?> entityType = ((SpawnEggItem)item).getEntityType(registryManager, ItemStack.EMPTY);
                     Identifier id = Registries.ENTITY_TYPE.getId(entityType);
                     nbt.putString("id", id.toString());
                 }
