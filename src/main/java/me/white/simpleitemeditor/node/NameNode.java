@@ -16,34 +16,38 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 public class NameNode implements Node {
-    private static final CommandSyntaxException NO_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noname")).create();
-    private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.alreadyis")).create();
+    private static final CommandSyntaxException NO_ITEM_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.noitemname")).create();
+    private static final CommandSyntaxException ITEM_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.itemalreadyis")).create();
     private static final CommandSyntaxException NO_CUSTOM_NAME_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.nocustomname")).create();
     private static final CommandSyntaxException CUSTOM_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.name.error.customalreadyis")).create();
-    private static final String OUTPUT_GET = "commands.edit.name.get";
-    private static final String OUTPUT_SET = "commands.edit.name.set";
-    private static final String OUTPUT_RESET = "commands.edit.name.reset";
+    private static final String OUTPUT_ITEM_GET = "commands.edit.name.getitem";
+    private static final String OUTPUT_ITEM_SET = "commands.edit.name.setitem";
+    private static final String OUTPUT_ITEM_RESET = "commands.edit.name.resetitem";
     private static final String OUTPUT_CUSTOM_GET = "commands.edit.name.getcustom";
     private static final String OUTPUT_CUSTOM_SET = "commands.edit.name.setcustom";
-    private static final String OUTPUT_CUSTOM_RESET = "commands.edit.name.resetcustom";
+    private static final String OUTPUT_CUSTOM_REMOVE = "commands.edit.name.removecustom";
 
-    private static boolean hasName(ItemStack stack) {
+    private static boolean hasItemName(ItemStack stack) {
         return stack.contains(DataComponentTypes.ITEM_NAME);
     }
 
-    private static Text getName(ItemStack stack) {
-        if (!hasName(stack)) {
+    private static Text getItemName(ItemStack stack) {
+        if (!hasItemName(stack)) {
             return null;
         }
         return stack.get(DataComponentTypes.ITEM_NAME);
     }
 
-    private static void setName(ItemStack stack, Text name) {
+    private static void setItemName(ItemStack stack, Text name) {
         if (name == null) {
             stack.remove(DataComponentTypes.ITEM_NAME);
         } else {
             stack.set(DataComponentTypes.ITEM_NAME, name);
         }
+    }
+
+    private static void resetItemName(ItemStack stack) {
+        stack.set(DataComponentTypes.ITEM_NAME, stack.getDefaultComponents().get(DataComponentTypes.ITEM_NAME));
     }
 
     private static boolean hasCustomName(ItemStack stack) {
@@ -69,54 +73,56 @@ public class NameNode implements Node {
     public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
         CommandNode<S> node = commandManager.literal("name").build();
 
-        CommandNode<S> getNode = commandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            if (!hasName(stack)) {
-                throw NO_NAME_EXCEPTION;
-            }
-            Text name = getName(stack);
+        CommandNode<S> itemNode = commandManager.literal("item").build();
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET, TextUtil.copyable(name)));
+        CommandNode<S> itemGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!hasItemName(stack)) {
+                throw NO_ITEM_NAME_EXCEPTION;
+            }
+            Text name = getItemName(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM_GET, TextUtil.copyable(name)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> setNode = commandManager.literal("set").executes(context -> {
+        CommandNode<S> itemSetNode = commandManager.literal("set").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            if (hasName(stack) && Text.empty().equals(getName(stack))) {
-                throw ALREADY_IS_EXCEPTION;
+            if (hasItemName(stack) && Text.empty().equals(getItemName(stack))) {
+                throw ITEM_ALREADY_IS_EXCEPTION;
             }
-            setName(stack, Text.empty());
+            setItemName(stack, Text.empty());
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, ""));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM_SET, ""));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> setNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
+        CommandNode<S> itemSetNameNode = commandManager.argument("name", LegacyTextArgumentType.text()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             Text name = LegacyTextArgumentType.getText(context, "name");
-            if (hasName(stack) && name.equals(getName(stack))) {
-                throw ALREADY_IS_EXCEPTION;
+            if (hasItemName(stack) && name.equals(getItemName(stack))) {
+                throw ITEM_ALREADY_IS_EXCEPTION;
             }
-            setName(stack, name);
+            setItemName(stack, name);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, TextUtil.copyable(name)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM_SET, TextUtil.copyable(name)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> resetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> itemResetNode = commandManager.literal("reset").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            if (!hasName(stack)) {
-                throw NO_NAME_EXCEPTION;
+            if (!hasItemName(stack)) {
+                throw NO_ITEM_NAME_EXCEPTION;
             }
-            setName(stack, null);
+            resetItemName(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_RESET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_ITEM_RESET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -160,7 +166,7 @@ public class NameNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> customResetNode = commandManager.literal("reset").executes(context -> {
+        CommandNode<S> customRemoveNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasCustomName(stack)) {
@@ -169,19 +175,19 @@ public class NameNode implements Node {
             setCustomName(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CUSTOM_RESET));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CUSTOM_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        // ... item ...
+        node.addChild(itemNode);
         // ... get
-        node.addChild(getNode);
-
+        itemNode.addChild(itemGetNode);
         // ... set [<name>]
-        node.addChild(setNode);
-        setNode.addChild(setNameNode);
-
+        itemNode.addChild(itemSetNode);
+        itemSetNode.addChild(itemSetNameNode);
         // ... reset
-        node.addChild(resetNode);
+        itemNode.addChild(itemResetNode);
 
         // ... custom ...
         node.addChild(customNode);
@@ -190,8 +196,8 @@ public class NameNode implements Node {
         // ... set [<name>]
         customNode.addChild(customSetNode);
         customSetNode.addChild(customSetNameNode);
-        // ... reset
-        customNode.addChild(customResetNode);
+        // ... remove
+        customNode.addChild(customRemoveNode);
 
         return node;
     }
