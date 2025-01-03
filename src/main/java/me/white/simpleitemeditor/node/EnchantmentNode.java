@@ -33,6 +33,9 @@ public class EnchantmentNode implements Node {
     private static final CommandSyntaxException NO_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noenchantments")).create();
     private static final CommandSyntaxException NO_GLINT_OVERRIDE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.noglintoverride")).create();
     private static final CommandSyntaxException GLINT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.glintalreadyis")).create();
+    private static final CommandSyntaxException STORED_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.storedalreadyis")).create();
+    private static final CommandSyntaxException NO_SUCH_STORED_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.nosuchstoredenchantments")).create();
+    private static final CommandSyntaxException NO_STORED_ENCHANTMENTS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.enchantment.error.nostoredenchantments")).create();
     private static final String OUTPUT_GET = "commands.edit.enchantment.get";
     private static final String OUTPUT_GET_ENCHANTMENT = "commands.edit.enchantment.getenchantment";
     private static final String OUTPUT_SET = "commands.edit.enchantment.set";
@@ -43,6 +46,11 @@ public class EnchantmentNode implements Node {
     private static final String OUTPUT_GLINT_DISABLE = "commands.edit.enchantment.glintdisable";
     private static final String OUTPUT_GLINT_RESET = "commands.edit.enchantment.glintreset";
     private static final String OUTPUT_CLEAR = "commands.edit.enchantment.clear";
+    private static final String OUTPUT_GET_STORED = "commands.edit.enchantment.getstored";
+    private static final String OUTPUT_GET_STORED_ENCHANTMENT = "commands.edit.enchantment.getstoredenchantment";
+    private static final String OUTPUT_SET_STORED = "commands.edit.enchantment.setstored";
+    private static final String OUTPUT_REMOVE_STORED = "commands.edit.enchantment.removestored";
+    private static final String OUTPUT_CLEAR_STORED = "commands.edit.enchantment.clearstored";
 
     private static RegistryEntry<Enchantment> entryOf(DynamicRegistryManager registryManager, Enchantment enchantment) {
         return registryManager.getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
@@ -96,6 +104,37 @@ public class EnchantmentNode implements Node {
 
     private static void removeGlintOverride(ItemStack stack) {
         stack.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+    }
+
+    private static boolean hasStoredEnchantments(ItemStack stack) {
+        if (!stack.contains(DataComponentTypes.STORED_ENCHANTMENTS)) {
+            return false;
+        }
+        return !stack.get(DataComponentTypes.STORED_ENCHANTMENTS).isEmpty();
+    }
+
+    private static Map<Enchantment, Integer> getStoredEnchantments(ItemStack stack) {
+        if (!hasStoredEnchantments(stack)) {
+            return Map.of();
+        }
+        ItemEnchantmentsComponent component = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
+        Map<Enchantment, Integer> enchantments = new HashMap<>();
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> enchantmentEntry : component.getEnchantmentEntries()) {
+            enchantments.put(enchantmentEntry.getKey().value(), enchantmentEntry.getIntValue());
+        }
+        return enchantments;
+    }
+
+    private static void setStoredEnchantments(DynamicRegistryManager registryManager, ItemStack stack, Map<Enchantment, Integer> enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            stack.remove(DataComponentTypes.STORED_ENCHANTMENTS);
+        } else {
+            ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+            for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
+            }
+            stack.set(DataComponentTypes.STORED_ENCHANTMENTS, builder.build().withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack)));
+        }
     }
 
     @Override
@@ -240,6 +279,106 @@ public class EnchantmentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        CommandNode<S> storedNode = commandManager.literal("stored").build();
+
+        CommandNode<S> storedGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!hasStoredEnchantments(stack)) {
+                throw NO_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+            Map<Enchantment, Integer> enchantments = getStoredEnchantments(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_STORED));
+            for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
+            }
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> storedGetEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!hasStoredEnchantments(stack)) {
+                throw NO_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
+            Map<Enchantment, Integer> enchantments = getStoredEnchantments(stack);
+            if (!enchantments.containsKey(enchantment)) {
+                throw NO_SUCH_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_STORED_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> storedSetNode = commandManager.literal("set").build();
+
+        CommandNode<S> storedSetEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getStoredEnchantments(stack));
+            if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == 1) {
+                throw STORED_ALREADY_IS_EXCEPTION;
+            }
+            enchantments.put(enchantment, 1);
+            setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> storedSetEnchantmentLevelNode = commandManager.argument("level", IntegerArgumentType.integer(0, 255)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getStoredEnchantments(stack));
+            int level = IntegerArgumentType.getInteger(context, "level");
+            if (enchantments.containsKey(enchantment) && enchantments.get(enchantment) == level) {
+                throw STORED_ALREADY_IS_EXCEPTION;
+            }
+            enchantments.put(enchantment, level);
+            setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, Enchantment.getName(RegistryEntry.of(enchantment), level)));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> storedRemoveNode = commandManager.literal("remove").build();
+
+        CommandNode<S> storedRemoveEnchantmentNode = commandManager.argument("enchantment", RegistryArgumentType.registryEntry(RegistryKeys.ENCHANTMENT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!hasStoredEnchantments(stack)) {
+                throw NO_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+            Enchantment enchantment = RegistryArgumentType.getRegistryEntry(context, "enchantment", RegistryKeys.ENCHANTMENT);
+            Map<Enchantment, Integer> enchantments = new HashMap<>(getStoredEnchantments(stack));
+            if (!enchantments.containsKey(enchantment)) {
+                throw NO_SUCH_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+            enchantments.remove(enchantment);
+            setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE_STORED, enchantment.description().copy()));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> storedClearNode = commandManager.literal("clear").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!hasStoredEnchantments(stack)) {
+                throw NO_STORED_ENCHANTMENTS_EXCEPTION;
+            }
+            setStoredEnchantments(context.getSource().getRegistryManager(), stack, null);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR_STORED));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
         // ... get [<enchantment>]
         node.addChild(getNode);
         getNode.addChild(getEnchantmentNode);
@@ -265,6 +404,21 @@ public class EnchantmentNode implements Node {
 
         // ... clear
         node.addChild(clearNode);
+
+        // ... stored ...
+        node.addChild(storedNode);
+        // ... get [<enchantment>]
+        storedNode.addChild(storedGetNode);
+        storedGetNode.addChild(storedGetEnchantmentNode);
+        // ... set <enchantment> [<level>]
+        storedNode.addChild(storedSetNode);
+        storedSetNode.addChild(storedSetEnchantmentNode);
+        storedSetEnchantmentNode.addChild(storedSetEnchantmentLevelNode);
+        // ... remove <enchantment>
+        storedNode.addChild(storedRemoveNode);
+        storedRemoveNode.addChild(storedRemoveEnchantmentNode);
+        // ... clear
+        storedNode.addChild(storedClearNode);
 
         return node;
     }
