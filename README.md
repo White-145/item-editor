@@ -4,7 +4,7 @@ Simple item editor is a minecraft mod for item editing using client commands.
 
 ## Features:
 
-### `/edit` command:
+### `/edit` command (as of latest commits):
 - `... attribute ...`
 - - `... get [<id>]`
 - - `... set <id> <attribute> <amount> [<operation>] [<slot>]`
@@ -28,7 +28,7 @@ Simple item editor is a minecraft mod for item editing using client commands.
 - - `... set <color>`
 - - `... remove`
 - `... component ...`
-- - `... get <component>`
+- - `... get [<component>]`
 - - `... set <component> <value>`
 - - `... remove <component>`
 - `... count ...`
@@ -72,6 +72,11 @@ Simple item editor is a minecraft mod for item editing using client commands.
 - - - `... set <glint>`
 - - - `... reset`
 - - `... clear`
+- - `... stored ...`
+- - - `... get [<enchantment>]`
+- - - `... set <enchantment> [<level>]`
+- - - `... remove <enchantment>`
+- - - `... clear`
 - `... equip [<slot>]`
 - `... get [<item>] [<count>]`
 - `... head ...`
@@ -92,18 +97,15 @@ Simple item editor is a minecraft mod for item editing using client commands.
 - `... material ...`
 - - `... get`
 - - `... set <material>`
-- `... model ...`
-- - `... get`
-- - `... set <model>`
-- - `... reset`
 - `... name ...`
-- - `... get`
-- - `... set [<name>]`
-- - `... reset`
-- - `... custom ...`
+- - `... item ...`
 - - - `... get`
 - - - `... set [<name>]`
 - - - `... reset`
+- - `... custom ...`
+- - - `... get`
+- - - `... set [<name>]`
+- - - `... remove`
 - `... potion ...`
 - - `... get [<effect>]`
 - - `... set <effect> <duration> [<amplifier>] [<particles>] [<icon>] [<ambient>]`

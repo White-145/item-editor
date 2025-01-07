@@ -25,10 +25,8 @@ public class EditCommand {
     // ... lock ... - container lock
     // ... lodestone ... - lodestone compass
     // ... map ... - map color, decorations, id
-    // ... head sound ... - noteblock sound
     // ... recipes ... - knowledge book recipes
     // ... repair/durability repair ... - repair_cost, repairable components
-    // ... enchantment stored ...
     // ... tool ...
     // ... book ...
     // ... use ... - consumable, food, use_cooldown, use_remainder

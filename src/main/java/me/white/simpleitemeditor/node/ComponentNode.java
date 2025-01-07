@@ -113,7 +113,7 @@ public class ComponentNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        // ... get <component>
+        // ... get [<component>]
         node.addChild(getNode);
         getNode.addChild(getComponentNode);
 

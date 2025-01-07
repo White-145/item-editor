@@ -9,10 +9,12 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
-import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.RegistryArgumentType;
+import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.command.CommandRegistryAccess;
@@ -22,7 +24,10 @@ import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,7 +51,8 @@ public class HeadNode implements Node {
     private static final CommandSyntaxException INVALID_URL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.invalidtexture")).create();
     private static final CommandSyntaxException BAD_CUSTOM_TEXTURE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustombad")).create();
     private static final CommandSyntaxException TOO_FAST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustomtoofast")).create();
-    private static final CommandSyntaxException SERVER_ERROR_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustomservererror")).create();
+    private static final DynamicCommandExceptionType SERVER_ERROR_EXCEPTION = new DynamicCommandExceptionType(code -> Text.translatable("commands.edit.head.error.texturecustomservererror", code));
+    private static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
@@ -54,15 +60,10 @@ public class HeadNode implements Node {
     private static final String OUTPUT_TEXTURE_SET = "commands.edit.head.textureset";
     private static final String OUTPUT_TEXTURE_CUSTOM_SET = "commands.edit.head.texturecustomset";
     private static final String OUTPUT_TEXTURE_CUSTOM_OK = "commands.edit.head.texturecustomok";
-    private static final URL MINESKIN_API;
-
-    static {
-        try {
-            MINESKIN_API = new URL("https://api.mineskin.org/generate/url");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final String OUTPUT_SOUND_GET = "commands.edit.head.soundget";
+    private static final String OUTPUT_SOUND_SET = "commands.edit.head.soundset";
+    private static final String OUTPUT_SOUND_REMOVE = "commands.edit.head.soundremove";
+    private static final String MINESKIN_API_URL = "https://api.mineskin.org/v2/queue/";
 
     private static boolean isHead(ItemStack stack) {
         Item item = stack.getItem();
@@ -80,13 +81,9 @@ public class HeadNode implements Node {
         return stack.get(DataComponentTypes.PROFILE).gameProfile();
     }
 
-    private static void setProfile(ItemStack stack, String texture, String signature) {
+    private static void setProfile(ItemStack stack, Property profile) {
         PropertyMap properties = new PropertyMap();
-        if (signature == null) {
-            properties.put("textures", new Property("textures", texture));
-        } else {
-            properties.put("textures", new Property("textures", texture, signature));
-        }
+        properties.put("textures", profile);
         stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.empty(), Optional.empty(), properties));
     }
 
@@ -94,8 +91,27 @@ public class HeadNode implements Node {
         stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.of(owner), Optional.empty(), new PropertyMap()));
     }
 
-    private static void resetProfile(ItemStack stack) {
+    private static void removeProfile(ItemStack stack) {
         stack.remove(DataComponentTypes.PROFILE);
+    }
+
+    private static boolean hasSound(ItemStack stack) {
+        return stack.contains(DataComponentTypes.NOTE_BLOCK_SOUND);
+    }
+
+    private static Identifier getSound(ItemStack stack) {
+        if (!hasSound(stack)) {
+            return null;
+        }
+        return stack.get(DataComponentTypes.NOTE_BLOCK_SOUND);
+    }
+
+    private static void setSound(ItemStack stack, Identifier sound) {
+        if (sound == null) {
+            stack.remove(DataComponentTypes.NOTE_BLOCK_SOUND);
+        } else {
+            stack.set(DataComponentTypes.NOTE_BLOCK_SOUND, sound);
+        }
     }
 
     private static String getTexture(GameProfile profile) {
@@ -112,66 +128,102 @@ public class HeadNode implements Node {
         return object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
     }
 
-    private static HttpURLConnection connect() throws IOException {
-        HttpURLConnection connection = (HttpURLConnection)MINESKIN_API.openConnection();
-        connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
-        connection.setConnectTimeout(30000);
-        connection.addRequestProperty("Content-Type", "application/json");
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        return connection;
+    private static JsonObject getResponse(HttpURLConnection connection) throws IOException {
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            while (true) {
+                String responseLine = buffer.readLine();
+                if (responseLine == null) {
+                    break;
+                }
+                response.append(responseLine.trim());
+            }
+        }
+        return JsonParser.parseString(response.toString()).getAsJsonObject();
     }
 
-    public static void setFromUrl(String url, CommandSource source) {
+    public static Property getProfile(String url) throws CommandSyntaxException, IOException {
+        HttpURLConnection connection = null;
+        String id;
         try {
+            connection = (HttpURLConnection)new URL(MINESKIN_API_URL).openConnection();
+            connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
+            connection.addRequestProperty("Content-Type", "application/json");
+            connection.setConnectTimeout(30000);
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+
             JsonObject body = new JsonObject();
-            HttpURLConnection connection = connect();
+            body.addProperty("url", url);
+            body.addProperty("visibility", "unlisted");
             try (OutputStream output = connection.getOutputStream()) {
                 byte[] input = body.toString().getBytes(StandardCharsets.UTF_8);
                 output.write(input, 0, input.length);
             }
 
             int code = connection.getResponseCode();
-            switch (code) {
-                case (HttpURLConnection.HTTP_OK) -> {
-                    StringBuilder response = new StringBuilder();
-                    try (BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                        String responseLine;
-                        while ((responseLine = buffer.readLine()) != null) {
-                            response.append(responseLine.trim());
-                        }
-                    }
-                    JsonObject object = JsonParser.parseString(response.toString()).getAsJsonObject();
-                    JsonObject texture = object.getAsJsonObject("data").getAsJsonObject("texture");
-
-                    String value = texture.get("value").getAsString();
-                    String signature = texture.get("signature").getAsString();
-
-                    ItemStack stack = EditorUtil.getCheckedStack(source).copy();
-                    if (!EditorUtil.hasItem(stack)) {
-                        throw EditorUtil.NO_ITEM_EXCEPTION;
-                    }
-                    if (!EditorUtil.canEdit(source)) {
-                        throw EditorUtil.NOT_CREATIVE_EXCEPTION;
-                    }
-                    if (!isHead(stack)) {
-                        throw ISNT_HEAD_EXCEPTION;
-                    }
-                    setProfile(stack, value, signature);
-
-                    EditorUtil.setStack(source, stack);
-                    EditorUtil.sendFeedback(source, Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
-                }
-                case (HttpURLConnection.HTTP_BAD_REQUEST) -> {
-                    throw BAD_CUSTOM_TEXTURE_EXCEPTION;
-                }
-                case (429) -> {
-                    throw TOO_FAST_EXCEPTION;
-                }
-                default -> {
-                    throw SERVER_ERROR_EXCEPTION;
-                }
+            JsonObject response = getResponse(connection);
+            if (code == HttpURLConnection.HTTP_OK) {
+                JsonObject data = response.getAsJsonObject("skin").getAsJsonObject("texture").getAsJsonObject("data");
+                return new Property("textures", data.get("value").getAsString(), data.get("signature").getAsString());
+            } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                throw BAD_CUSTOM_TEXTURE_EXCEPTION;
+            } else if (code == 429) {
+                throw TOO_FAST_EXCEPTION;
+            } else if (code != HttpURLConnection.HTTP_ACCEPTED) {
+                throw SERVER_ERROR_EXCEPTION.create(code);
             }
+
+            id = response.getAsJsonObject("job").get("id").getAsString();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        while (true) {
+            try {
+                connection = (HttpURLConnection)new URL(MINESKIN_API_URL + id).openConnection();
+                connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
+                connection.addRequestProperty("Accept", "application/json");
+                connection.setConnectTimeout(30000);
+                connection.setRequestMethod("GET");
+
+                int code = connection.getResponseCode();
+                if (code != 200) {
+                    throw SERVER_ERROR_EXCEPTION.create(code);
+                }
+                JsonObject response = getResponse(connection);
+                if (response.has("skin")) {
+                    JsonObject data = response.getAsJsonObject("skin").getAsJsonObject("texture").getAsJsonObject("data");
+                    return new Property("textures", data.get("value").getAsString(), data.get("signature").getAsString());
+                }
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                connection.disconnect();
+            }
+        }
+    }
+
+    public static void setFromUrl(String url, CommandSource source) {
+        try {
+            Property profile = getProfile(url);
+            ItemStack stack = EditorUtil.getCheckedStack(source).copy();
+            if (!EditorUtil.hasItem(stack)) {
+                throw EditorUtil.NO_ITEM_EXCEPTION;
+            }
+            if (!EditorUtil.canEdit(source)) {
+                throw EditorUtil.NOT_CREATIVE_EXCEPTION;
+            }
+            if (!isHead(stack)) {
+                throw ISNT_HEAD_EXCEPTION;
+            }
+            setProfile(stack, profile);
+
+            EditorUtil.setStack(source, stack);
+            EditorUtil.sendFeedback(source, Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (CommandSyntaxException e) {
@@ -239,7 +291,7 @@ public class HeadNode implements Node {
                         throw TEXTURE_ALREADY_IS_EXCEPTION;
                     }
                     String value = new String(Base64.getEncoder().encode(("{\"textures\":{\"SKIN\":{\"url\":\"" + texture + "\"}}}").getBytes()));
-                    setProfile(stack, value, null);
+                    setProfile(stack, new Property("textures", value, null));
                     EditorUtil.setStack(context.getSource(), stack);
                     EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(texture)));
                 } else {
@@ -261,17 +313,65 @@ public class HeadNode implements Node {
             if (!hasProfile(stack)) {
                 throw NO_TEXTURE_EXCEPTION;
             }
-            resetProfile(stack);
+            removeProfile(stack);
 
             EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_REMOVE));
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        CommandNode<S> soundNode = commandManager.literal("sound").build();
+
+        CommandNode<S> soundGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!isHead(stack)) {
+                throw ISNT_HEAD_EXCEPTION;
+            }
+            if (!hasSound(stack)) {
+                throw NO_SOUND_EXCEPTION;
+            }
+
+            Identifier sound = getSound(stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SOUND_GET, sound));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> soundSetNode = commandManager.literal("set").build();
+
+        CommandNode<S> soundSetSoundNode = commandManager.argument("sound", RegistryArgumentType.registryEntry(RegistryKeys.SOUND_EVENT, registryAccess)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isHead(stack)) {
+                throw ISNT_HEAD_EXCEPTION;
+            }
+            SoundEvent sound = RegistryArgumentType.getRegistryEntry(context, "sound", RegistryKeys.SOUND_EVENT);
+            setSound(stack, sound.id());
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SOUND_SET, sound.id()));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> soundRemoveNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isHead(stack)) {
+                throw ISNT_HEAD_EXCEPTION;
+            }
+            if (!hasSound(stack)) {
+                throw NO_SOUND_EXCEPTION;
+            }
+            setSound(stack, null);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SOUND_REMOVE));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
         // ... get
         node.addChild(getNode);
 
-        // ... set
+        // ... set ...
         node.addChild(setNode);
         // ... owner <owner>
         setNode.addChild(setOwnerNode);
@@ -282,6 +382,16 @@ public class HeadNode implements Node {
 
         // ... remove
         node.addChild(removeNode);
+
+        // ... sound ...
+        node.addChild(soundNode);
+        // ... get
+        soundNode.addChild(getNode);
+        // ... set <sound>
+        soundNode.addChild(soundSetNode);
+        soundSetNode.addChild(soundSetSoundNode);
+        // ... remove
+        soundNode.addChild(soundRemoveNode);
 
         return node;
     }
