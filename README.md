@@ -85,6 +85,10 @@ Simple item editor is a minecraft mod for item editing using client commands.
 - - - `... owner <owner>`
 - - - `... texture <texture>`
 - - `... remove`
+- - `... sound ...`
+- - - `... get`
+- - - `... set <sound>`
+- - - `... remove`
 - `... lore ...`
 - - `... get [<index>]`
 - - `... set <index> [<line>]`
