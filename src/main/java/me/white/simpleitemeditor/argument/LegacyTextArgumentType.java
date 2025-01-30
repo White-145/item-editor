@@ -246,14 +246,17 @@ public class LegacyTextArgumentType implements ArgumentType<Text> {
             case '[' -> {
                 if (skipUntil(last, 0, ']') == -1) {
                     MinecraftClient client = MinecraftClient.getInstance();
-                    Set<String> keys = ((TranslationStorage)Language.getInstance()).translations.keySet();
-                    builder = builder.createOffset(builder.getStart() + i);
-                    for (String key : keys) {
-                        if (key.startsWith(last)) {
-                            builder.suggest(key);
+                    Language language = Language.getInstance();
+                    if (language instanceof TranslationStorage) {
+                        Set<String> keys = ((TranslationStorage)language).translations.keySet();
+                        builder = builder.createOffset(builder.getStart() + i);
+                        for (String key : keys) {
+                            if (key.startsWith(last)) {
+                                builder.suggest(key);
+                            }
                         }
+                        return builder.buildFuture();
                     }
-                    return builder.buildFuture();
                 }
             }
         }
