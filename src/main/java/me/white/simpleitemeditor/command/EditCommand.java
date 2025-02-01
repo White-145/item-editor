@@ -10,27 +10,73 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.Identifier;
 
 public class EditCommand {
-    // TODO:
-    // ... script ... - store/execute list of actions to perform. Possibly parameters
-    // ... whitelist ... - candestroy/canplaceon
-    // ... firework ... - firework rockets and firework star
-    // ... blockstate ...
-    // ... bundle ...
-    // ... projectile ... - charged projectiles (crossbow)
-    // ... container ... - contents and loot
-    // ... enchantment value ... - 1.21 enchantable component
-    // ... fire_resistance ...
-    // ... instrument ...
-    // ... jukebox ... - jukebox_playable
-    // ... lock ... - container lock
-    // ... lodestone ... - lodestone compass
-    // ... map ... - map color, decorations, id
-    // ... recipes ... - knowledge book recipes
-    // ... repair/durability repair ... - repair_cost, repairable components
-    // ... tool ...
-    // ... book ...
-    // ... use ... - consumable, food, use_cooldown, use_remainder
-    // ... model ...
+    // Components as of 1.21.4:
+
+    // attribute_modifiers          — attribute
+    // banner_patterns              — banner
+    // base_color                   — banner base
+    // bees                         —
+    // block_entity_data            — data block
+    // block_state                  —
+    // bucket_entity_data           — data bucket
+    // bundle_contents              —
+    // can_break                    —
+    // can_place_on                 —
+    // charged_projectiles          —
+    // consumable                   —
+    // container                    —
+    // container_loot               —
+    // custom_data                  — data custom
+    // custom_model_data            —
+    // custom_name                  — name custom
+    // damage                       — durability
+    // damage_resistant             —
+    // debug_stick_state            —
+    // death_protection             —
+    // dyed_color                   — color
+    // enchantable                  —
+    // enchantment_glint_override   — enchantment glint
+    // enchantments                 — enchantment
+    // entity_data                  — data entity
+    // equippable                   —
+    // firework_explosion           —
+    // fireworks                    —
+    // food                         —
+    // glider                       —
+    // hide_additional_tooltip      — tooltip additional
+    // hide_tooltip                 — tooltip all
+    // instrument                   —
+    // intangible_projectile        —
+    // item_model                   —
+    // item_name                    — name item
+    // jukebox_playable             —
+    // lock                         —
+    // lodestone_tracker            —
+    // lore                         — lore
+    // map_color                    —
+    // map_decorations              —
+    // map_id                       —
+    // max_damage                   — durability max
+    // max_stack_size               —
+    // note_block_sound             — head sound
+    // ominous_bottle_amplifier     —
+    // pot_decorations              —
+    // potion_contents              — potion
+    // profile                      — head
+    // rarity                       — rarity
+    // recipes                      —
+    // repairable                   —
+    // repair_cost                  —
+    // stored_enchantments          — enchantment stored
+    // suspicious_stew_effects      —
+    // tool                         —
+    // tooltip_style                —
+    // trim                         — trim
+    // unbreakable                  — durability
+    // use_cooldown                 —
+    // use_remainder                —
+    // writable_book_content        —
+    // written_book_content         —
 
     private static Node[] NODES = new Node[]{
             new AttributeNode(),
