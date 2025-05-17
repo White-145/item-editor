@@ -83,7 +83,7 @@ public class EnchantmentNode implements Node {
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
             }
-            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build().withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack)));
+            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
         }
     }
 
@@ -133,7 +133,7 @@ public class EnchantmentNode implements Node {
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
             }
-            stack.set(DataComponentTypes.STORED_ENCHANTMENTS, builder.build().withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack)));
+            stack.set(DataComponentTypes.STORED_ENCHANTMENTS, builder.build());
         }
     }
 

@@ -33,10 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -122,7 +119,7 @@ public class HeadNode implements Node {
         if (textures.isEmpty()) {
             return null;
         }
-        String texture = textures.get(0).value();
+        String texture = textures.getFirst().value();
         String json = new String(Base64.getDecoder().decode(texture));
         JsonObject object = new Gson().fromJson(json, JsonObject.class);
         return object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
@@ -146,7 +143,7 @@ public class HeadNode implements Node {
         HttpURLConnection connection = null;
         String id;
         try {
-            connection = (HttpURLConnection)new URL(MINESKIN_API_URL).openConnection();
+            connection = (HttpURLConnection)URI.create(MINESKIN_API_URL).toURL().openConnection();
             connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
             connection.addRequestProperty("Content-Type", "application/json");
             connection.setConnectTimeout(30000);
@@ -183,7 +180,7 @@ public class HeadNode implements Node {
 
         while (true) {
             try {
-                connection = (HttpURLConnection)new URL(MINESKIN_API_URL + id).openConnection();
+                connection = (HttpURLConnection)URI.create(MINESKIN_API_URL + id).toURL().openConnection();
                 connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
                 connection.addRequestProperty("Accept", "application/json");
                 connection.setConnectTimeout(30000);
@@ -284,22 +281,23 @@ public class HeadNode implements Node {
             }
             String oldTexture = getTexture(getProfile(stack));
             String texture = StringArgumentType.getString(context, "texture");
+            URI uri;
             try {
-                URL url = new URL(texture);
-                if (url.toURI().getHost().equals("textures.minecraft.net")) {
-                    if (texture.equals(oldTexture)) {
-                        throw TEXTURE_ALREADY_IS_EXCEPTION;
-                    }
-                    String value = new String(Base64.getEncoder().encode(("{\"textures\":{\"SKIN\":{\"url\":\"" + texture + "\"}}}").getBytes()));
-                    setProfile(stack, new Property("textures", value, null));
-                    EditorUtil.setStack(context.getSource(), stack);
-                    EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(texture)));
-                } else {
-                    EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_CUSTOM_SET, TextUtil.url(texture)));
-                    CompletableFuture.runAsync(() -> setFromUrl(texture, context.getSource()));
-                }
-            } catch (MalformedURLException | URISyntaxException ignored) {
+                uri = URI.create(texture);
+            } catch (IllegalArgumentException ignored) {
                 throw INVALID_URL_EXCEPTION;
+            }
+            if (uri.getHost().equals("textures.minecraft.net")) {
+                if (texture.equals(oldTexture)) {
+                    throw TEXTURE_ALREADY_IS_EXCEPTION;
+                }
+                String value = new String(Base64.getEncoder().encode(("{\"textures\":{\"SKIN\":{\"url\":\"" + texture + "\"}}}").getBytes()));
+                setProfile(stack, new Property("textures", value, null));
+                EditorUtil.setStack(context.getSource(), stack);
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_SET, TextUtil.url(texture)));
+            } else {
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_TEXTURE_CUSTOM_SET, TextUtil.url(texture)));
+                CompletableFuture.runAsync(() -> setFromUrl(texture, context.getSource()));
             }
             return Command.SINGLE_SUCCESS;
         }).build();

@@ -31,7 +31,7 @@ public class EquipNode implements Node {
 
     private void equip(CommandSource source, ItemStack stack, ExclusiveSlot slot) throws CommandSyntaxException {
         PlayerInventory inventory = getInventory(source);
-        ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.offHand.get(0).copy() : inventory.getArmorStack(slot.armorSlot).copy();
+        ItemStack equippedStack = slot == ExclusiveSlot.OFFHAND ? inventory.getStack(PlayerInventory.OFF_HAND_SLOT).copy() : inventory.getStack(slot.mainSlot).copy();
         EditorUtil.setStack(source, equippedStack);
         inventory.setStack(slot.mainSlot, stack);
         if (EditorUtil.isClientSource(source)) {

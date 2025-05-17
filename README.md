@@ -17,7 +17,6 @@ Simple item editor is a minecraft mod for item editing using client commands.
 - - `... add <pattern> <color>`
 - - `... insert <index> <pattern> <color>`
 - - `... base ...`
-- - - `... get`
 - - - `... set <color>`
 - - - `... remove`
 - - `... clear`

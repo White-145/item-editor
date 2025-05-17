@@ -49,7 +49,7 @@ public class TrimNode implements Node {
     }
 
     private static void setTrim(ItemStack stack, ArmorTrim trim) {
-        stack.set(DataComponentTypes.TRIM, trim.withShowInTooltip(TooltipNode.TooltipPart.TRIM.get(stack)));
+        stack.set(DataComponentTypes.TRIM, trim);
     }
 
     @Override

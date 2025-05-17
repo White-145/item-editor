@@ -40,7 +40,6 @@ import java.util.List;
 public class DataNode implements Node {
     private static final CommandSyntaxException NO_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nonbt")).create();
     private static final CommandSyntaxException NO_SUCH_NBT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.nosuchnbt")).create();
-    private static final CommandSyntaxException TYPE_MISMATCH_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.typemismatch")).create();
     private static final CommandSyntaxException NOT_LIST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notlist")).create();
     private static final CommandSyntaxException NOT_COMPOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.notcompound")).create();
     private static final CommandSyntaxException MERGE_ALREADY_HAS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.data.error.mergealreadyhas")).create();
@@ -131,9 +130,6 @@ public class DataNode implements Node {
             }
             for (NbtElement el : elements) {
                 if (el instanceof NbtList list) {
-                    if (!list.isEmpty() && list.getHeldType() != element.getType()) {
-                        throw TYPE_MISMATCH_EXCEPTION;
-                    }
                     list.add(element);
                 } else {
                     throw NOT_LIST_EXCEPTION;
@@ -175,9 +171,6 @@ public class DataNode implements Node {
             }
             for (NbtElement el : elements) {
                 if (el instanceof NbtList list) {
-                    if (!list.isEmpty() && list.getHeldType() != element.getType()) {
-                        throw TYPE_MISMATCH_EXCEPTION;
-                    }
                     if (index > list.size()) {
                         throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, list.size());
                     }
@@ -219,9 +212,6 @@ public class DataNode implements Node {
             }
             for (NbtElement el : elements) {
                 if (el instanceof NbtList list) {
-                    if (!list.isEmpty() && list.getHeldType() != element.getType()) {
-                        throw TYPE_MISMATCH_EXCEPTION;
-                    }
                     list.add(0, element);
                 } else {
                     throw NOT_LIST_EXCEPTION;

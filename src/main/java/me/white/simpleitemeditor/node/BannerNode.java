@@ -43,7 +43,6 @@ public class BannerNode implements Node {
     private static final String OUTPUT_REMOVE = "commands.edit.banner.remove";
     private static final String OUTPUT_ADD = "commands.edit.banner.add";
     private static final String OUTPUT_INSERT = "commands.edit.banner.insert";
-    private static final String OUTPUT_BASE_GET = "commands.edit.banner.baseget";
     private static final String OUTPUT_BASE_SET = "commands.edit.banner.baseset";
     private static final String OUTPUT_BASE_REMOVE = "commands.edit.banner.baseremove";
     private static final String OUTPUT_CLEAR = "commands.edit.banner.clear";
@@ -176,8 +175,7 @@ public class BannerNode implements Node {
     }
 
     private static Text translation(BannerPatternsComponent.Layer layer) {
-        String string = layer.pattern().value().translationKey();
-        return Text.translatable(string + "." + layer.color().getName());
+        return layer.getTooltipText();
     }
 
     @Override
@@ -339,20 +337,6 @@ public class BannerNode implements Node {
 
         CommandNode<S> baseNode = commandManager.literal("base").build();
 
-        CommandNode<S> baseGetNode = commandManager.literal("get").executes(context -> {
-            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            if (!isBanner(stack)) {
-                throw ISNT_BANNER_EXCEPTION;
-            }
-            if (!hasBaseColor(stack)) {
-                throw NO_BASE_EXCEPTION;
-            }
-            DyeColor color = getBaseColor(stack);
-
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_GET, color.getName()));
-            return Command.SINGLE_SUCCESS;
-        }).build();
-
         CommandNode<S> baseSetNode = commandManager.literal("set").build();
 
         CommandNode<S> baseSetColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
@@ -368,7 +352,7 @@ public class BannerNode implements Node {
             ItemStack newStack = setBaseColor(stack, color);
 
             EditorUtil.setStack(context.getSource(), newStack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_SET, color.getName()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_BASE_SET));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -479,8 +463,6 @@ public class BannerNode implements Node {
 
         // ... base ...
         node.addChild(baseNode);
-        // ... get
-        baseNode.addChild(baseGetNode);
         // ... set <color>
         baseNode.addChild(baseSetNode);
         baseSetNode.addChild(baseSetColorNode);

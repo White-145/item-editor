@@ -45,7 +45,7 @@ public class ColorNode implements Node {
     }
 
     private static void setColor(ItemStack stack, int color) {
-        stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, TooltipNode.TooltipPart.COLOR.get(stack)));
+        stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
     }
 
     @Override

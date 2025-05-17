@@ -98,7 +98,7 @@ public class EditorUtil {
         } else {
             throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
         }
-        int slot = inventory.selectedSlot;
+        int slot = inventory.getSelectedSlot();
         inventory.setStack(slot, stack);
         if (isClientSource(source)) {
             ((FabricClientCommandSource)source).getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));

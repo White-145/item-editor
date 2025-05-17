@@ -47,6 +47,7 @@ public class SimpleItemEditor implements ClientModInitializer {
     }
 
     // intellij doesnt show it, but code does not compile without this weird generics cast
+    // was made to make the mod work on server, but turns out you still need client to have the same argument types :/
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void registerArgumentTypes() {
         ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "color"), ColorArgumentType.class, ConstantArgumentSerializer.of(ColorArgumentType::color));
@@ -62,7 +63,6 @@ public class SimpleItemEditor implements ClientModInitializer {
         ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "datasource"), DataSourceArgumentType.class, ConstantArgumentSerializer.of(DataSourceArgumentType::dataSource));
         ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "exclusiveslot"), ExclusiveSlotArgumentType.class, ConstantArgumentSerializer.of(ExclusiveSlotArgumentType::exclusiveSlot));
         ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "rarity"), RarityArgumentType.class, ConstantArgumentSerializer.of(RarityArgumentType::rarity));
-        ArgumentTypeRegistry.registerArgumentType(Identifier.of("sie", "tooltippart"), TooltipPartArgumentType.class, ConstantArgumentSerializer.of(TooltipPartArgumentType::tooltipPart));
     }
 
     @Override

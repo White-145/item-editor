@@ -85,7 +85,7 @@ public class AttributeNode implements Node {
         if (attributes == null || attributes.isEmpty()) {
             stack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         } else {
-            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode.TooltipPart.ATTRIBUTE.get(stack)));
+            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes));
         }
     }
     @Override
@@ -128,7 +128,7 @@ public class AttributeNode implements Node {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;
             }
             if (matching.size() == 1) {
-                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(matching.get(0))));
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(matching.getFirst())));
             } else {
                 EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
                 for (AttributeModifiersComponent.Entry entry : matching) {

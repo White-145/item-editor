@@ -11,19 +11,20 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
+import java.net.URI;
 import java.util.Map;
 
 public class TextUtil {
     private static final String SUGGESTION_COPY = "chat.copyable.copy";
 
     public static MutableText copyable(Text text, String copy) {
-        return Text.empty().append(text).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(SUGGESTION_COPY))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copy)).withInsertion(copy));
+        return Text.empty().append(text).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Text.translatable(SUGGESTION_COPY))).withClickEvent(new ClickEvent.CopyToClipboard(copy)).withInsertion(copy));
     }
 
     public static MutableText copyable(ItemStack stack) {
         String copied = Registries.ITEM.getId(stack.getItem()).toString();
 
-        return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copied)).withInsertion(copied));
+        return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(copied)).withInsertion(copied));
     }
 
     public static MutableText copyable(ItemStack stack, DynamicRegistryManager registryManager) throws CommandSyntaxException {
@@ -48,7 +49,7 @@ public class TextUtil {
         }
         String copied = builder.toString();
 
-        return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copied)).withInsertion(copied));
+        return Text.empty().append(stack.getName()).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(copied)).withInsertion(copied));
     }
 
     public static MutableText copyable(Text text) {
@@ -72,6 +73,10 @@ public class TextUtil {
     }
 
     public static MutableText url(String url) {
-        return Text.empty().append(url).setStyle(Style.EMPTY.withColor(Formatting.BLUE).withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)).withInsertion(url));
+        try {
+            return Text.empty().append(url).setStyle(Style.EMPTY.withColor(Formatting.BLUE).withUnderline(true).withClickEvent(new ClickEvent.OpenUrl(URI.create(url))).withInsertion(url));
+        } catch (IllegalArgumentException ignored) {
+            return Text.empty().append(url).setStyle(Style.EMPTY.withColor(Formatting.BLUE).withUnderline(true).withInsertion(url));
+        }
     }
 }

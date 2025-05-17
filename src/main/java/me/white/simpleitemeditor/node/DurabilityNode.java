@@ -7,15 +7,17 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
-import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.RegistryArgumentType;
+import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
+import net.minecraft.util.Unit;
 
 public class DurabilityNode implements Node {
     private static final CommandSyntaxException STACKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.stackable")).create();
@@ -68,7 +70,7 @@ public class DurabilityNode implements Node {
 
     private static void setUnbreakable(ItemStack stack, boolean isUnbreakable) {
         if (isUnbreakable) {
-            stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(TooltipNode.TooltipPart.UNBREAKABLE.get(stack)));
+            stack.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
         } else {
             stack.remove(DataComponentTypes.UNBREAKABLE);
         }
@@ -251,6 +253,20 @@ public class DurabilityNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
+        CommandNode<S> resistanceNode = commandManager.literal("resistance").build();
+
+        CommandNode<S> resistanceGetNode = commandManager.literal("get").build();
+
+        CommandNode<S> resistanceAddNode = commandManager.literal("add").build();
+
+        CommandNode<S> resistanceAddTypeNode = commandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.DAMAGE_TYPE, registryAccess)).build();
+
+        CommandNode<S> resistanceRemoveNode = commandManager.literal("remove").build();
+
+        CommandNode<S> resistanceRemoveTypeNode = commandManager.argument("type", RegistryArgumentType.registryEntry(RegistryKeys.DAMAGE_TYPE, registryAccess)).build();
+
+        CommandNode<S> resistanceClearNode = commandManager.literal("clear").build();
+
         // ... get
         node.addChild(getNode);
 
@@ -284,6 +300,19 @@ public class DurabilityNode implements Node {
         // ... set <unbreakable>
         unbreakableNode.addChild(unbreakableSetNode);
         unbreakableSetNode.addChild(unbreakableSetunbreakableNode);
+
+        // ... resistance ...
+        node.addChild(resistanceNode);
+        // ... get
+        resistanceNode.addChild(resistanceGetNode);
+        // ... add <type>
+        resistanceNode.addChild(resistanceAddNode);
+        resistanceAddNode.addChild(resistanceAddTypeNode);
+        // ... remove <type>
+        resistanceNode.addChild(resistanceRemoveNode);
+        resistanceRemoveNode.addChild(resistanceRemoveTypeNode);
+        // ... clear
+        resistanceNode.addChild(resistanceClearNode);
 
         return node;
     }
