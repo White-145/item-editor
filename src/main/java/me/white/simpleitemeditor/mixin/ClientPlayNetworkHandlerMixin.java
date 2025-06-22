@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
@@ -38,13 +37,6 @@ public abstract class ClientPlayNetworkHandlerMixin {
 
         SimpleItemEditor.clientCommandDispatcher.getRoot().addChild(node);
         commandDispatcher.getRoot().addChild((CommandNode<CommandSource>)(CommandNode<? extends CommandSource>)node);
-    }
-
-    @Inject(method = "sendCommand(Ljava/lang/String;)Z", at = @At("HEAD"), cancellable = true)
-    public void sendCommand(String command, CallbackInfoReturnable<Boolean> cir) {
-        if (SimpleItemEditor.executeCommand(command)) {
-            cir.setReturnValue(true);
-        }
     }
 
     @Inject(method = "sendChatCommand(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
