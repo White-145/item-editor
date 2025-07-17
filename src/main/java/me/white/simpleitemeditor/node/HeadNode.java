@@ -50,6 +50,7 @@ public class HeadNode implements Node {
     private static final CommandSyntaxException TOO_FAST_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.texturecustomtoofast")).create();
     private static final DynamicCommandExceptionType SERVER_ERROR_EXCEPTION = new DynamicCommandExceptionType(code -> Text.translatable("commands.edit.head.error.texturecustomservererror", code));
     private static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
+    private static final CommandSyntaxException SOUND_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.soundalreadyis")).create();
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
@@ -119,7 +120,11 @@ public class HeadNode implements Node {
         if (textures.isEmpty()) {
             return null;
         }
+        //? if >=1.21.6 {
         String texture = textures.getFirst().value();
+        //?} else {
+        /*String texture = textures.get(0).value();
+        *///?}
         String json = new String(Base64.getDecoder().decode(texture));
         JsonObject object = new Gson().fromJson(json, JsonObject.class);
         return object.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
@@ -343,10 +348,18 @@ public class HeadNode implements Node {
                 throw ISNT_HEAD_EXCEPTION;
             }
             SoundEvent sound = RegistryArgumentType.getRegistryEntry(context, "sound", RegistryKeys.SOUND_EVENT);
-            setSound(stack, sound.id());
+            //? if >=1.21.4 {
+            Identifier id = sound.id();
+            //?} else {
+            /*Identifier id = sound.getId();
+            *///?}
+            setSound(stack, id);
+            if (hasSound(stack) && id.equals(getSound(stack))) {
+                throw SOUND_ALREADY_IS_EXCEPTION;
+            }
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SOUND_SET, sound.id()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SOUND_SET, id));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -384,7 +397,7 @@ public class HeadNode implements Node {
         // ... sound ...
         node.addChild(soundNode);
         // ... get
-        soundNode.addChild(getNode);
+        soundNode.addChild(soundGetNode);
         // ... set <sound>
         soundNode.addChild(soundSetNode);
         soundSetNode.addChild(soundSetSoundNode);

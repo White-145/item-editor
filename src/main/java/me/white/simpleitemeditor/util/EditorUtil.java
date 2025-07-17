@@ -16,8 +16,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -35,6 +34,22 @@ public class EditorUtil {
     public static final CommandSyntaxException NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.error.noitem")).create();
     public static final Dynamic2CommandExceptionType OUT_OF_BOUNDS_EXCEPTION = new Dynamic2CommandExceptionType((index, size) -> Text.translatable("commands.edit.error.outofbounds", index, size));
     public static final Function<CommandSource, IllegalArgumentException> UNKNOWN_SOURCE_EXCEPTION = source -> new IllegalArgumentException("Unknown command source '" + source.getClass().getName() + "'.");
+
+    private static int getSelectedSlot(PlayerInventory inventory) {
+        //? if >=1.21.6 {
+        return inventory.getSelectedSlot();
+        //?} else {
+        /*return inventory.selectedSlot;
+        *///?}
+    }
+
+    public static <T> Registry<T> getRegistry(DynamicRegistryManager registryManager, RegistryKey<Registry<T>> key) {
+        //? if >=1.21.4 {
+        return registryManager.getOrThrow(key);
+        //?} else {
+        /*return registryManager.get(key);*/
+        //?}
+    }
 
     public static boolean isClientSource(CommandSource source) {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && source instanceof FabricClientCommandSource;
@@ -98,7 +113,7 @@ public class EditorUtil {
         } else {
             throw UNKNOWN_SOURCE_EXCEPTION.apply(source);
         }
-        int slot = inventory.getSelectedSlot();
+        int slot = getSelectedSlot(inventory);
         inventory.setStack(slot, stack);
         if (isClientSource(source)) {
             ((FabricClientCommandSource)source).getClient().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + slot, stack));

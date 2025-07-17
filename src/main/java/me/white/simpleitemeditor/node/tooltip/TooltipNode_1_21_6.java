@@ -1,5 +1,6 @@
-package me.white.simpleitemeditor.node;
+package me.white.simpleitemeditor.node.tooltip;
 
+//? if >=1.21.6 {
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -20,7 +21,7 @@ import net.minecraft.text.Text;
 
 import java.util.Set;
 
-public class TooltipNode implements Node {
+public class TooltipNode_1_21_6 implements Node {
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.tooltip.error.alreadyis")).create();
     private static final CommandSyntaxException NO_COMPONENT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.tooltip.error.nocomponent")).create();
     private static final String OUTPUT_GET_ENABLED = "commands.edit.tooltip.getenabled";
@@ -118,3 +119,4 @@ public class TooltipNode implements Node {
         return node;
     }
 }
+//?}

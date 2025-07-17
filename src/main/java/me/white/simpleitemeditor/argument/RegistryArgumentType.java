@@ -16,6 +16,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -36,6 +37,14 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
         this.registryAccess = registryAccess;
     }
 
+    private RegistryWrapper<T> getWrapper() {
+        //? if >=1.21.4 {
+        return registryAccess.getOrThrow(registry);
+        //?} else {
+        /*return registryAccess.getWrapperOrThrow(registry);
+        *///?}
+    }
+
     public static <T> RegistryArgumentType<T> registryEntry(RegistryKey<? extends Registry<T>> registry, CommandRegistryAccess registryAccess) {
         return new RegistryArgumentType<>(registry, registryAccess);
     }
@@ -53,14 +62,15 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     @Override
     public RegistryEntry<T> parse(StringReader stringReader) throws CommandSyntaxException {
         Identifier identifier = Identifier.fromCommandInput(stringReader);
-        Optional<RegistryEntry.Reference<T>> optional = registryAccess.getOrThrow(registry).getOptional(RegistryKey.of(registry, identifier));
+
+        Optional<RegistryEntry.Reference<T>> optional = getWrapper().getOptional(RegistryKey.of(registry, identifier));
         return optional.orElseThrow(INVALID_ENTRY_EXCEPTION::create);
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         DynamicRegistryManager registryManager = MinecraftClient.getInstance().world.getRegistryManager();
-        CommandSource.suggestIdentifiers(registryManager.getOrThrow(registry).getIds(), builder);
+        CommandSource.suggestIdentifiers(getWrapper().streamKeys().map(RegistryKey::getValue), builder);
         return builder.buildFuture();
     }
 

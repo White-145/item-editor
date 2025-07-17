@@ -4,13 +4,16 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
-import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.IdentifierArgumentType;
 import me.white.simpleitemeditor.argument.InfiniteDoubleArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
 import me.white.simpleitemeditor.argument.enums.AttributeOperationArgumentType;
 import me.white.simpleitemeditor.argument.enums.AttributeSlotArgumentType;
+//? if <1.21.6 {
+/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
+*///?}
+import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -64,7 +67,7 @@ public class AttributeNode implements Node {
     }
 
     private static RegistryEntry<EntityAttribute> entryOf(DynamicRegistryManager registryManager, EntityAttribute attribute) {
-        return registryManager.getOrThrow(RegistryKeys.ATTRIBUTE).getEntry(attribute);
+        return EditorUtil.getRegistry(registryManager, RegistryKeys.ATTRIBUTE).getEntry(attribute);
     }
 
     private static boolean hasAttributes(ItemStack stack) {
@@ -85,7 +88,11 @@ public class AttributeNode implements Node {
         if (attributes == null || attributes.isEmpty()) {
             stack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         } else {
+            //? if >=1.21.6 {
             stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes));
+            //?} else {
+            /*stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode_1_21_1.TooltipPart.ATTRIBUTE.get(stack)));
+            *///?}
         }
     }
     @Override
@@ -128,7 +135,12 @@ public class AttributeNode implements Node {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;
             }
             if (matching.size() == 1) {
-                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(matching.getFirst())));
+                //? if >=1.21.6 {
+                AttributeModifiersComponent.Entry entry = matching.getFirst();
+                //?} else {
+                /*AttributeModifiersComponent.Entry entry = matching.get(0);
+                *///?}
+                EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ATTRIBUTE, translate(entry)));
             } else {
                 EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
                 for (AttributeModifiersComponent.Entry entry : matching) {

@@ -7,6 +7,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+//? if <1.21.6 {
+/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
+*///?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
@@ -53,7 +56,7 @@ public class EnchantmentNode implements Node {
     private static final String OUTPUT_CLEAR_STORED = "commands.edit.enchantment.clearstored";
 
     private static RegistryEntry<Enchantment> entryOf(DynamicRegistryManager registryManager, Enchantment enchantment) {
-        return registryManager.getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
+        return EditorUtil.getRegistry(registryManager, RegistryKeys.ENCHANTMENT).getEntry(enchantment);
     }
 
     private static boolean hasEnchantments(ItemStack stack) {
@@ -83,7 +86,11 @@ public class EnchantmentNode implements Node {
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
             }
-            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
+            ItemEnchantmentsComponent component = builder.build();
+            //? if <1.21.6 {
+            /*component = component.withShowInTooltip(TooltipNode_1_21_1.TooltipPart.ENCHANTMENT.get(stack));
+            *///?}
+            stack.set(DataComponentTypes.ENCHANTMENTS, component);
         }
     }
 

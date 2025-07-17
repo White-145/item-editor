@@ -24,6 +24,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.PotionItem;
 import net.minecraft.item.TippedArrowItem;
 import net.minecraft.potion.Potion;
+//? if <=1.21.1 {
+/*import net.minecraft.registry.Registries;
+*///?}
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
@@ -54,12 +57,24 @@ public class PotionNode implements Node {
     private static final String OUTPUT_COLOR_REMOVE = "commands.edit.potion.removecolor";
     private static final String OUTPUT_EFFECT = "commands.edit.potion.effect";
 
+    private static void setPotionComponent(ItemStack stack, Optional<RegistryEntry<Potion>> potion, Optional<Integer> customColor, List<StatusEffectInstance> effects) {
+        //? if >=1.21.4 {
+        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, customColor, effects, Optional.empty()));
+        //?} else {
+        /*stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, customColor, effects));
+        *///?}
+    }
+
     private static Text getTranslation(StatusEffectInstance effect) {
         return Text.translatable(OUTPUT_EFFECT, effect.getEffectType().value().getName(), effect.getAmplifier() + 1, effect.getDuration() < 0 ? "Infinity" : effect.getDuration());
     }
 
     private static Text getTranslation(ItemStack stack, Potion potion) {
+        //? if >=1.21.4 {
         return Text.translatable(stack.getItem().getTranslationKey() + ".effect." + potion.getBaseName());
+        //?} else {
+        /*return Text.translatable(Potion.finishTranslationKey(Optional.of(Registries.POTION.getEntry(potion)), stack.getItem().getTranslationKey() + ".effect."));
+        *///?}
     }
 
     private static boolean isPotion(ItemStack stack) {
@@ -87,7 +102,7 @@ public class PotionNode implements Node {
             effects = List.of();
         }
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), component.customColor(), effects, Optional.empty()));
+        setPotionComponent(stack, component.potion(), component.customColor(), effects);
     }
 
     private static boolean hasType(ItemStack stack) {
@@ -107,7 +122,7 @@ public class PotionNode implements Node {
     private static void setType(ItemStack stack, Potion potion) {
         Optional<RegistryEntry<Potion>> componentPotion = potion == null ? Optional.empty() : Optional.of(RegistryEntry.of(potion));
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(componentPotion, component.customColor(), component.customEffects(), Optional.empty()));
+        setPotionComponent(stack, componentPotion, component.customColor(), component.customEffects());
     }
 
     private static boolean hasColor(ItemStack stack) {
@@ -126,12 +141,12 @@ public class PotionNode implements Node {
 
     private static void setColor(ItemStack stack, int color) {
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.of(color), component.customEffects(), Optional.empty()));
+        setPotionComponent(stack, component.potion(), Optional.of(color), component.customEffects());
     }
 
     private static void removeColor(ItemStack stack) {
         PotionContentsComponent component = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-        stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.empty(), component.customEffects(), Optional.empty()));
+        setPotionComponent(stack, component.potion(), Optional.empty(), component.customEffects());
     }
 
     private static void addEffect(List<StatusEffectInstance> effects, StatusEffectInstance effect) throws CommandSyntaxException {

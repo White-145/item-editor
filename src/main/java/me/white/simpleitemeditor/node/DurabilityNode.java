@@ -14,10 +14,16 @@ import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
+//? if <1.21.6 {
+/*import net.minecraft.component.type.UnbreakableComponent;
+import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
+*///?} else {
+import net.minecraft.util.Unit;
+//?}
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
-import net.minecraft.util.Unit;
 
 public class DurabilityNode implements Node {
     private static final CommandSyntaxException STACKABLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.durability.error.stackable")).create();
@@ -70,7 +76,11 @@ public class DurabilityNode implements Node {
 
     private static void setUnbreakable(ItemStack stack, boolean isUnbreakable) {
         if (isUnbreakable) {
+            //? if >=1.21.6 {
             stack.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
+            //?} else {
+            /*stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(TooltipNode_1_21_1.TooltipPart.UNBREAKABLE.get(stack)));
+            *///?}
         } else {
             stack.remove(DataComponentTypes.UNBREAKABLE);
         }

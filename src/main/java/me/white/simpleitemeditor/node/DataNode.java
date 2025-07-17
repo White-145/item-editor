@@ -417,7 +417,11 @@ public class DataNode implements Node {
                         return;
                     }
                     DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
+                    //? if >= 1.21.4 {
                     EntityType<?> entityType = ((SpawnEggItem)item).getEntityType(registryManager, ItemStack.EMPTY);
+                    //?} else {
+                    /*EntityType<?> entityType = ((SpawnEggItem)item).getEntityType(ItemStack.EMPTY);
+                    *///?}
                     Identifier id = Registries.ENTITY_TYPE.getId(entityType);
                     nbt.putString("id", id.toString());
                 }
