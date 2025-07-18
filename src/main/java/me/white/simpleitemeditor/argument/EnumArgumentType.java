@@ -14,12 +14,12 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public abstract class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
+public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     private static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
     private Class<T> clazz;
     private List<String> suggestions;
 
-    protected EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
+    private EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
         this.clazz = clazz;
         T[] consts = clazz.getEnumConstants();
         String[] suggestions = new String[consts.length];
@@ -29,8 +29,12 @@ public abstract class EnumArgumentType<T extends Enum<T>> implements ArgumentTyp
         this.suggestions = List.of(suggestions);
     }
 
-    protected EnumArgumentType(Class<T> clazz) {
-        this(clazz, value -> value.name().toLowerCase(Locale.ROOT));
+    public static <T extends Enum<T>> EnumArgumentType<T> enums(Class<T> clazz) {
+        return new EnumArgumentType<>(clazz, value -> value.name().toLowerCase(Locale.ROOT));
+    }
+
+    public static <T extends Enum<T>> EnumArgumentType<T> enums(Class<T> clazz, Function<T, String> formatter) {
+        return new EnumArgumentType<>(clazz, formatter);
     }
 
     @Override

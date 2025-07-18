@@ -6,10 +6,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
+//? if >=1.21.1 {
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-//? if <1.21.6 {
-/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
-*///?}
+//?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
@@ -72,9 +71,15 @@ public class EnchantmentNode implements Node {
         }
         ItemEnchantmentsComponent component = stack.get(DataComponentTypes.ENCHANTMENTS);
         Map<Enchantment, Integer> enchantments = new HashMap<>();
+        //? if >=1.21.1 {
         for (Object2IntMap.Entry<RegistryEntry<Enchantment>> enchantmentEntry : component.getEnchantmentEntries()) {
             enchantments.put(enchantmentEntry.getKey().value(), enchantmentEntry.getIntValue());
         }
+        //?} else {
+        /*for (RegistryEntry<Enchantment> enchantment : component.getEnchantments()) {
+            enchantments.put(enchantment.value(), component.getLevel(enchantment.value()));
+        }
+        *///?}
         return enchantments;
     }
 
@@ -84,11 +89,15 @@ public class EnchantmentNode implements Node {
         } else {
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                //? if >=1.21.1 {
                 builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
+                //?} else {
+                /*builder.set(entry.getKey(), entry.getValue());
+                *///?}
             }
             ItemEnchantmentsComponent component = builder.build();
             //? if <1.21.6 {
-            /*component = component.withShowInTooltip(TooltipNode_1_21_1.TooltipPart.ENCHANTMENT.get(stack));
+            /*component = component.withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack));
             *///?}
             stack.set(DataComponentTypes.ENCHANTMENTS, component);
         }
@@ -126,9 +135,15 @@ public class EnchantmentNode implements Node {
         }
         ItemEnchantmentsComponent component = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
         Map<Enchantment, Integer> enchantments = new HashMap<>();
+        //? if >=1.21.1 {
         for (Object2IntMap.Entry<RegistryEntry<Enchantment>> enchantmentEntry : component.getEnchantmentEntries()) {
             enchantments.put(enchantmentEntry.getKey().value(), enchantmentEntry.getIntValue());
         }
+        //?} else {
+        /*for (RegistryEntry<Enchantment> enchantment : component.getEnchantments()) {
+            enchantments.put(enchantment.value(), component.getLevel(enchantment.value()));
+        }
+        *///?}
         return enchantments;
     }
 
@@ -138,10 +153,22 @@ public class EnchantmentNode implements Node {
         } else {
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+                //? if >=1.21.1 {
                 builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
+                //?} else {
+                /*builder.set(entry.getKey(), entry.getValue());
+                *///?}
             }
             stack.set(DataComponentTypes.STORED_ENCHANTMENTS, builder.build());
         }
+    }
+
+    private static Text getEnchantmentName(Enchantment enchantment, int level) {
+        //? if >=1.21.1 {
+        return Enchantment.getName(RegistryEntry.of(enchantment), level);
+        //?} else {
+        /*return enchantment.getName(level);
+        *///?}
     }
 
     @Override
@@ -157,7 +184,7 @@ public class EnchantmentNode implements Node {
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(getEnchantmentName(entry.getKey(), entry.getValue())));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
@@ -173,7 +200,7 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_ENCHANTMENT, getEnchantmentName(enchantment, enchantments.get(enchantment))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -191,7 +218,7 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getEnchantmentName(enchantment, 1)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -208,7 +235,7 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, Enchantment.getName(RegistryEntry.of(enchantment), level)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getEnchantmentName(enchantment, level)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -229,7 +256,12 @@ public class EnchantmentNode implements Node {
             setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE, enchantment.description().copy()));
+            //? if >=1.21.1 {
+            Text description = enchantment.description().copy();
+            //?} else {
+            /*Text description = enchantment.getName(1);
+            *///?}
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE, description));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -297,7 +329,7 @@ public class EnchantmentNode implements Node {
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_STORED));
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(Enchantment.getName(RegistryEntry.of(entry.getKey()), entry.getValue())));
+                EditorUtil.sendFeedback(context.getSource(), Text.empty().append(Text.literal("- ").setStyle(Style.EMPTY.withColor(Formatting.GRAY))).append(getEnchantmentName(entry.getKey(), entry.getValue())));
             }
             return Command.SINGLE_SUCCESS;
         }).build();
@@ -313,7 +345,7 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_STORED_ENCHANTMENTS_EXCEPTION;
             }
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_STORED_ENCHANTMENT, Enchantment.getName(RegistryEntry.of(enchantment), enchantments.get(enchantment))));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_STORED_ENCHANTMENT, getEnchantmentName(enchantment, enchantments.get(enchantment))));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -331,7 +363,7 @@ public class EnchantmentNode implements Node {
             setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, Enchantment.getName(RegistryEntry.of(enchantment), 1)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, getEnchantmentName(enchantment, 1)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -348,7 +380,7 @@ public class EnchantmentNode implements Node {
             setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, Enchantment.getName(RegistryEntry.of(enchantment), level)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_STORED, getEnchantmentName(enchantment, level)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -369,7 +401,12 @@ public class EnchantmentNode implements Node {
             setStoredEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE_STORED, enchantment.description().copy()));
+            //? if >=1.21.1 {
+            Text description = enchantment.description().copy();
+            //?} else {
+            /*Text description = enchantment.getName(1);
+            *///?}
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE_STORED, description));
             return Command.SINGLE_SUCCESS;
         }).build();
 

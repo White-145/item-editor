@@ -11,7 +11,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.Component;
+//? if >=1.21.1 {
 import net.minecraft.component.ComponentType;
+//?} else {
+/*import net.minecraft.component.DataComponentType;
+*///?}
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
@@ -47,8 +51,8 @@ public class EditorUtil {
         //? if >=1.21.4 {
         return registryManager.getOrThrow(key);
         //?} else {
-        /*return registryManager.get(key);*/
-        //?}
+        /*return registryManager.get(key);
+        *///?}
     }
 
     public static boolean isClientSource(CommandSource source) {
@@ -204,7 +208,11 @@ public class EditorUtil {
         ItemStack defaultStack = stack.getItem().getDefaultStack();
         Map<Identifier, NbtElement> components = new HashMap<>();
         for (Component<?> component : stack.getComponents()) {
+            //? if >=1.21.1 {
             ComponentType<?> componentType = component.type();
+            //?} else {
+            /*DataComponentType<?> componentType = component.type();
+            *///?}
             Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
             NbtElement element = ComponentNode.getFromComponent(stack, componentType, registryManager);
             if (includeDefault || !defaultStack.contains(componentType)) {
@@ -218,7 +226,11 @@ public class EditorUtil {
         }
         // get removed components too
         for (Component<?> defaultComponent : defaultStack.getComponents()) {
+            //? if >=1.21.1 {
             ComponentType<?> componentType = defaultComponent.type();
+            //?} else {
+            /*DataComponentType<?> componentType = defaultComponent.type();
+            *///?}
             Identifier id = Registries.DATA_COMPONENT_TYPE.getId(componentType);
             if (!stack.contains(componentType)) {
                 components.put(id, null);

@@ -14,7 +14,11 @@ import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.NbtElementArgumentType;
+//? if >=1.21.1 {
 import net.minecraft.component.ComponentType;
+//?} else {
+/*import net.minecraft.component.DataComponentType;
+*///?}
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
@@ -37,6 +41,7 @@ public class ComponentNode implements Node {
     private static final String OUTPUT_SET = "commands.edit.component.set";
     private static final String OUTPUT_REMOVE = "commands.edit.component.remove";
 
+    //? if >=1.21.1 {
     public static <T> void setFromNbt(ItemStack stack, ComponentType<T> component, NbtElement element, DynamicRegistryManager registryManager) throws CommandSyntaxException {
         DataResult<T> value = component.getCodecOrThrow().parse(registryManager.getOps(NbtOps.INSTANCE), element);
         stack.set(component, value.getOrThrow(MALFORMED_COMPONENT_EXCEPTION::create));
@@ -46,6 +51,17 @@ public class ComponentNode implements Node {
         DataResult<NbtElement> element = component.getCodecOrThrow().encodeStart(registryManager.getOps(NbtOps.INSTANCE), stack.get(component));
         return element.getOrThrow(BROKEN_COMPONENT_EXCEPTION::create);
     }
+    //?} else {
+    /*public static <T> void setFromNbt(ItemStack stack, DataComponentType<T> component, NbtElement element, DynamicRegistryManager registryManager) throws CommandSyntaxException {
+        DataResult<T> value = component.getCodecOrThrow().parse(registryManager.getOps(NbtOps.INSTANCE), element);
+        stack.set(component, value.getOrThrow(MALFORMED_COMPONENT_EXCEPTION::create));
+    }
+
+    public static <T> NbtElement getFromComponent(ItemStack stack, DataComponentType<T> component, DynamicRegistryManager registryManager) throws CommandSyntaxException {
+        DataResult<NbtElement> element = component.getCodecOrThrow().encodeStart(registryManager.getOps(NbtOps.INSTANCE), stack.get(component));
+        return element.getOrThrow(BROKEN_COMPONENT_EXCEPTION::create);
+    }
+    *///?}
 
     @Override
     public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
@@ -71,7 +87,12 @@ public class ComponentNode implements Node {
 
         CommandNode<S> getComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            //? if >=1.21.1 {
+            ComponentType<?> component;
+            //?} else {
+            /*DataComponentType<?> component;
+            *///?}
+            component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
             }
@@ -88,7 +109,12 @@ public class ComponentNode implements Node {
         CommandNode<S> setComponentValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            //? if >=1.21.1 {
+            ComponentType<?> component;
+            //?} else {
+            /*DataComponentType<?> component;
+            *///?}
+            component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
             setFromNbt(stack, component, element, context.getSource().getRegistryManager());
 
@@ -102,7 +128,12 @@ public class ComponentNode implements Node {
         CommandNode<S> removeComponentNode = commandManager.argument("component", RegistryArgumentType.registryEntry(RegistryKeys.DATA_COMPONENT_TYPE, registryAccess)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            ComponentType<?> component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
+            //? if >=1.21.1 {
+            ComponentType<?> component;
+            //?} else {
+            /*DataComponentType<?> component;
+            *///?}
+            component = RegistryArgumentType.getRegistryEntry(context, "component", RegistryKeys.DATA_COMPONENT_TYPE);
             if (!stack.contains(component)) {
                 throw NO_COMPONENT_EXCEPTION;
             }

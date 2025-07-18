@@ -5,10 +5,10 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
-import me.white.simpleitemeditor.argument.enums.DyeColorArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.command.CommandRegistryAccess;
@@ -225,7 +225,7 @@ public class BannerNode implements Node {
 
         CommandNode<S> setIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<S> setIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> setIndexPatternColorNode = commandManager.argument("color", EnumArgumentType.enums(DyeColor.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -237,7 +237,7 @@ public class BannerNode implements Node {
                 throw NO_LAYERS_EXCEPTION;
             }
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
+            DyeColor color = context.getArgument("color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             if (layers.size() < index) {
                 throw EditorUtil.OUT_OF_BOUNDS_EXCEPTION.create(index, layers.size());
@@ -286,14 +286,14 @@ public class BannerNode implements Node {
 
         CommandNode<S> addPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<S> addPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> addPatternColorNode = commandManager.argument("color", EnumArgumentType.enums(DyeColor.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
+            DyeColor color = context.getArgument("color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
             layers.add(layer);
@@ -310,7 +310,7 @@ public class BannerNode implements Node {
 
         CommandNode<S> insertIndexPatternNode = commandManager.argument("pattern", RegistryArgumentType.registryEntry(RegistryKeys.BANNER_PATTERN, registryAccess)).build();
 
-        CommandNode<S> insertIndexPatternColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> insertIndexPatternColorNode = commandManager.argument("color", EnumArgumentType.enums(DyeColor.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
@@ -321,7 +321,7 @@ public class BannerNode implements Node {
             }
             int index = IntegerArgumentType.getInteger(context, "index");
             BannerPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.BANNER_PATTERN);
-            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
+            DyeColor color = context.getArgument("color", DyeColor.class);
             BannerPatternsComponent.Layer layer = getLayer(context.getSource().getRegistryManager(), pattern, color);
             List<BannerPatternsComponent.Layer> layers = new ArrayList<>(getBannerLayers(stack));
             if (index >= layers.size()) {
@@ -339,13 +339,13 @@ public class BannerNode implements Node {
 
         CommandNode<S> baseSetNode = commandManager.literal("set").build();
 
-        CommandNode<S> baseSetColorNode = commandManager.argument("color", DyeColorArgumentType.dyeColor()).executes(context -> {
+        CommandNode<S> baseSetColorNode = commandManager.argument("color", EnumArgumentType.enums(DyeColor.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!isBanner(stack)) {
                 throw ISNT_BANNER_EXCEPTION;
             }
-            DyeColor color = DyeColorArgumentType.getDyeColor(context, "color");
+            DyeColor color = context.getArgument("color", DyeColor.class);
             if (hasBaseColor(stack) && getBaseColor(stack) == color) {
                 throw BASE_ALREADY_IS_EXCEPTION;
             }

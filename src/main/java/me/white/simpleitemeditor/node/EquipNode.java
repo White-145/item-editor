@@ -3,9 +3,9 @@ package me.white.simpleitemeditor.node;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
-import me.white.simpleitemeditor.argument.enums.ExclusiveSlotArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
@@ -50,11 +50,10 @@ public class EquipNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        ExclusiveSlotArgumentType argumentType = ExclusiveSlotArgumentType.exclusiveSlot();
-        CommandNode<S> slotNode = commandManager.argument("slot", ExclusiveSlotArgumentType.exclusiveSlot()).executes(context -> {
+        CommandNode<S> slotNode = commandManager.argument("slot", EnumArgumentType.enums(ExclusiveSlot.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            ExclusiveSlot slot = ExclusiveSlotArgumentType.getExclusiveSlot(context, "slot");
+            ExclusiveSlot slot = context.getArgument("slot", ExclusiveSlot.class);
             equip(context.getSource(), stack, slot);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT));
             return Command.SINGLE_SUCCESS;

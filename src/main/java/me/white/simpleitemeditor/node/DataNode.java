@@ -5,9 +5,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
-import me.white.simpleitemeditor.argument.enums.DataSourceArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.block.Block;
@@ -19,7 +19,11 @@ import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.command.argument.NbtElementArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType.NbtPath;
+//? if >=1.21.1 {
 import net.minecraft.component.ComponentType;
+//?} else {
+/*import net.minecraft.component.DataComponentType;
+*///?}
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.EntityType;
@@ -59,11 +63,11 @@ public class DataNode implements Node {
     public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
         CommandNode<S> node = commandManager.literal("data").build();
 
-        CommandNode<S> sourceNode = commandManager.argument("source", DataSourceArgumentType.dataSource()).build();
+        CommandNode<S> sourceNode = commandManager.argument("source", EnumArgumentType.enums(DataSource.class)).build();
 
         CommandNode<S> sourceGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -77,7 +81,7 @@ public class DataNode implements Node {
 
         CommandNode<S> sourceGetPathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -111,7 +115,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceAppendPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -151,7 +155,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceInsertPathIndexValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             int index = IntegerArgumentType.getInteger(context, "index");
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
@@ -193,7 +197,7 @@ public class DataNode implements Node {
         CommandNode<S> sourcePrependPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -231,7 +235,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceSetPathValueNode = commandManager.argument("value", NbtElementArgumentType.nbtElement()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtElement element = NbtElementArgumentType.getNbtElement(context, "value");
 
@@ -261,7 +265,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceMergeValueNode = commandManager.argument("value", NbtCompoundArgumentType.nbtCompound()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
 
             if (!source.isApplicable(stack)) {
@@ -283,7 +287,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceMergeValuePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
             NbtCompound element = NbtCompoundArgumentType.getNbtCompound(context, "value");
 
@@ -327,7 +331,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceRemovePathNode = commandManager.argument("path", NbtPathArgumentType.nbtPath()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             NbtPath path = context.getArgument("path", NbtPath.class);
 
             if (!source.isApplicable(stack)) {
@@ -351,7 +355,7 @@ public class DataNode implements Node {
         CommandNode<S> sourceClearNode = commandManager.literal("clear").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            DataSource source = DataSourceArgumentType.getDataSource(context, "source");
+            DataSource source = context.getArgument("source", DataSource.class);
             if (!source.isApplicable(stack)) {
                 throw NOT_APPLICABLE_EXCEPTION;
             }
@@ -462,11 +466,21 @@ public class DataNode implements Node {
             }
         };
 
+        //?if >=1.21.1 {
         final ComponentType<NbtComponent> component;
 
         DataSource(ComponentType<NbtComponent> component) {
             this.component = component;
         }
+        //?} else {
+        /*
+        final DataComponentType<NbtComponent> component;
+
+        DataSource(DataComponentType<NbtComponent> component) {
+            this.component = component;
+        }
+        */
+        //?}
 
         public boolean has(ItemStack stack) {
             if (!stack.contains(component)) {

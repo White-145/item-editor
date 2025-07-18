@@ -5,11 +5,7 @@ import me.white.simpleitemeditor.ClientCommand;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.node.*;
-//? if <1.21.6 {
-/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
-*///?} else {
-import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_6;
-//?}
+import me.white.simpleitemeditor.node.TooltipNode;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.Identifier;
@@ -101,11 +97,7 @@ public class EditCommand {
             new PotionNode(),
             new RarityNode(),
             new TrimNode(),
-            //? if <1.21.6 {
-            /*new TooltipNode_1_21_1(),
-            *///?} else {
-            new TooltipNode_1_21_6()
-            //?}
+            new TooltipNode()
     };
 
     public static final ClientCommand PROVIDER = new ClientCommand(Identifier.of("sie", "edit"), (name, registryAccess) -> {

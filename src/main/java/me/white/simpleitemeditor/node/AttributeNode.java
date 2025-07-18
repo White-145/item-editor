@@ -1,18 +1,18 @@
 package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+//?if <1.21.1 {
+/*import com.mojang.brigadier.arguments.StringArgumentType;*/
+//?}
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.argument.IdentifierArgumentType;
 import me.white.simpleitemeditor.argument.InfiniteDoubleArgumentType;
 import me.white.simpleitemeditor.argument.RegistryArgumentType;
-import me.white.simpleitemeditor.argument.enums.AttributeOperationArgumentType;
-import me.white.simpleitemeditor.argument.enums.AttributeSlotArgumentType;
-//? if <1.21.6 {
-/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
-*///?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
@@ -52,12 +52,28 @@ public class AttributeNode implements Node {
         return attribute.slot() == AttributeModifierSlot.ANY ? Text.translatable(OUTPUT_ATTRIBUTE, name, value) : Text.translatable(OUTPUT_ATTRIBUTE_SLOT, name, value, attribute.slot().asString());
     }
 
+    private static Identifier getId(AttributeModifiersComponent.Entry entry) {
+        //? if >=1.21.1 {
+        return entry.modifier().id();
+        //?} else {
+        /*return Identifier.of("blank", entry.modifier().name());
+        *///?}
+    }
+
+    private static ArgumentType<?> getIdArgumentType() {
+        //? if >=1.21.1 {
+        return IdentifierArgumentType.identifier();
+        //?} else {
+        /*return StringArgumentType.string();
+        *///?}
+    }
+
     private static boolean removeId(List<AttributeModifiersComponent.Entry> attributes, Identifier id) {
         Iterator<AttributeModifiersComponent.Entry> iterator = attributes.iterator();
         boolean wasSuccessful = false;
         while (iterator.hasNext()) {
             AttributeModifiersComponent.Entry attributeEntry = iterator.next();
-            Identifier attributeId = attributeEntry.modifier().id();
+            Identifier attributeId = getId(attributeEntry);
             if (attributeId.equals(id)) {
                 iterator.remove();
                 wasSuccessful = true;
@@ -91,7 +107,7 @@ public class AttributeNode implements Node {
             //? if >=1.21.6 {
             stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes));
             //?} else {
-            /*stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode_1_21_1.TooltipPart.ATTRIBUTE.get(stack)));
+            /*stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode.TooltipPart.ATTRIBUTE.get(stack)));
             *///?}
         }
     }
@@ -107,7 +123,7 @@ public class AttributeNode implements Node {
             List<AttributeModifiersComponent.Entry> attributes = getAttributes(stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (AttributeModifiersComponent.Entry entry : attributes) {
-                Identifier id = entry.modifier().id();
+                Identifier id = getId(entry);
                 EditorUtil.sendFeedback(context.getSource(), Text.empty()
                         .append(Text.literal(id.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                         .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
@@ -126,7 +142,7 @@ public class AttributeNode implements Node {
             List<AttributeModifiersComponent.Entry> attributes = getAttributes(stack);
             List<AttributeModifiersComponent.Entry> matching = new ArrayList<>();
             for (AttributeModifiersComponent.Entry entry : attributes) {
-                Identifier attributeId = entry.modifier().id();
+                Identifier attributeId = getId(entry);
                 if (attributeId.equals(id)) {
                     matching.add(entry);
                 }
@@ -144,7 +160,7 @@ public class AttributeNode implements Node {
             } else {
                 EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
                 for (AttributeModifiersComponent.Entry entry : matching) {
-                    Identifier attributeId = entry.modifier().id();
+                    Identifier attributeId = getId(entry);
                     EditorUtil.sendFeedback(context.getSource(), Text.empty()
                             .append(Text.literal(attributeId.toString()).setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
                             .append(Text.literal(": ").setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)))
@@ -157,17 +173,23 @@ public class AttributeNode implements Node {
 
         CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<S> setIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).build();
+        CommandNode<S> setIdNode = commandManager.argument("id", getIdArgumentType()).build();
 
         CommandNode<S> setIdAttributeNode = commandManager.argument("attribute", RegistryArgumentType.registryEntry(RegistryKeys.ATTRIBUTE, registryAccess)).build();
 
         CommandNode<S> setIdentifierAttributeAmountNode = commandManager.argument("amount", InfiniteDoubleArgumentType.infiniteDouble()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
+            //? if >=1.21.1 {
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
+            //?} else {
+            /*String name = StringArgumentType.getString(context, "id");
+            Identifier id = Identifier.of("blank", name);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, EntityAttributeModifier.Operation.ADD_VALUE);
+            *///?}
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
@@ -179,14 +201,20 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> setIdAttributeAmountOperationNode = commandManager.argument("operation", AttributeOperationArgumentType.attributeOperation()).executes(context -> {
+        CommandNode<S> setIdAttributeAmountOperationNode = commandManager.argument("operation", EnumArgumentType.enums(EntityAttributeModifier.Operation.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
-            EntityAttributeModifier.Operation operation = AttributeOperationArgumentType.getAttributeOperation(context, "operation");
+            EntityAttributeModifier.Operation operation = context.getArgument("operation", EntityAttributeModifier.Operation.class);
+            //? if >=1.21.1 {
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
+            //?} else {
+            /*String name = StringArgumentType.getString(context, "id");
+            Identifier id = Identifier.of("blank", name);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
+            *///?}
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
@@ -198,15 +226,21 @@ public class AttributeNode implements Node {
             return Command.SINGLE_SUCCESS;
         }).build();
 
-        CommandNode<S> setNameAttributeAmountOperationSlotNode = commandManager.argument("slot", AttributeSlotArgumentType.attributeSlot()).executes(context -> {
+        CommandNode<S> setNameAttributeAmountOperationSlotNode = commandManager.argument("slot", EnumArgumentType.enums(AttributeModifierSlot.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttribute attribute = RegistryArgumentType.getRegistryEntry(context, "attribute", RegistryKeys.ATTRIBUTE);
             double amount = InfiniteDoubleArgumentType.getInfiniteDouble(context, "amount");
-            EntityAttributeModifier.Operation operation = AttributeOperationArgumentType.getAttributeOperation(context, "operation");
-            AttributeModifierSlot slot = AttributeSlotArgumentType.getSlot(context, "slot");
+            EntityAttributeModifier.Operation operation = context.getArgument("operation", EntityAttributeModifier.Operation.class);
+            AttributeModifierSlot slot = context.getArgument("slot", AttributeModifierSlot.class);
+            //? if >=1.21.1 {
+            Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
             EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, operation);
+            //?} else {
+            /*String name = StringArgumentType.getString(context, "id");
+            Identifier id = Identifier.of("blank", name);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
+            *///?}
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, slot);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
@@ -220,13 +254,18 @@ public class AttributeNode implements Node {
 
         CommandNode<S> removeNode = commandManager.literal("remove").build();
 
-        CommandNode<S> removeIdNode = commandManager.argument("id", IdentifierArgumentType.identifier()).executes(context -> {
+        CommandNode<S> removeIdNode = commandManager.argument("id", getIdArgumentType()).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
             if (!hasAttributes(stack)) {
                 throw NO_ATTRIBUTES_EXCEPTION;
             }
+            //? if >=1.21.1 {
             Identifier id = IdentifierArgumentType.getIdentifier(context, "id");
+            //?} else {
+            /*String name = StringArgumentType.getString(context, "id");
+            Identifier id = Identifier.of("blank", name);
+            *///?}
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             if (!removeId(attributes, id)) {
                 throw NO_SUCH_ATTRIBUTES_EXCEPTION;

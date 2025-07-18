@@ -4,9 +4,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
-//? if <1.21.6 {
-/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
-*///?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.ColorArgumentType;
@@ -51,7 +48,7 @@ public class ColorNode implements Node {
         //? if >=1.21.6 {
         stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
         //?} else {
-        /*stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, TooltipNode_1_21_1.TooltipPart.COLOR.get(stack)));
+        /*stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, TooltipNode.TooltipPart.COLOR.get(stack)));
         *///?}
     }
 

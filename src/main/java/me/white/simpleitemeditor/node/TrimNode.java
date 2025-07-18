@@ -12,9 +12,6 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-//? if <1.21.6 {
-/*import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
-*///?}
 //? if >=1.21.4 {
 import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
@@ -59,7 +56,7 @@ public class TrimNode implements Node {
 
     private static void setTrim(ItemStack stack, ArmorTrim trim) {
         //? if <1.21.6 {
-        /*trim = trim.withShowInTooltip(TooltipNode_1_21_1.TooltipPart.TRIM.get(stack));
+        /*trim = trim.withShowInTooltip(TooltipNode.TooltipPart.TRIM.get(stack));
         *///?}
         stack.set(DataComponentTypes.TRIM, trim);
     }

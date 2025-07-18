@@ -16,7 +16,6 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 //? if <1.21.6 {
 /*import net.minecraft.component.type.UnbreakableComponent;
-import me.white.simpleitemeditor.node.tooltip.TooltipNode_1_21_1;
 *///?} else {
 import net.minecraft.util.Unit;
 //?}
@@ -79,7 +78,7 @@ public class DurabilityNode implements Node {
             //? if >=1.21.6 {
             stack.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
             //?} else {
-            /*stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(TooltipNode_1_21_1.TooltipPart.UNBREAKABLE.get(stack)));
+            /*stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(TooltipNode.TooltipPart.UNBREAKABLE.get(stack)));
             *///?}
         } else {
             stack.remove(DataComponentTypes.UNBREAKABLE);

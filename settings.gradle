@@ -20,7 +20,7 @@ plugins {
 stonecutter {
 	it.create(rootProject) {
 		versions(
-//				"1.20.5",
+				"1.20.5",
 //				"1.20.6",
 				"1.21.1",
 //				"1.21.2",

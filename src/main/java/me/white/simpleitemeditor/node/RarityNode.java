@@ -4,9 +4,9 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.Node;
-import me.white.simpleitemeditor.argument.enums.RarityArgumentType;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -55,10 +55,10 @@ public class RarityNode implements Node {
 
         CommandNode<S> setNode = commandManager.literal("set").build();
 
-        CommandNode<S> setRarityNode = commandManager.argument("rarity", RarityArgumentType.rarity()).executes(context -> {
+        CommandNode<S> setRarityNode = commandManager.argument("rarity", EnumArgumentType.enums(Rarity.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            Rarity rarity = RarityArgumentType.getRarity(context, "rarity");
+            Rarity rarity = context.getArgument("rarity", Rarity.class);
             if (getRarity(stack) == rarity) {
                 throw ALREADY_IS_EXCEPTION;
             }
