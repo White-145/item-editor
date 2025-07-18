@@ -466,21 +466,19 @@ public class DataNode implements Node {
             }
         };
 
-        //?if >=1.21.1 {
+        //? if >=1.21.1 {
         final ComponentType<NbtComponent> component;
 
         DataSource(ComponentType<NbtComponent> component) {
             this.component = component;
         }
         //?} else {
-        /*
-        final DataComponentType<NbtComponent> component;
+        /*final DataComponentType<NbtComponent> component;
 
         DataSource(DataComponentType<NbtComponent> component) {
             this.component = component;
         }
-        */
-        //?}
+        *///?}
 
         public boolean has(ItemStack stack) {
             if (!stack.contains(component)) {

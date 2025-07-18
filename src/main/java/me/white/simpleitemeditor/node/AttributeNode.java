@@ -2,9 +2,9 @@ package me.white.simpleitemeditor.node;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.ArgumentType;
-//?if <1.21.1 {
-/*import com.mojang.brigadier.arguments.StringArgumentType;*/
-//?}
+//? if <1.21.1 {
+/*import com.mojang.brigadier.arguments.StringArgumentType;
+*///?}
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
