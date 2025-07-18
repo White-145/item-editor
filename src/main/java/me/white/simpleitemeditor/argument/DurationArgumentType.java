@@ -1,6 +1,5 @@
 package me.white.simpleitemeditor.argument;
 
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -9,9 +8,6 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 import java.util.Arrays;
@@ -27,8 +23,8 @@ public class DurationArgumentType implements ArgumentType<Integer> {
     private static final String SUGGESTION_SECONDS = "argument.duration.suggestionseconds";
     private static final String SUGGESTION_MINUTES = "argument.duration.suggestionminutes";
     private static final String SUGGESTION_HOURS = "argument.duration.suggestionhours";
-    private int min;
-    private boolean allowInfinity;
+    private final int min;
+    private final boolean allowInfinity;
 
     private DurationArgumentType(int min, boolean allowInfinity) {
         this.min = min;
@@ -125,52 +121,6 @@ public class DurationArgumentType implements ArgumentType<Integer> {
                 }
             }
             return null;
-        }
-    }
-
-    public static class Serializer implements ArgumentSerializer<DurationArgumentType, Serializer.Properties> {
-        @Override
-        public void writePacket(Properties properties, PacketByteBuf buf) {
-            buf.writeInt(properties.min);
-            buf.writeBoolean(properties.allowInfinity);
-        }
-
-        @Override
-        public Properties fromPacket(PacketByteBuf buf) {
-            int min = buf.readInt();
-            boolean allowInfinity = buf.readBoolean();
-            return new Properties(min, allowInfinity);
-        }
-
-        @Override
-        public void writeJson(Properties properties, JsonObject json) {
-            json.addProperty("min", properties.min);
-            json.addProperty("allowInfinity", properties.allowInfinity);
-        }
-
-        @Override
-        public Properties getArgumentTypeProperties(DurationArgumentType argumentType) {
-            return new Properties(argumentType.min, argumentType.allowInfinity);
-        }
-
-        public class Properties implements ArgumentTypeProperties<DurationArgumentType> {
-            private int min;
-            private boolean allowInfinity;
-
-            public Properties(int min, boolean allowInfinity) {
-                this.min = min;
-                this.allowInfinity = allowInfinity;
-            }
-
-            @Override
-            public DurationArgumentType createType(CommandRegistryAccess commandRegistryAccess) {
-                return new DurationArgumentType(min, allowInfinity);
-            }
-
-            @Override
-            public ArgumentSerializer<DurationArgumentType, ?> getSerializer() {
-                return Serializer.this;
-            }
         }
     }
 }

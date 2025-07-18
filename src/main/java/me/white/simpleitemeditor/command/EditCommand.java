@@ -5,7 +5,6 @@ import me.white.simpleitemeditor.ClientCommand;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.node.*;
-import me.white.simpleitemeditor.node.TooltipNode;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.Identifier;
@@ -79,7 +78,7 @@ public class EditCommand {
     // writable_book_content        —
     // written_book_content         —
 
-    private static Node[] NODES = new Node[]{
+    private static final Node[] NODES = new Node[]{
             new AttributeNode(),
             new BannerNode(),
             new ComponentNode(),

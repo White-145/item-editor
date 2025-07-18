@@ -194,7 +194,7 @@ public class TooltipNode implements Node {
             }
 
             @Override
-            public void set(ItemStack stack, boolean tooltip) throws CommandSyntaxException {
+            public void set(ItemStack stack, boolean tooltip) {
                 if (!tooltip) {
                     stack.set(DataComponentTypes.HIDE_TOOLTIP, Unit.INSTANCE);
                 } else {
@@ -209,7 +209,7 @@ public class TooltipNode implements Node {
             }
 
             @Override
-            public void set(ItemStack stack, boolean tooltip) throws CommandSyntaxException {
+            public void set(ItemStack stack, boolean tooltip) {
                 if (!tooltip) {
                     stack.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
                 } else {
@@ -224,7 +224,7 @@ public class TooltipNode implements Node {
             }
 
             @Override
-            public void set(ItemStack stack, boolean tooltip) throws CommandSyntaxException {
+            public void set(ItemStack stack, boolean tooltip) {
                 AttributeModifiersComponent component = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
                 stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, component.withShowInTooltip(tooltip));
             }
@@ -251,7 +251,7 @@ public class TooltipNode implements Node {
             }
 
             @Override
-            public void set(ItemStack stack, boolean tooltip) throws CommandSyntaxException {
+            public void set(ItemStack stack, boolean tooltip) {
                 ItemEnchantmentsComponent component = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
                 stack.set(DataComponentTypes.ENCHANTMENTS, component.withShowInTooltip(tooltip));
             }

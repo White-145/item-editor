@@ -1,6 +1,5 @@
 package me.white.simpleitemeditor.argument;
 
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -11,8 +10,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -77,48 +74,5 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     @Override
     public Collection<String> getExamples() {
         return EXAMPLES;
-    }
-
-    public static class Serializer implements ArgumentSerializer<RegistryArgumentType<?>, Serializer.Properties> {
-        @Override
-        public void writePacket(Properties properties, PacketByteBuf buf) {
-            buf.writeIdentifier(properties.registry.getValue());
-        }
-
-        @Override
-        public Properties fromPacket(PacketByteBuf buf) {
-            Identifier value = buf.readIdentifier();
-            RegistryKey<? extends Registry<?>> key = RegistryKey.ofRegistry(value);
-            return new Properties(key);
-        }
-
-        @Override
-        public void writeJson(Properties properties, JsonObject json) {
-            json.addProperty("registry", properties.registry.getValue().toString());
-        }
-
-        @Override
-        public Properties getArgumentTypeProperties(RegistryArgumentType<?> argumentType) {
-            return new Properties(argumentType.registry);
-        }
-
-        public class Properties implements ArgumentTypeProperties<RegistryArgumentType<?>> {
-            private RegistryKey<? extends Registry<?>> registry;
-
-            public Properties(RegistryKey<? extends Registry<?>> registry) {
-                this.registry = registry;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public RegistryArgumentType<?> createType(CommandRegistryAccess commandRegistryAccess) {
-                return new RegistryArgumentType<>((RegistryKey<? extends Registry<Object>>)registry, commandRegistryAccess);
-            }
-
-            @Override
-            public ArgumentSerializer<RegistryArgumentType<?>, ?> getSerializer() {
-                return Serializer.this;
-            }
-        }
     }
 }

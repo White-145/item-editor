@@ -16,8 +16,8 @@ import java.util.function.Function;
 
 public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
     private static final SimpleCommandExceptionType INVALID_ENUM_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.enum.error.invalidenum"));
-    private Class<T> clazz;
-    private List<String> suggestions;
+    private final Class<T> clazz;
+    private final List<String> suggestions;
 
     private EnumArgumentType(Class<T> clazz, Function<T, String> formatter) {
         this.clazz = clazz;
