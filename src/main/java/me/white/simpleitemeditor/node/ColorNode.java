@@ -45,7 +45,7 @@ public class ColorNode implements Node {
     }
 
     private static void setColor(ItemStack stack, int color) {
-        //? if >=1.21.6 {
+        //? if >=1.21.5 {
         stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
         //?} else {
         /*stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, TooltipNode.TooltipPart.COLOR.get(stack)));

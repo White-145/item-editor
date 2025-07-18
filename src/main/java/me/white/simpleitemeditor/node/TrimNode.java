@@ -55,7 +55,7 @@ public class TrimNode implements Node {
     }
 
     private static void setTrim(ItemStack stack, ArmorTrim trim) {
-        //? if <1.21.6 {
+        //? if <1.21.5 {
         /*trim = trim.withShowInTooltip(TooltipNode.TooltipPart.TRIM.get(stack));
         *///?}
         stack.set(DataComponentTypes.TRIM, trim);

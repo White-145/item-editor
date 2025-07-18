@@ -14,11 +14,11 @@ import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
-//? if <1.21.6 {
-/*import net.minecraft.component.type.UnbreakableComponent;
-*///?} else {
+//? if >=1.21.5 {
 import net.minecraft.util.Unit;
-//?}
+//?} else {
+/*import net.minecraft.component.type.UnbreakableComponent;
+*///?}
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
@@ -75,7 +75,7 @@ public class DurabilityNode implements Node {
 
     private static void setUnbreakable(ItemStack stack, boolean isUnbreakable) {
         if (isUnbreakable) {
-            //? if >=1.21.6 {
+            //? if >=1.21.5 {
             stack.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
             //?} else {
             /*stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(TooltipNode.TooltipPart.UNBREAKABLE.get(stack)));

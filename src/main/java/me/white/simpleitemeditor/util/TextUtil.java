@@ -11,7 +11,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-//? if >= 1.21.6 {
+//? if >= 1.21.5 {
 import java.net.URI;
 //?}
 import java.util.Map;
@@ -20,7 +20,7 @@ public class TextUtil {
     private static final String SUGGESTION_COPY = "chat.copyable.copy";
 
     private static Style hoverShowText(Style style, Text text) {
-        //? if >= 1.21.6 {
+        //? if >= 1.21.5 {
         return style.withHoverEvent(new HoverEvent.ShowText(text));
         //?} else {
         /*return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text));
@@ -28,7 +28,7 @@ public class TextUtil {
     }
 
     private static Style hoverShowItem(Style style, ItemStack stack) {
-        //? if >= 1.21.6 {
+        //? if >= 1.21.5 {
         return style.withHoverEvent(new HoverEvent.ShowItem(stack));
         //?} else {
         /*return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)));
@@ -36,7 +36,7 @@ public class TextUtil {
     }
 
     private static Style clickCopy(Style style, String text) {
-        //? if >= 1.21.6 {
+        //? if >= 1.21.5 {
         return style.withClickEvent(new ClickEvent.CopyToClipboard(text));
         //?} else {
         /*return style.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, text));
@@ -44,7 +44,7 @@ public class TextUtil {
     }
 
     private static Style clickOpen(Style style, String url) {
-        //? if >= 1.21.6 {
+        //? if >= 1.21.5 {
         return style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)));
         //?} else {
         /*return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));

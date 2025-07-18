@@ -13,7 +13,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-//? if >=1.21.6 {
+//? if >=1.21.5 {
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.registry.RegistryKeys;
@@ -35,7 +35,7 @@ import net.minecraft.item.equipment.trim.ArmorTrim;
 *///?}
 
 public class TooltipNode implements Node {
-    //? if >=1.21.6 {
+    //? if >=1.21.5 {
     private static final CommandSyntaxException ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.tooltip.error.alreadyis")).create();
     private static final CommandSyntaxException NO_COMPONENT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.tooltip.error.nocomponent")).create();
     private static final String OUTPUT_GET_ENABLED = "commands.edit.tooltip.getenabled";

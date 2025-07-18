@@ -96,7 +96,7 @@ public class EnchantmentNode implements Node {
                 *///?}
             }
             ItemEnchantmentsComponent component = builder.build();
-            //? if <1.21.6 {
+            //? if <1.21.5 {
             /*component = component.withShowInTooltip(TooltipNode.TooltipPart.ENCHANTMENT.get(stack));
             *///?}
             stack.set(DataComponentTypes.ENCHANTMENTS, component);

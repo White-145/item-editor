@@ -40,7 +40,7 @@ public class EditorUtil {
     public static final Function<CommandSource, IllegalArgumentException> UNKNOWN_SOURCE_EXCEPTION = source -> new IllegalArgumentException("Unknown command source '" + source.getClass().getName() + "'.");
 
     private static int getSelectedSlot(PlayerInventory inventory) {
-        //? if >=1.21.6 {
+        //? if >=1.21.5 {
         return inventory.getSelectedSlot();
         //?} else {
         /*return inventory.selectedSlot;

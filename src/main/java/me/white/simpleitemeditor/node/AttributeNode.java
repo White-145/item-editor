@@ -104,7 +104,7 @@ public class AttributeNode implements Node {
         if (attributes == null || attributes.isEmpty()) {
             stack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         } else {
-            //? if >=1.21.6 {
+            //? if >=1.21.5 {
             stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes));
             //?} else {
             /*stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(attributes, TooltipNode.TooltipPart.ATTRIBUTE.get(stack)));
