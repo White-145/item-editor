@@ -48,7 +48,7 @@ public class EditorUtil {
     }
 
     public static <T> Registry<T> getRegistry(DynamicRegistryManager registryManager, RegistryKey<Registry<T>> key) {
-        //? if >=1.21.4 {
+        //? if >=1.21.2 {
         return registryManager.getOrThrow(key);
         //?} else {
         /*return registryManager.get(key);

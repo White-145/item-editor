@@ -348,7 +348,7 @@ public class HeadNode implements Node {
                 throw ISNT_HEAD_EXCEPTION;
             }
             SoundEvent sound = RegistryArgumentType.getRegistryEntry(context, "sound", RegistryKeys.SOUND_EVENT);
-            //? if >=1.21.4 {
+            //? if >=1.21.2 {
             Identifier id = sound.id();
             //?} else {
             /*Identifier id = sound.getId();

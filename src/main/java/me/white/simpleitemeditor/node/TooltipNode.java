@@ -27,11 +27,11 @@ import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.util.Unit;
-//? if >=1.21.4 {
+//? if >=1.21.2 {
 import net.minecraft.item.equipment.trim.ArmorTrim;
 //?} else {
-/^import net.minecraft.item.trim.ArmorTrim;
-^///?}
+/^import net.minecraft.item.trim.ArmorTrim;^/
+//?}
 *///?}
 
 public class TooltipNode implements Node {
@@ -259,11 +259,11 @@ public class TooltipNode implements Node {
         TRIM {
             @Override
             public boolean get(ItemStack stack) {
-                //? if >=1.21.4 {
+                //? if >=1.21.2 {
                 return !stack.contains(DataComponentTypes.TRIM) || stack.get(DataComponentTypes.TRIM).showInTooltip();
                 //?} else {
-                /^return !stack.contains(DataComponentTypes.TRIM) || stack.get(DataComponentTypes.TRIM).showInTooltip;
-                ^///?}
+                /^return !stack.contains(DataComponentTypes.TRIM) || stack.get(DataComponentTypes.TRIM).showInTooltip;^/
+                //?}
             }
 
             @Override

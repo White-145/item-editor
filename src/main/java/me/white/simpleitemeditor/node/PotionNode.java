@@ -24,7 +24,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.PotionItem;
 import net.minecraft.item.TippedArrowItem;
 import net.minecraft.potion.Potion;
-//? if <=1.21.1 {
+//? if <1.21.2 {
 /*import net.minecraft.registry.Registries;
 *///?}
 import net.minecraft.registry.RegistryKeys;
@@ -58,7 +58,7 @@ public class PotionNode implements Node {
     private static final String OUTPUT_EFFECT = "commands.edit.potion.effect";
 
     private static void setPotionComponent(ItemStack stack, Optional<RegistryEntry<Potion>> potion, Optional<Integer> customColor, List<StatusEffectInstance> effects) {
-        //? if >=1.21.4 {
+        //? if >=1.21.2 {
         stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, customColor, effects, Optional.empty()));
         //?} else {
         /*stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, customColor, effects));
@@ -70,7 +70,7 @@ public class PotionNode implements Node {
     }
 
     private static Text getTranslation(ItemStack stack, Potion potion) {
-        //? if >=1.21.4 {
+        //? if >=1.21.2 {
         return Text.translatable(stack.getItem().getTranslationKey() + ".effect." + potion.getBaseName());
         //?} else {
         /*return Text.translatable(Potion.finishTranslationKey(Optional.of(Registries.POTION.getEntry(potion)), stack.getItem().getTranslationKey() + ".effect."));

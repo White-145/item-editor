@@ -38,7 +38,7 @@ public class RegistryArgumentType<T> implements ArgumentType<RegistryEntry<T>> {
     }
 
     private RegistryWrapper<T> getWrapper() {
-        //? if >=1.21.4 {
+        //? if >=1.21.2 {
         return registryAccess.getOrThrow(registry);
         //?} else {
         /*return registryAccess.getWrapperOrThrow(registry);

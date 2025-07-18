@@ -12,7 +12,7 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-//? if >=1.21.4 {
+//? if >=1.21.2 {
 import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
 import net.minecraft.item.equipment.trim.ArmorTrimPattern;
@@ -74,7 +74,7 @@ public class TrimNode implements Node {
                 throw NO_TRIM_EXCEPTION;
             }
             ArmorTrim trim = getTrim(stack);
-            //? if >=1.21.4 {
+            //? if >=1.21.2 {
             ArmorTrimPattern pattern = trim.pattern().value();
             ArmorTrimMaterial material = trim.material().value();
             //?} else {
@@ -98,7 +98,7 @@ public class TrimNode implements Node {
             }
             ArmorTrimPattern pattern = RegistryArgumentType.getRegistryEntry(context, "pattern", RegistryKeys.TRIM_PATTERN);
             ArmorTrimMaterial material = RegistryArgumentType.getRegistryEntry(context, "material", RegistryKeys.TRIM_MATERIAL);
-            //? if >=1.21.4 {
+            //? if >=1.21.2 {
             Registry<ArmorTrimPattern> patternRegistry = context.getSource().getRegistryManager().getOrThrow(RegistryKeys.TRIM_PATTERN);
             Registry<ArmorTrimMaterial> materialRegistry = context.getSource().getRegistryManager().getOrThrow(RegistryKeys.TRIM_MATERIAL);
             //?} else {
