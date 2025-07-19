@@ -81,6 +81,7 @@ public class EditCommand {
     private static final Node[] NODES = new Node[]{
             new AttributeNode(),
             new BannerNode(),
+            new BookNode(),
             new ComponentNode(),
             new ColorNode(),
             new CountNode(),
