@@ -93,6 +93,7 @@ public class EditCommand {
             new HeadNode(),
             new LoreNode(),
             new MaterialNode(),
+            new MobNode(),
             new NameNode(),
             new PotionNode(),
             new RarityNode(),

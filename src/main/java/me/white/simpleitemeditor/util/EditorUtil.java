@@ -16,8 +16,11 @@ import net.minecraft.component.ComponentType;
 //?} else {
 /*import net.minecraft.component.DataComponentType;
 *///?}
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.*;
@@ -53,6 +56,19 @@ public class EditorUtil {
         //?} else {
         /*return registryManager.get(key);
         *///?}
+    }
+
+    public static EntityType<?> getEntityType(ItemStack stack) {
+        Item item = stack.getItem();
+        if (!(item instanceof SpawnEggItem)) {
+            return null;
+        }
+        //? if >= 1.21.4 {
+        DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
+        return ((SpawnEggItem)item).getEntityType(registryManager, stack);
+        //?} else {
+        /*return ((SpawnEggItem)item).getEntityType(stack);
+         *///?}
     }
 
     public static boolean isClientSource(CommandSource source) {
