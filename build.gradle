@@ -56,7 +56,7 @@ java {
 
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
-    projectId = 'qoBL6M0R'
+    projectId = 'simple-item-editor'
     versionType = 'beta'
     uploadFile = remapJar
     gameVersions = [ project.minecraft_version ]
