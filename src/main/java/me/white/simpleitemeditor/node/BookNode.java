@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
+import me.white.simpleitemeditor.argument.EnumArgumentType;
 import me.white.simpleitemeditor.argument.LegacyTextArgumentType;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
@@ -34,11 +35,14 @@ public class BookNode implements Node {
     private static final CommandSyntaxException NO_PAGES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.nopages")).create();
     private static final CommandSyntaxException TITLE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.titlealreadyis")).create();
     private static final CommandSyntaxException AUTHOR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.authoralreadyis")).create();
+    private static final CommandSyntaxException GENERATION_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.generationalreadyis")).create();
     private static final CommandSyntaxException PAGE_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.book.error.pagealreadyis")).create();
     private static final String OUTPUT_GET_TITLE = "commands.edit.book.gettitle";
     private static final String OUTPUT_SET_TITLE = "commands.edit.book.settitle";
     private static final String OUTPUT_GET_AUTHOR = "commands.edit.book.getauthor";
     private static final String OUTPUT_SET_AUTHOR = "commands.edit.book.setauthor";
+    private static final String OUTPUT_GET_GENERATION = "commands.edit.book.getgeneration";
+    private static final String OUTPUT_SET_GENERATION = "commands.edit.book.setgeneration";
     private static final String OUTPUT_PAGE_GET = "commands.edit.book.getpages";
     private static final String OUTPUT_PAGE_GET_SINGLE = "commands.edit.book.getpage";
     private static final String OUTPUT_PAGE_SET = "commands.edit.book.setpage";
@@ -84,11 +88,25 @@ public class BookNode implements Node {
     }
 
     private static String getTitle(ItemStack stack) {
+        if (!stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
+            return DEFAULT_TITLE;
+        }
         return stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).title().get(false);
     }
 
     private static String getAuthor(ItemStack stack) {
+        if (!stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
+            return DEFAULT_AUTHOR;
+        }
         return stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).author();
+    }
+
+    private static Generation getGeneration(ItemStack stack) {
+        if (!stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
+            return Generation.ORIGINAL;
+        }
+        Generation generation = Generation.byGeneration(stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).generation());
+        return generation == null ? Generation.ORIGINAL : generation;
     }
 
     private static List<Text> getPages(ItemStack stack) {
@@ -107,7 +125,7 @@ public class BookNode implements Node {
     private static void setTitle(ItemStack stack, String title) {
         List<RawFilteredPair<Text>> pages = List.of();
         String author = DEFAULT_AUTHOR;
-        int generation = 0;
+        int generation = Generation.ORIGINAL.generation;
         if (stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
             WrittenBookContentComponent component = stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT);
             pages = component.pages();
@@ -120,7 +138,7 @@ public class BookNode implements Node {
     private static void setAuthor(ItemStack stack, String author) {
         List<RawFilteredPair<Text>> pages = List.of();
         RawFilteredPair<String> title = RawFilteredPair.of(DEFAULT_TITLE);
-        int generation = 0;
+        int generation = Generation.ORIGINAL.generation;
         if (stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
             WrittenBookContentComponent component = stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT);
             pages = component.pages();
@@ -128,6 +146,19 @@ public class BookNode implements Node {
             generation = component.generation();
         }
         stack.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, new WrittenBookContentComponent(title, author, generation, pages, false));
+    }
+
+    private static void setGeneration(ItemStack stack, Generation generation) {
+        List<RawFilteredPair<Text>> pages = List.of();
+        String author = DEFAULT_AUTHOR;
+        RawFilteredPair<String> title = RawFilteredPair.of(DEFAULT_TITLE);
+        if (stack.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
+            WrittenBookContentComponent component = stack.get(DataComponentTypes.WRITTEN_BOOK_CONTENT);
+            pages = component.pages();
+            author = component.author();
+            title = component.title();
+        }
+        stack.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, new WrittenBookContentComponent(title, author, generation.generation, pages, false));
     }
 
     private static void setPages(ItemStack stack, List<Text> pages) {
@@ -197,7 +228,7 @@ public class BookNode implements Node {
                 throw ISNT_WRITTEN_BOOK_EXCEPTION;
             }
             if (!hasAuthor(stack)) {
-                throw NO_TITLE_EXCEPTION;
+                throw NO_AUTHOR_EXCEPTION;
             }
             String author = getAuthor(stack);
 
@@ -224,6 +255,39 @@ public class BookNode implements Node {
 
             EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_AUTHOR, author));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> generationNode = commandManager.literal("generation").build();
+
+        CommandNode<S> generationGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!isBook(stack, true)) {
+                throw ISNT_WRITTEN_BOOK_EXCEPTION;
+            }
+            Generation generation = getGeneration(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_GENERATION, Text.translatable(generation.translationKey)));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> generationSetNode = commandManager.literal("set").build();
+
+        CommandNode<S> generationSetGenerationNode = commandManager.argument("generation", EnumArgumentType.enums(Generation.class)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isBook(stack, true)) {
+                throw ISNT_WRITTEN_BOOK_EXCEPTION;
+            }
+            Generation generation = context.getArgument("generation", Generation.class);
+            Generation oldGeneration = getGeneration(stack);
+            if (generation == oldGeneration) {
+                throw GENERATION_ALREADY_IS_EXCEPTION;
+            }
+            setGeneration(stack, generation);
+
+            EditorUtil.setStack(context.getSource(), stack);
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_GENERATION, Text.translatable(generation.translationKey)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -536,6 +600,14 @@ public class BookNode implements Node {
         authorNode.addChild(authorSetNode);
         authorSetNode.addChild(authorSetAuthorNode);
 
+        // ... generation
+        node.addChild(generationNode);
+        // ... get
+        generationNode.addChild(generationGetNode);
+        // ... set <generation>
+        generationNode.addChild(generationSetNode);
+        generationSetNode.addChild(generationSetGenerationNode);
+
         // ... page
         node.addChild(pageNode);
         // ... get [<index>]
@@ -565,5 +637,29 @@ public class BookNode implements Node {
         pageClearAfterNode.addChild(pageClearAfterIndexNode);
 
         return node;
+    }
+
+    public enum Generation {
+        ORIGINAL(0, "book.generation.0"),
+        COPY_OF_ORIGINAL(1, "book.generation.1"),
+        COPY_OF_COPY(2, "book.generation.2"),
+        TATTERED(3, "book.generation.3");
+
+        final int generation;
+        final String translationKey;
+
+        Generation(int generation, String translationKey) {
+            this.generation = generation;
+            this.translationKey = translationKey;
+        }
+
+        public static Generation byGeneration(int generation) {
+            for (Generation value : Generation.values()) {
+                if (value.generation == generation) {
+                    return value;
+                }
+            }
+            return null;
+        }
     }
 }
