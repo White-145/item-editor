@@ -93,7 +93,9 @@ public class EditCommand {
             new HeadNode(),
             new LoreNode(),
             new MaterialNode(),
+            //? if >=1.21.5 {
             new MobNode(),
+            //?}
             new NameNode(),
             new PotionNode(),
             new RarityNode(),

@@ -1,5 +1,6 @@
 package me.white.simpleitemeditor.node.mob;
 
+//? if >=1.21.5 {
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -19,8 +20,10 @@ import net.minecraft.text.Text;
 public class AxolotlNode implements Node {
     private static final CommandSyntaxException ISNT_AXOLOTL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.isntaxolotl")).create();
     private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.variantalreadyis")).create();
+    private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.novariant")).create();
     private static final String OUTPUT_GET_VARIANT = "command.edit.mob.axolotl.variantget";
     private static final String OUTPUT_SET_VARIANT = "command.edit.mob.axolotl.variantset";
+    private static final String OUTPUT_REMOVE_VARIANT = "command.edit.mob.axolotl.variantremove";
     private static final String VARIANT_BLUE = "variant.minecraft.axolotl.blue";
     private static final String VARIANT_LUCY = "variant.minecraft.axolotl.lucy";
     private static final String VARIANT_WILD = "variant.minecraft.axolotl.wild";
@@ -39,18 +42,23 @@ public class AxolotlNode implements Node {
 
     private static boolean isAxolotl(ItemStack stack) {
         EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType.getBaseClass().equals(AxolotlEntity.class);
+        return entityType == EntityType.AXOLOTL;
+    }
+
+    private static boolean hasVariant(ItemStack stack) {
+        return stack.contains(DataComponentTypes.AXOLOTL_VARIANT);
     }
 
     private static AxolotlEntity.Variant getVariant(ItemStack stack) {
-        if (stack.contains(DataComponentTypes.AXOLOTL_VARIANT)) {
-            return AxolotlEntity.Variant.DEFAULT;
-        }
         return stack.get(DataComponentTypes.AXOLOTL_VARIANT);
     }
 
     private static void setVariant(ItemStack stack, AxolotlEntity.Variant variant) {
         stack.set(DataComponentTypes.AXOLOTL_VARIANT, variant);
+    }
+
+    private static void removeVariant(ItemStack stack) {
+        stack.remove(DataComponentTypes.AXOLOTL_VARIANT);
     }
 
     @Override
@@ -63,6 +71,9 @@ public class AxolotlNode implements Node {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             if (!isAxolotl(stack)) {
                 throw ISNT_AXOLOTL_EXCEPTION;
+            }
+            if (!hasVariant(stack)) {
+                throw NO_VARIANT_EXCEPTION;
             }
             AxolotlEntity.Variant variant = getVariant(stack);
 
@@ -79,13 +90,31 @@ public class AxolotlNode implements Node {
                 throw ISNT_AXOLOTL_EXCEPTION;
             }
             AxolotlEntity.Variant variant = context.getArgument("variant", AxolotlEntity.Variant.class);
-            AxolotlEntity.Variant oldVariant = getVariant(stack);
-            if (variant == oldVariant) {
-                throw VARIANT_ALREADY_IS_EXCEPTION;
+            if (hasVariant(stack)) {
+                AxolotlEntity.Variant oldVariant = getVariant(stack);
+                if (variant == oldVariant) {
+                    throw VARIANT_ALREADY_IS_EXCEPTION;
+                }
             }
             setVariant(stack, variant);
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_VARIANT, translation(variant)));
+            EditorUtil.setStack(context.getSource(), stack);
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> variantRemoveNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isAxolotl(stack)) {
+                throw ISNT_AXOLOTL_EXCEPTION;
+            }
+            if (!hasVariant(stack)) {
+                throw NO_VARIANT_EXCEPTION;
+            }
+            removeVariant(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_REMOVE_VARIANT));
             EditorUtil.setStack(context.getSource(), stack);
             return Command.SINGLE_SUCCESS;
         }).build();
@@ -97,7 +126,10 @@ public class AxolotlNode implements Node {
         // ... set <variant>
         variantNode.addChild(variantSetNode);
         variantSetNode.addChild(variantSetVariantNode);
+        // ... remove
+        variantNode.addChild(variantRemoveNode);
 
         return node;
     }
 }
+//?}

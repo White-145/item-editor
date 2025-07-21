@@ -1,16 +1,19 @@
 package me.white.simpleitemeditor.node;
 
+//? if >=1.21.5 {
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.node.mob.AxolotlNode;
+import me.white.simpleitemeditor.node.mob.CatNode;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 
 public class MobNode implements Node {
     private static final Node[] NODES = new Node[]{
-            new AxolotlNode()
+            new AxolotlNode(),
+            new CatNode()
     };
 
     @Override
@@ -28,3 +31,4 @@ public class MobNode implements Node {
         return node;
     }
 }
+//?}

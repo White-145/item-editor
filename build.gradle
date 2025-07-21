@@ -58,7 +58,7 @@ modrinth {
     projectId = 'simple-item-editor'
     versionType = 'beta'
     versionName = "Simple Item Editor ${project.version}"
-    changeLog = ''
+    changelog = ''
     uploadFile = remapJar
     gameVersions = [ project.minecraft_version ]
 
