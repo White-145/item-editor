@@ -55,7 +55,7 @@ public class CowNode implements Node {
     }
 
     private static void setVariant(ItemStack stack, CowVariant variant) {
-        stack.set(DataComponentTypes.COW_VARIANT,EditorUtil.getRegistry(RegistryKeys.COW_VARIANT).getEntry(variant));
+        stack.set(DataComponentTypes.COW_VARIANT, EditorUtil.getRegistry(RegistryKeys.COW_VARIANT).getEntry(variant));
     }
 
     private static void removeVariant(ItemStack stack) {
