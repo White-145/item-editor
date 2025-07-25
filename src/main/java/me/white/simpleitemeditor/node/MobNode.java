@@ -7,6 +7,7 @@ import me.white.simpleitemeditor.node.mob.AxolotlNode;
 import me.white.simpleitemeditor.node.mob.CatNode;
 //? if >=1.21.5 {
 import me.white.simpleitemeditor.node.mob.ChickenNode;
+import me.white.simpleitemeditor.node.mob.CowNode;
 //?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.minecraft.command.CommandRegistryAccess;
@@ -17,7 +18,8 @@ public class MobNode implements Node {
             new AxolotlNode(),
             new CatNode(),
             //? if >=1.21.5 {
-            new ChickenNode()
+            new ChickenNode(),
+            new CowNode()
             //?}
     };
 
