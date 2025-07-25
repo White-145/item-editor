@@ -5,6 +5,9 @@ import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
 import me.white.simpleitemeditor.node.mob.AxolotlNode;
 import me.white.simpleitemeditor.node.mob.CatNode;
+//? if >=1.21.5 {
+import me.white.simpleitemeditor.node.mob.ChickenNode;
+//?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -12,7 +15,10 @@ import net.minecraft.command.CommandSource;
 public class MobNode implements Node {
     private static final Node[] NODES = new Node[]{
             new AxolotlNode(),
-            new CatNode()
+            new CatNode(),
+            //? if >=1.21.5 {
+            new ChickenNode()
+            //?}
     };
 
     @Override

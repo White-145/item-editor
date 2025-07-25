@@ -25,9 +25,9 @@ public class AxolotlNode implements Node {
     private static final CommandSyntaxException ISNT_AXOLOTL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.isntaxolotl")).create();
     private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.variantalreadyis")).create();
     private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.axolotl.error.novariant")).create();
-    private static final String OUTPUT_GET_VARIANT = "command.edit.mob.axolotl.variantget";
-    private static final String OUTPUT_SET_VARIANT = "command.edit.mob.axolotl.variantset";
-    private static final String OUTPUT_REMOVE_VARIANT = "command.edit.mob.axolotl.variantremove";
+    private static final String OUTPUT_GET_VARIANT = "commands.edit.mob.axolotl.variantget";
+    private static final String OUTPUT_SET_VARIANT = "commands.edit.mob.axolotl.variantset";
+    private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.axolotl.variantremove";
     private static final String VARIANT_BLUE = "variant.minecraft.axolotl.blue";
     private static final String VARIANT_LUCY = "variant.minecraft.axolotl.lucy";
     private static final String VARIANT_WILD = "variant.minecraft.axolotl.wild";

@@ -34,11 +34,11 @@ public class CatNode implements Node {
     private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.variantalreadyis")).create();
     private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.novariant")).create();
     private static final CommandSyntaxException COLLAR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.collaralreadyis")).create();
-    private static final String OUTPUT_GET_VARIANT = "command.edit.mob.cat.variantget";
-    private static final String OUTPUT_SET_VARIANT = "command.edit.mob.cat.variantset";
+    private static final String OUTPUT_GET_VARIANT = "commands.edit.mob.cat.variantget";
+    private static final String OUTPUT_SET_VARIANT = "commands.edit.mob.cat.variantset";
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.cat.variantremove";
-    private static final String OUTPUT_GET_COLLAR = "command.edit.mob.cat.collarget";
-    private static final String OUTPUT_SET_COLLAR = "command.edit.mob.cat.collarset";
+    private static final String OUTPUT_GET_COLLAR = "commands.edit.mob.cat.collarget";
+    private static final String OUTPUT_SET_COLLAR = "commands.edit.mob.cat.collarset";
     //? if <1.21.5 {
     /*private static final String VARIANT_KEY = "variant";
     private static final String COLLAR_KEY = "CollarColor";
@@ -152,9 +152,8 @@ public class CatNode implements Node {
                 throw NO_VARIANT_EXCEPTION;
             }
             CatVariant variant = getVariant(stack);
-            Identifier id = getId(variant);
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_VARIANT, id));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_VARIANT, getId(variant)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -174,9 +173,8 @@ public class CatNode implements Node {
                 }
             }
             setVariant(stack, variant);
-            Identifier id = getId(variant);
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_VARIANT, id));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_VARIANT, getId(variant)));
             EditorUtil.setStack(context.getSource(), stack);
             return Command.SINGLE_SUCCESS;
         }).build();
