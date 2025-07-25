@@ -3,12 +3,7 @@ package me.white.simpleitemeditor.node;
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
-import me.white.simpleitemeditor.node.mob.AxolotlNode;
-import me.white.simpleitemeditor.node.mob.CatNode;
-//? if >=1.21.5 {
-import me.white.simpleitemeditor.node.mob.ChickenNode;
-import me.white.simpleitemeditor.node.mob.CowNode;
-//?}
+import me.white.simpleitemeditor.node.mob.*;
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -19,8 +14,9 @@ public class MobNode implements Node {
             new CatNode(),
             //? if >=1.21.5 {
             new ChickenNode(),
-            new CowNode()
+            new CowNode(),
             //?}
+            new FoxNode()
     };
 
     @Override
