@@ -1,12 +1,16 @@
 package me.white.simpleitemeditor.node.mob;
 
-//? if >=1.21.5 {
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.EnumArgumentType;
+//? if <1.21.5 {
+/*import me.white.simpleitemeditor.node.DataNode;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+*///?}
 import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
@@ -29,6 +33,9 @@ public class AxolotlNode implements Node {
     private static final String VARIANT_WILD = "variant.minecraft.axolotl.wild";
     private static final String VARIANT_GOLD = "variant.minecraft.axolotl.gold";
     private static final String VARIANT_CYAN = "variant.minecraft.axolotl.cyan";
+    //? if <1.21.5 {
+    /*private static final String VARIANT_KEY = "Variant";
+    *///?}
 
     private static Text translation(AxolotlEntity.Variant variant) {
         return switch (variant) {
@@ -46,19 +53,48 @@ public class AxolotlNode implements Node {
     }
 
     private static boolean hasVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         return stack.contains(DataComponentTypes.AXOLOTL_VARIANT);
+        //?} else {
+        /*if (!stack.contains(DataComponentTypes.ENTITY_DATA)) {
+            return false;
+        }
+        NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
+            return false;
+        }
+        int variant = nbt.getInt(VARIANT_KEY);
+        return variant >= 0 && variant < AxolotlEntity.Variant.values().length;
+        *///?}
     }
 
     private static AxolotlEntity.Variant getVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         return stack.get(DataComponentTypes.AXOLOTL_VARIANT);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        return AxolotlEntity.Variant.byId(nbt.getInt(VARIANT_KEY));
+        *///?}
     }
 
     private static void setVariant(ItemStack stack, AxolotlEntity.Variant variant) {
+        //? if >=1.21.5 {
         stack.set(DataComponentTypes.AXOLOTL_VARIANT, variant);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        nbt.putInt(VARIANT_KEY, variant.getId());
+        DataNode.DataSource.ENTITY.set(stack, nbt);
+        *///?}
     }
 
     private static void removeVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         stack.remove(DataComponentTypes.AXOLOTL_VARIANT);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        nbt.remove(VARIANT_KEY);
+        DataNode.DataSource.ENTITY.set(stack, nbt);
+        *///?}
     }
 
     @Override
@@ -132,4 +168,3 @@ public class AxolotlNode implements Node {
         return node;
     }
 }
-//?}

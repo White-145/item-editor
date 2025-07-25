@@ -1,6 +1,5 @@
 package me.white.simpleitemeditor.node.mob;
 
-//? if >=1.21.5 {
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -12,14 +11,23 @@ import me.white.simpleitemeditor.util.CommonCommandManager;
 import me.white.simpleitemeditor.util.EditorUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
+//? if >=1.21.5 {
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
+//?} else {
+/*import me.white.simpleitemeditor.node.DataNode;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.Registries;
+*///?}
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.CatVariant;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 
 public class CatNode implements Node {
     private static final CommandSyntaxException ISNT_CAT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.isntaxolotl")).create();
@@ -31,9 +39,17 @@ public class CatNode implements Node {
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.cat.variantremove";
     private static final String OUTPUT_GET_COLLAR = "command.edit.mob.cat.collarget";
     private static final String OUTPUT_SET_COLLAR = "command.edit.mob.cat.collarset";
+    //? if <1.21.5 {
+    /*private static final String VARIANT_KEY = "variant";
+    private static final String COLLAR_KEY = "CollarColor";
+    *///?}
 
     private static Text colorTranslation(DyeColor color) {
+        //? if >=1.21.5 {
         return Text.translatable("color.minecraft." + color.getId());
+        //?} else {
+        /*return Text.translatable("color.minecraft." + color.getName());
+        *///?}
     }
 
     private static boolean isCat(ItemStack stack) {
@@ -41,31 +57,84 @@ public class CatNode implements Node {
         return entityType == EntityType.CAT;
     }
 
+    private static Identifier getId(CatVariant variant) {
+        //? if >=1.21.5 {
+        Registry<CatVariant> registry = EditorUtil.getRegistry(RegistryKeys.CAT_VARIANT);
+        return registry.getId(variant);
+        //?} else {
+        /*return Registries.CAT_VARIANT.getId(variant);
+        *///?}
+    }
+
     private static boolean hasVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         return stack.contains(DataComponentTypes.CAT_VARIANT);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        if (!nbt.contains(VARIANT_KEY, NbtElement.STRING_TYPE)) {
+            return false;
+        }
+        Identifier variant = Identifier.tryParse(nbt.getString(VARIANT_KEY));
+        return Registries.CAT_VARIANT.containsId(variant);
+        *///?}
     }
 
     private static CatVariant getVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         return stack.get(DataComponentTypes.CAT_VARIANT).value();
+        //?} else {
+        /*if (!hasVariant(stack)) {
+            return null;
+        }
+        NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        Identifier variant = Identifier.tryParse(nbt.getString(VARIANT_KEY));
+        return Registries.CAT_VARIANT.get(variant);
+        *///?}
     }
 
     private static DyeColor getCollar(ItemStack stack) {
+        //? if >=1.21.5 {
         if (!stack.contains(DataComponentTypes.CAT_COLLAR)) {
             return DyeColor.RED;
         }
         return stack.get(DataComponentTypes.CAT_COLLAR);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        if (!nbt.contains(COLLAR_KEY, NbtElement.BYTE_TYPE)) {
+            return DyeColor.RED;
+        }
+        return DyeColor.byId(nbt.getByte(COLLAR_KEY));
+        *///?}
     }
 
     private static void setVariant(ItemStack stack, CatVariant variant) {
+        //? if >=1.21.5 {
         stack.set(DataComponentTypes.CAT_VARIANT, RegistryEntry.of(variant));
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        nbt.putString(VARIANT_KEY, Registries.CAT_VARIANT.getId(variant).toString());
+        DataNode.DataSource.ENTITY.set(stack, nbt);
+        *///?}
     }
 
     private static void setCollar(ItemStack stack, DyeColor collar) {
+        //? if >=1.21.5 {
         stack.set(DataComponentTypes.CAT_COLLAR, collar);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        nbt.putByte(COLLAR_KEY, (byte)collar.getId());
+        DataNode.DataSource.ENTITY.set(stack, nbt);
+        *///?}
     }
 
     private static void removeVariant(ItemStack stack) {
+        //? if >=1.21.5 {
         stack.remove(DataComponentTypes.CAT_VARIANT);
+        //?} else {
+        /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
+        nbt.remove(VARIANT_KEY);
+        DataNode.DataSource.ENTITY.set(stack, nbt);
+        *///?}
     }
 
     @Override
@@ -83,8 +152,9 @@ public class CatNode implements Node {
                 throw NO_VARIANT_EXCEPTION;
             }
             CatVariant variant = getVariant(stack);
+            Identifier id = getId(variant);
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_VARIANT, variant.assetInfo().id()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_VARIANT, id));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -104,8 +174,9 @@ public class CatNode implements Node {
                 }
             }
             setVariant(stack, variant);
+            Identifier id = getId(variant);
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_VARIANT, variant.assetInfo().id()));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_VARIANT, id));
             EditorUtil.setStack(context.getSource(), stack);
             return Command.SINGLE_SUCCESS;
         }).build();
@@ -180,4 +251,3 @@ public class CatNode implements Node {
         return node;
     }
 }
-//?}

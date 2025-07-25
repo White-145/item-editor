@@ -18,9 +18,7 @@ import net.minecraft.component.ComponentType;
 *///?}
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.*;
@@ -50,7 +48,8 @@ public class EditorUtil {
         *///?}
     }
 
-    public static <T> Registry<T> getRegistry(DynamicRegistryManager registryManager, RegistryKey<Registry<T>> key) {
+    public static <T> Registry<T> getRegistry(RegistryKey<Registry<T>> key) {
+        DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
         //? if >=1.21.2 {
         return registryManager.getOrThrow(key);
         //?} else {
@@ -60,6 +59,27 @@ public class EditorUtil {
 
     public static EntityType<?> getEntityType(ItemStack stack) {
         Item item = stack.getItem();
+        if (item instanceof EntityBucketItem) {
+            if (item == Items.AXOLOTL_BUCKET) {
+                return EntityType.AXOLOTL;
+            }
+            if (item == Items.COD_BUCKET) {
+                return EntityType.COD;
+            }
+            if (item == Items.PUFFERFISH_BUCKET) {
+                return EntityType.PUFFERFISH;
+            }
+            if (item == Items.SALMON_BUCKET) {
+                return EntityType.SALMON;
+            }
+            if (item == Items.TADPOLE_BUCKET) {
+                return EntityType.TADPOLE;
+            }
+            if (item == Items.TROPICAL_FISH_BUCKET) {
+                return EntityType.TROPICAL_FISH;
+            }
+            return null;
+        }
         if (!(item instanceof SpawnEggItem)) {
             return null;
         }

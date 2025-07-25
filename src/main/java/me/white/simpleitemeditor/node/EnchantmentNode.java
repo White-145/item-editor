@@ -54,8 +54,8 @@ public class EnchantmentNode implements Node {
     private static final String OUTPUT_REMOVE_STORED = "commands.edit.enchantment.removestored";
     private static final String OUTPUT_CLEAR_STORED = "commands.edit.enchantment.clearstored";
 
-    private static RegistryEntry<Enchantment> entryOf(DynamicRegistryManager registryManager, Enchantment enchantment) {
-        return EditorUtil.getRegistry(registryManager, RegistryKeys.ENCHANTMENT).getEntry(enchantment);
+    private static RegistryEntry<Enchantment> entryOf(Enchantment enchantment) {
+        return EditorUtil.getRegistry(RegistryKeys.ENCHANTMENT).getEntry(enchantment);
     }
 
     private static boolean hasEnchantments(ItemStack stack) {
@@ -83,14 +83,14 @@ public class EnchantmentNode implements Node {
         return enchantments;
     }
 
-    private static void setEnchantments(DynamicRegistryManager registryManager, ItemStack stack, Map<Enchantment, Integer> enchantments) {
+    private static void setEnchantments(ItemStack stack, Map<Enchantment, Integer> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             stack.remove(DataComponentTypes.ENCHANTMENTS);
         } else {
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 //? if >=1.21.1 {
-                builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
+                builder.set(entryOf(entry.getKey()), entry.getValue());
                 //?} else {
                 /*builder.set(entry.getKey(), entry.getValue());
                 *///?}
@@ -154,7 +154,7 @@ public class EnchantmentNode implements Node {
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
             for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
                 //? if >=1.21.1 {
-                builder.set(entryOf(registryManager, entry.getKey()), entry.getValue());
+                builder.set(entryOf(entry.getKey()), entry.getValue());
                 //?} else {
                 /*builder.set(entry.getKey(), entry.getValue());
                 *///?}
@@ -215,7 +215,7 @@ public class EnchantmentNode implements Node {
                 throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, 1);
-            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+            setEnchantments(stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getEnchantmentName(enchantment, 1)));
@@ -232,7 +232,7 @@ public class EnchantmentNode implements Node {
                 throw ALREADY_IS_EXCEPTION;
             }
             enchantments.put(enchantment, level);
-            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+            setEnchantments(stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET, getEnchantmentName(enchantment, level)));
@@ -253,7 +253,7 @@ public class EnchantmentNode implements Node {
                 throw NO_SUCH_ENCHANTMENTS_EXCEPTION;
             }
             enchantments.remove(enchantment);
-            setEnchantments(context.getSource().getRegistryManager(), stack, enchantments);
+            setEnchantments(stack, enchantments);
 
             EditorUtil.setStack(context.getSource(), stack);
             //? if >=1.21.1 {
@@ -311,7 +311,7 @@ public class EnchantmentNode implements Node {
             if (!hasEnchantments(stack)) {
                 throw NO_ENCHANTMENTS_EXCEPTION;
             }
-            setEnchantments(context.getSource().getRegistryManager(), stack, null);
+            setEnchantments(stack, null);
 
             EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_CLEAR));

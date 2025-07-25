@@ -23,7 +23,6 @@ import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
@@ -82,8 +81,8 @@ public class AttributeNode implements Node {
         return wasSuccessful;
     }
 
-    private static RegistryEntry<EntityAttribute> entryOf(DynamicRegistryManager registryManager, EntityAttribute attribute) {
-        return EditorUtil.getRegistry(registryManager, RegistryKeys.ATTRIBUTE).getEntry(attribute);
+    private static RegistryEntry<EntityAttribute> entryOf(EntityAttribute attribute) {
+        return EditorUtil.getRegistry(RegistryKeys.ATTRIBUTE).getEntry(attribute);
     }
 
     private static boolean hasAttributes(ItemStack stack) {
@@ -190,7 +189,7 @@ public class AttributeNode implements Node {
             Identifier id = Identifier.of("blank", name);
             EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, EntityAttributeModifier.Operation.ADD_VALUE);
             *///?}
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
             attributes.add(entry);
@@ -215,7 +214,7 @@ public class AttributeNode implements Node {
             Identifier id = Identifier.of("blank", name);
             EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
             *///?}
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, AttributeModifierSlot.ANY);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(attribute), modifier, AttributeModifierSlot.ANY);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
             attributes.add(entry);
@@ -241,7 +240,7 @@ public class AttributeNode implements Node {
             Identifier id = Identifier.of("blank", name);
             EntityAttributeModifier modifier = new EntityAttributeModifier(name, amount, operation);
             *///?}
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(context.getSource().getRegistryManager(), attribute), modifier, slot);
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(entryOf(attribute), modifier, slot);
             List<AttributeModifiersComponent.Entry> attributes = new ArrayList<>(getAttributes(stack));
             removeId(attributes, id);
             attributes.add(entry);

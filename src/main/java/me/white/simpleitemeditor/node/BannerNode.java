@@ -170,7 +170,7 @@ public class BannerNode implements Node {
     }
 
     private static BannerPatternsComponent.Layer getLayer(DynamicRegistryManager registryManager, BannerPattern pattern, DyeColor color) {
-        RegistryEntry<BannerPattern> patternEntry = EditorUtil.getRegistry(registryManager, RegistryKeys.BANNER_PATTERN).getEntry(pattern);
+        RegistryEntry<BannerPattern> patternEntry = EditorUtil.getRegistry(RegistryKeys.BANNER_PATTERN).getEntry(pattern);
         return new BannerPatternsComponent.Layer(patternEntry, color);
     }
 

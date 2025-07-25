@@ -1,6 +1,5 @@
 package me.white.simpleitemeditor.node;
 
-//? if >=1.21.5 {
 import com.mojang.brigadier.tree.CommandNode;
 import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.SimpleItemEditor;
@@ -31,4 +30,3 @@ public class MobNode implements Node {
         return node;
     }
 }
-//?}
