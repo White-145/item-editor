@@ -46,8 +46,7 @@ public class LlamaNode implements Node {
     }
 
     private static boolean isLlama(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.LLAMA;
+        return EditorUtil.getEntityType(stack) == EntityType.LLAMA;
     }
 
     private static boolean hasVariant(ItemStack stack) {

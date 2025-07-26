@@ -72,8 +72,7 @@ public class HorseNode implements Node {
     *///?}
 
     private static boolean isHorse(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.HORSE;
+        return EditorUtil.getEntityType(stack) == EntityType.HORSE;
     }
 
     private static boolean hasColor(ItemStack stack) {

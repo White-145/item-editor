@@ -53,8 +53,7 @@ public class CatNode implements Node {
     }
 
     private static boolean isCat(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.CAT;
+        return EditorUtil.getEntityType(stack) == EntityType.CAT;
     }
 
     private static Identifier getId(CatVariant variant) {

@@ -42,8 +42,7 @@ public class FoxNode implements Node {
     }
 
     private static boolean isFox(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.FOX;
+        return EditorUtil.getEntityType(stack) == EntityType.FOX;
     }
 
     private static boolean hasVariant(ItemStack stack) {

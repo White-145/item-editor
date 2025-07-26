@@ -42,8 +42,7 @@ public class MooshroomNode implements Node {
     }
 
     private static boolean isMooshroom(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.MOOSHROOM;
+        return EditorUtil.getEntityType(stack) == EntityType.MOOSHROOM;
     }
 
     private static boolean hasVariant(ItemStack stack) {

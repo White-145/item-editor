@@ -48,8 +48,7 @@ public class AxolotlNode implements Node {
     }
 
     private static boolean isAxolotl(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.AXOLOTL;
+        return EditorUtil.getEntityType(stack) == EntityType.AXOLOTL;
     }
 
     private static boolean hasVariant(ItemStack stack) {

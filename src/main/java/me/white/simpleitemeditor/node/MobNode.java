@@ -15,6 +15,7 @@ public class MobNode implements Node {
             //? if >=1.21.5 {
             new ChickenNode(),
             new CowNode(),
+            new PigNode(),
             //?}
             new FoxNode(),
             new FrogNode(),

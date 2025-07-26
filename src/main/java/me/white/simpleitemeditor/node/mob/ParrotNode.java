@@ -48,8 +48,7 @@ public class ParrotNode implements Node {
     }
 
     private static boolean isParrot(ItemStack stack) {
-        EntityType<?> entityType = EditorUtil.getEntityType(stack);
-        return entityType == EntityType.PARROT;
+        return EditorUtil.getEntityType(stack) == EntityType.PARROT;
     }
 
     private static boolean hasVariant(ItemStack stack) {
