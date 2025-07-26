@@ -17,7 +17,8 @@ public class MobNode implements Node {
             new CowNode(),
             //?}
             new FoxNode(),
-            new FrogNode()
+            new FrogNode(),
+            new HorseNode()
     };
 
     @Override
