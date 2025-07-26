@@ -57,7 +57,12 @@ public class MooshroomNode implements Node {
             return false;
         }
         String variant = nbt.getString(VARIANT_KEY);
-        return MooshroomEntity.Type.fromName(variant) != null;
+        for (MooshroomEntity.Type type : MooshroomEntity.Type.values()) {
+            if (type.asString().equals(variant)) {
+                return true;
+            }
+        }
+        return false;
         *///?}
     }
 
@@ -67,7 +72,12 @@ public class MooshroomNode implements Node {
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
         String variant = nbt.getString(VARIANT_KEY);
-        return MooshroomVariant.byVariant(MooshroomEntity.Type.fromName(variant));
+        for (MooshroomEntity.Type type : MooshroomEntity.Type.values()) {
+            if (type.asString().equals(variant)) {
+                return MooshroomVariant.byVariant(type);
+            }
+        }
+        return null;
         *///?}
     }
 
@@ -76,7 +86,7 @@ public class MooshroomNode implements Node {
         stack.set(DataComponentTypes.MOOSHROOM_VARIANT, variant.variant);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        nbt.putString(VARIANT_KEY, variant.variantName);
+        nbt.putString(VARIANT_KEY, variant.variant.asString());
         DataNode.DataSource.ENTITY.set(stack, nbt);
         *///?}
     }
@@ -165,15 +175,13 @@ public class MooshroomNode implements Node {
     // somewhere along the way Type was renamed to Variant
     private enum MooshroomVariant {
         //? if >=1.21.5 {
-        RED(MooshroomEntity.Variant.RED, "red"),
-        BROWN(MooshroomEntity.Variant.BROWN, "brown");
+        RED(MooshroomEntity.Variant.RED),
+        BROWN(MooshroomEntity.Variant.BROWN);
 
         final MooshroomEntity.Variant variant;
-        final String variantName;
 
-        MooshroomVariant(MooshroomEntity.Variant variant, String variantName) {
+        MooshroomVariant(MooshroomEntity.Variant variant) {
             this.variant = variant;
-            this.variantName = variantName;
         }
 
         public static MooshroomVariant byVariant(MooshroomEntity.Variant variant) {
@@ -185,15 +193,13 @@ public class MooshroomNode implements Node {
             return null;
         }
         //?} else {
-        /*RED(MooshroomEntity.Type.RED, "red"),
-        BROWN(MooshroomEntity.Type.BROWN, "brown");
+        /*RED(MooshroomEntity.Type.RED),
+        BROWN(MooshroomEntity.Type.BROWN);
 
         final MooshroomEntity.Type variant;
-        final String variantName;
 
-        MooshroomVariant(MooshroomEntity.Type variant, String variantName) {
+        MooshroomVariant(MooshroomEntity.Type variant) {
             this.variant = variant;
-            this.variantName = variantName;
         }
 
         public static MooshroomVariant byVariant(MooshroomEntity.Type variant) {

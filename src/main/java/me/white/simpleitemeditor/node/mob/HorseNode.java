@@ -31,19 +31,19 @@ public class HorseNode implements Node {
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.horse.variantremove";
     private static final String OUTPUT_GET_MARKING = "commands.edit.mob.horse.markingget";
     private static final String OUTPUT_SET_MARKING = "commands.edit.mob.horse.markingset";
-    private static final String COLOR_WHITE = "entity.minecraft.horse.color.white";
-    private static final String COLOR_CREAMY = "entity.minecraft.horse.color.creamy";
-    private static final String COLOR_CHESTNUT = "entity.minecraft.horse.color.chestnut";
-    private static final String COLOR_BROWN = "entity.minecraft.horse.color.brown";
-    private static final String COLOR_BLACK = "entity.minecraft.horse.color.black";
-    private static final String COLOR_GRAY = "entity.minecraft.horse.color.gray";
-    private static final String COLOR_DARK_BROWN = "entity.minecraft.horse.color.darkbrown";
+    private static final String COLOR_WHITE = "variant.minecraft.horse.color.white";
+    private static final String COLOR_CREAMY = "variant.minecraft.horse.color.creamy";
+    private static final String COLOR_CHESTNUT = "variant.minecraft.horse.color.chestnut";
+    private static final String COLOR_BROWN = "variant.minecraft.horse.color.brown";
+    private static final String COLOR_BLACK = "variant.minecraft.horse.color.black";
+    private static final String COLOR_GRAY = "variant.minecraft.horse.color.gray";
+    private static final String COLOR_DARK_BROWN = "variant.minecraft.horse.color.darkbrown";
     //? if <1.21.5 {
-    /*private static final String MARKING_NONE = "entity.minecraft.horse.marking.none";
-    private static final String MARKING_WHITE = "entity.minecraft.horse.marking.white";
-    private static final String MARKING_WHITE_FIELD = "entity.minecraft.horse.marking.whitefields";
-    private static final String MARKING_WHITE_DOTS = "entity.minecraft.horse.marking.whitedots";
-    private static final String MARKING_BLACK_DOTS = "entity.minecraft.horse.marking.blackdots";
+    /*private static final String MARKING_NONE = "variant.minecraft.horse.marking.none";
+    private static final String MARKING_WHITE = "variant.minecraft.horse.marking.white";
+    private static final String MARKING_WHITE_FIELD = "variant.minecraft.horse.marking.whitefields";
+    private static final String MARKING_WHITE_DOTS = "variant.minecraft.horse.marking.whitedots";
+    private static final String MARKING_BLACK_DOTS = "variant.minecraft.horse.marking.blackdots";
     private static final String VARIANT_KEY = "Variant";
     *///?}
 
@@ -86,9 +86,13 @@ public class HorseNode implements Node {
         if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
             return false;
         }
-        int variant = nbt.getInt(VARIANT_KEY);
-        int color = variant & 0xFF;
-        return color < HorseColor.values().length;
+        int id = nbt.getInt(VARIANT_KEY) & 0xFF;
+        for (HorseColor color : HorseColor.values()) {
+            if (color.getId() == id) {
+                return true;
+            }
+        }
+        return false;
         *///?}
     }
 
@@ -103,9 +107,13 @@ public class HorseNode implements Node {
         if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
             return false;
         }
-        int variant = nbt.getInt(VARIANT_KEY);
-        int marking = variant >> 8;
-        return marking >= 0 && marking < HorseMarking.values().length;
+        int id = nbt.getInt(VARIANT_KEY) >> 8;
+        for (HorseMarking marking : HorseMarking.values()) {
+            if (marking.getId() == id) {
+                return true;
+            }
+        }
+        return false;
         *///?}
     }
 
@@ -114,7 +122,13 @@ public class HorseNode implements Node {
         return stack.get(DataComponentTypes.HORSE_VARIANT);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        return HorseColor.byId(nbt.getInt(VARIANT_KEY) & 0xFF);
+        int id = nbt.getInt(VARIANT_KEY) & 0xFF;
+        for (HorseColor color : HorseColor.values()) {
+            if (color.getId() == id) {
+                return color;
+            }
+        }
+        return null;
         *///?}
     }
 
@@ -123,8 +137,8 @@ public class HorseNode implements Node {
         stack.set(DataComponentTypes.HORSE_VARIANT, color);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        int variant = nbt.getInt(VARIANT_KEY);
-        nbt.putInt(VARIANT_KEY, ((variant >> 8) << 8) | color.getId());
+        int marking = nbt.getInt(VARIANT_KEY) >> 8;
+        nbt.putInt(VARIANT_KEY, (marking << 8) | color.getId());
         DataNode.DataSource.ENTITY.set(stack, nbt);
         *///?}
     }
@@ -142,8 +156,13 @@ public class HorseNode implements Node {
     //? if <1.21.5 {
     /*private static HorseMarking getMarking(ItemStack stack) {
         NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        int variant = nbt.getInt(VARIANT_KEY);
-        return HorseMarking.byIndex(variant >> 8);
+        int id = nbt.getInt(VARIANT_KEY) >> 8;
+        for (HorseMarking marking : HorseMarking.values()) {
+            if (marking.getId() == id) {
+                return marking;
+            }
+        }
+        return null;
     }
 
     private static void setMarking(ItemStack stack, HorseMarking marking) {

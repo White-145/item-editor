@@ -8,6 +8,7 @@ import me.white.simpleitemeditor.Node;
 import me.white.simpleitemeditor.argument.EnumArgumentType;
 //? if <1.21.5 {
 /*import me.white.simpleitemeditor.node.DataNode;
+import net.minecraft.entity.passive.LlamaEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 *///?}
@@ -62,8 +63,13 @@ public class ParrotNode implements Node {
         if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
             return false;
         }
-        int variant = nbt.getInt(VARIANT_KEY);
-        return variant >= 0 && variant < ParrotEntity.Variant.values().length;
+        int id = nbt.getInt(VARIANT_KEY);
+        for (LlamaEntity.Variant variant : LlamaEntity.Variant.values()) {
+            if (variant.getIndex() == id) {
+                return true;
+            }
+        }
+        return false;
         *///?}
     }
 
@@ -72,7 +78,13 @@ public class ParrotNode implements Node {
         return stack.get(DataComponentTypes.PARROT_VARIANT);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        return ParrotEntity.Variant.byIndex(nbt.getInt(VARIANT_KEY));
+        int id = nbt.getInt(VARIANT_KEY);
+        for (LlamaEntity.Variant variant : LlamaEntity.Variant.values()) {
+            if (variant.getIndex() == id) {
+                return ParrotEntity.Variant.byIndex(id);
+            }
+        }
+        return null;
         *///?}
     }
 

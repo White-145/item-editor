@@ -17,48 +17,58 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.FoxEntity;
+import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-public class FoxNode implements Node {
-    private static final CommandSyntaxException ISNT_FOX_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.fox.error.isntfox")).create();
-    private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.fox.error.variantalreadyis")).create();
-    private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.fox.error.novariant")).create();
-    private static final String OUTPUT_GET_VARIANT = "commands.edit.mob.fox.variantget";
-    private static final String OUTPUT_SET_VARIANT = "commands.edit.mob.fox.variantset";
-    private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.fox.variantremove";
-    private static final String VARIANT_RED = "variant.minecraft.fox.red";
-    private static final String VARIANT_SNOW = "variant.minecraft.fox.snow";
+public class RabbitNode implements Node {
+    private static final CommandSyntaxException ISNT_RABBIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.rabbit.error.isntrabbit")).create();
+    private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.rabbit.error.variantalreadyis")).create();
+    private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.rabbit.error.novariant")).create();
+    private static final String OUTPUT_GET_VARIANT = "commands.edit.mob.rabbit.variantget";
+    private static final String OUTPUT_SET_VARIANT = "commands.edit.mob.rabbit.variantset";
+    private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.rabbit.variantremove";
+    private static final String VARIANT_RED = "variant.minecraft.rabbit.red";
+    private static final String VARIANT_WHITE = "variant.minecraft.rabbit.white";
+    private static final String VARIANT_BLACK = "variant.minecraft.rabbit.black";
+    private static final String VARIANT_WHITE_SPLOTCHED = "variant.minecraft.rabbit.white_splotched";
+    private static final String VARIANT_GOLD = "variant.minecraft.rabbit.gold";
+    private static final String VARIANT_SALT = "variant.minecraft.rabbit.salt";
+    private static final String VARIANT_EVIL = "variant.minecraft.rabbit.evil";
     //? if <1.21.5 {
-    /*private static final String VARIANT_KEY = "Type";
+    /*private static final String VARIANT_KEY = "RabbitType";
     *///?}
 
-    private static Text translation(FoxVariant variant) {
+    private static Text translation(RabbitVariant variant) {
         return switch (variant) {
             case RED -> Text.translatable(VARIANT_RED);
-            case SNOW -> Text.translatable(VARIANT_SNOW);
+            case WHITE -> Text.translatable(VARIANT_WHITE);
+            case BLACK -> Text.translatable(VARIANT_BLACK);
+            case WHITE_SPLOTCHED -> Text.translatable(VARIANT_WHITE_SPLOTCHED);
+            case GOLD -> Text.translatable(VARIANT_GOLD);
+            case SALT -> Text.translatable(VARIANT_SALT);
+            case EVIL -> Text.translatable(VARIANT_EVIL);
         };
     }
 
-    private static boolean isFox(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.FOX;
+    private static boolean isRabbit(ItemStack stack) {
+        return EditorUtil.getEntityType(stack) == EntityType.RABBIT;
     }
 
     private static boolean hasVariant(ItemStack stack) {
         //? if >=1.21.5 {
-        return stack.contains(DataComponentTypes.FOX_VARIANT);
+        return stack.contains(DataComponentTypes.RABBIT_VARIANT);
         //?} else {
         /*if (!stack.contains(DataComponentTypes.ENTITY_DATA)) {
             return false;
         }
         NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        if (!nbt.contains(VARIANT_KEY, NbtElement.STRING_TYPE)) {
+        if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
             return false;
         }
-        String variant = nbt.getString(VARIANT_KEY);
-        for (FoxEntity.Type type : FoxEntity.Type.values()) {
-            if (type.asString().equals(variant)) {
+        int id = nbt.getInt(VARIANT_KEY);
+        for (RabbitEntity.RabbitType variant : RabbitEntity.RabbitType.values()) {
+            if (variant.getId() == id) {
                 return true;
             }
         }
@@ -66,34 +76,34 @@ public class FoxNode implements Node {
         *///?}
     }
 
-    private static FoxVariant getVariant(ItemStack stack) {
+    private static RabbitVariant getVariant(ItemStack stack) {
         //? if >=1.21.5 {
-        return FoxVariant.byVariant(stack.get(DataComponentTypes.FOX_VARIANT));
+        return RabbitVariant.byVariant(stack.get(DataComponentTypes.RABBIT_VARIANT));
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        String id = nbt.getString(VARIANT_KEY);
-        for (FoxEntity.Type variant : FoxEntity.Type.values()) {
-            if (variant.asString().equals(id)) {
-                return FoxVariant.byVariant(variant);
+        int id = nbt.getInt(VARIANT_KEY);
+        for (RabbitEntity.RabbitType variant : RabbitEntity.RabbitType.values()) {
+            if (variant.getId() == id) {
+                return RabbitVariant.byVariant(variant);
             }
         }
         return null;
         *///?}
     }
 
-    private static void setVariant(ItemStack stack, FoxVariant variant) {
+    private static void setVariant(ItemStack stack, RabbitVariant variant) {
         //? if >=1.21.5 {
-        stack.set(DataComponentTypes.FOX_VARIANT, variant.variant);
+        stack.set(DataComponentTypes.RABBIT_VARIANT, variant.variant);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        nbt.putString(VARIANT_KEY, variant.variant.asString());
+        nbt.putInt(VARIANT_KEY, variant.variant.getId());
         DataNode.DataSource.ENTITY.set(stack, nbt);
         *///?}
     }
 
     private static void removeVariant(ItemStack stack) {
         //? if >=1.21.5 {
-        stack.remove(DataComponentTypes.FOX_VARIANT);
+        stack.remove(DataComponentTypes.RABBIT_VARIANT);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
         nbt.remove(VARIANT_KEY);
@@ -103,19 +113,19 @@ public class FoxNode implements Node {
 
     @Override
     public <S extends CommandSource> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandRegistryAccess registryAccess) {
-        CommandNode<S> node = commandManager.literal("fox").build();
+        CommandNode<S> node = commandManager.literal("rabbit").build();
 
         CommandNode<S> variantNode = commandManager.literal("variant").build();
 
         CommandNode<S> variantGetNode = commandManager.literal("get").executes(context -> {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
-            if (!isFox(stack)) {
-                throw ISNT_FOX_EXCEPTION;
+            if (!isRabbit(stack)) {
+                throw ISNT_RABBIT_EXCEPTION;
             }
             if (!hasVariant(stack)) {
                 throw NO_VARIANT_EXCEPTION;
             }
-            FoxVariant variant = getVariant(stack);
+            RabbitVariant variant = getVariant(stack);
 
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_VARIANT, translation(variant)));
             return Command.SINGLE_SUCCESS;
@@ -123,15 +133,15 @@ public class FoxNode implements Node {
 
         CommandNode<S> variantSetNode = commandManager.literal("set").build();
 
-        CommandNode<S> variantSetVariantNode = commandManager.argument("variant", EnumArgumentType.enums(FoxVariant.class)).executes(context -> {
+        CommandNode<S> variantSetVariantNode = commandManager.argument("variant", EnumArgumentType.enums(RabbitVariant.class)).executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            if (!isFox(stack)) {
-                throw ISNT_FOX_EXCEPTION;
+            if (!isRabbit(stack)) {
+                throw ISNT_RABBIT_EXCEPTION;
             }
-            FoxVariant variant = context.getArgument("variant", FoxVariant.class);
+            RabbitVariant variant = context.getArgument("variant", RabbitVariant.class);
             if (hasVariant(stack)) {
-                FoxVariant oldVariant = getVariant(stack);
+                RabbitVariant oldVariant = getVariant(stack);
                 if (variant == oldVariant) {
                     throw VARIANT_ALREADY_IS_EXCEPTION;
                 }
@@ -146,8 +156,8 @@ public class FoxNode implements Node {
         CommandNode<S> variantRemoveNode = commandManager.literal("remove").executes(context -> {
             EditorUtil.checkCanEdit(context.getSource());
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
-            if (!isFox(stack)) {
-                throw ISNT_FOX_EXCEPTION;
+            if (!isRabbit(stack)) {
+                throw ISNT_RABBIT_EXCEPTION;
             }
             if (!hasVariant(stack)) {
                 throw NO_VARIANT_EXCEPTION;
@@ -173,19 +183,24 @@ public class FoxNode implements Node {
     }
 
     // somewhere along the way Type was renamed to Variant
-    private enum FoxVariant {
+    private enum RabbitVariant {
         //? if >=1.21.5 {
-        RED(FoxEntity.Variant.RED),
-        SNOW(FoxEntity.Variant.SNOW);
+        RED(RabbitEntity.Variant.BROWN),
+        WHITE(RabbitEntity.Variant.WHITE),
+        BLACK(RabbitEntity.Variant.BLACK),
+        WHITE_SPLOTCHED(RabbitEntity.Variant.WHITE_SPLOTCHED),
+        GOLD(RabbitEntity.Variant.GOLD),
+        SALT(RabbitEntity.Variant.SALT),
+        EVIL(RabbitEntity.Variant.EVIL);
 
-        final FoxEntity.Variant variant;
+        final RabbitEntity.Variant variant;
 
-        FoxVariant(FoxEntity.Variant variant) {
+        RabbitVariant(RabbitEntity.Variant variant) {
             this.variant = variant;
         }
 
-        public static FoxVariant byVariant(FoxEntity.Variant variant) {
-            for (FoxVariant value : FoxVariant.values()) {
+        public static RabbitVariant byVariant(RabbitEntity.Variant variant) {
+            for (RabbitVariant value : RabbitVariant.values()) {
                 if (value.variant == variant) {
                     return value;
                 }
@@ -193,17 +208,22 @@ public class FoxNode implements Node {
             return null;
         }
         //?} else {
-        /*RED(FoxEntity.Type.RED),
-        SNOW(FoxEntity.Type.SNOW);
+        /*RED(RabbitEntity.RabbitType.BROWN),
+        WHITE(RabbitEntity.RabbitType.WHITE),
+        BLACK(RabbitEntity.RabbitType.BLACK),
+        WHITE_SPLOTCHED(RabbitEntity.RabbitType.WHITE_SPLOTCHED),
+        GOLD(RabbitEntity.RabbitType.GOLD),
+        SALT(RabbitEntity.RabbitType.SALT),
+        EVIL(RabbitEntity.RabbitType.EVIL);
 
-        final FoxEntity.Type variant;
+        final RabbitEntity.RabbitType variant;
 
-        FoxVariant(FoxEntity.Type variant) {
+        RabbitVariant(RabbitEntity.RabbitType variant) {
             this.variant = variant;
         }
 
-        public static FoxVariant byVariant(FoxEntity.Type variant) {
-            for (FoxVariant value : FoxVariant.values()) {
+        public static RabbitVariant byVariant(RabbitEntity.RabbitType variant) {
+            for (RabbitVariant value : RabbitVariant.values()) {
                 if (value.variant == variant) {
                     return value;
                 }

@@ -22,7 +22,8 @@ public class MobNode implements Node {
             new HorseNode(),
             new LlamaNode(),
             new MooshroomNode(),
-            new ParrotNode()
+            new ParrotNode(),
+            new RabbitNode()
     };
 
     @Override

@@ -60,8 +60,13 @@ public class LlamaNode implements Node {
         if (!nbt.contains(VARIANT_KEY, NbtElement.INT_TYPE)) {
             return false;
         }
-        int variant = nbt.getInt(VARIANT_KEY);
-        return variant >= 0 && variant < LlamaEntity.Variant.values().length;
+        int id = nbt.getInt(VARIANT_KEY);
+        for (LlamaEntity.Variant variant : LlamaEntity.Variant.values()) {
+            if (variant.getIndex() == id) {
+                return true;
+            }
+        }
+        return false;
         *///?}
     }
 
@@ -70,7 +75,13 @@ public class LlamaNode implements Node {
         return stack.get(DataComponentTypes.LLAMA_VARIANT);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        return LlamaEntity.Variant.byId(nbt.getInt(VARIANT_KEY));
+        int id = nbt.getInt(VARIANT_KEY);
+        for (LlamaEntity.Variant variant : LlamaEntity.Variant.values()) {
+            if (variant.getIndex() == id) {
+                return variant;
+            }
+        }
+        return null;
         *///?}
     }
 
