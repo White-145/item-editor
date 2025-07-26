@@ -23,7 +23,10 @@ public class MobNode implements Node {
             new LlamaNode(),
             new MooshroomNode(),
             new ParrotNode(),
-            new RabbitNode()
+            new RabbitNode(),
+            //? if >=1.21.2 {
+            new SalmonNode()
+            //?}
     };
 
     @Override

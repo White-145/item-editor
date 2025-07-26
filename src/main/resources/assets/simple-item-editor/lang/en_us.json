@@ -270,6 +270,12 @@
   "commands.edit.mob.rabbit.variantget": "Item has the following rabbit variant: %s",
   "commands.edit.mob.rabbit.variantset": "Item rabbit variant has been set to %s",
   "commands.edit.mob.rabbit.variantremove": "Item rabbit variant has been removed",
+  "commands.edit.mob.salmon.error.isntsalmon": "Can only edit salmons",
+  "commands.edit.mob.salmon.error.sizealreadyis": "Item already has given salmon size",
+  "commands.edit.mob.salmon.error.nosize": "Item doesn't have salmon size",
+  "commands.edit.mob.salmon.sizeget": "Item has the following salmon size: %s",
+  "commands.edit.mob.salmon.sizeset": "Item salmon size has been set to %s",
+  "commands.edit.mob.salmon.sizeremove": "Item salmon size has been removed",
   "commands.edit.name.error.noitemname": "Item doesn't have a name",
   "commands.edit.name.error.itemalreadyis": "Item already has given name",
   "commands.edit.name.error.nocustomname": "Item doesn't have a custom name",
@@ -360,5 +366,8 @@
   "variant.minecraft.rabbit.white_splotched": "White Splotched",
   "variant.minecraft.rabbit.gold": "Gold",
   "variant.minecraft.rabbit.salt": "Salt",
-  "variant.minecraft.rabbit.evil": "Evil"
+  "variant.minecraft.rabbit.evil": "Evil",
+  "variant.minecraft.salmon.small": "Small",
+  "variant.minecraft.salmon.medium": "Medium",
+  "variant.minecraft.salmon.large": "Large"
 }
