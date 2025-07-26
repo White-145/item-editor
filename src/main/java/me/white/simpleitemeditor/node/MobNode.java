@@ -27,7 +27,8 @@ public class MobNode implements Node {
             //? if >=1.21.2 {
             new SalmonNode(),
             //?}
-            new SheepNode()
+            new SheepNode(),
+            new ShulkerNode()
     };
 
     @Override
