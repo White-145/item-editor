@@ -62,7 +62,7 @@ public class LlamaNode implements Node {
             return false;
         }
         int variant = nbt.getInt(VARIANT_KEY);
-        return variant >= 0 && variant < Llama.Variant.values().length;
+        return variant >= 0 && variant < LlamaEntity.Variant.values().length;
         *///?}
     }
 
@@ -71,7 +71,7 @@ public class LlamaNode implements Node {
         return stack.get(DataComponentTypes.LLAMA_VARIANT);
         //?} else {
         /*NbtCompound nbt = DataNode.DataSource.ENTITY.get(stack);
-        return AxolotlEntity.Variant.byId(nbt.getInt(VARIANT_KEY));
+        return LlamaEntity.Variant.byId(nbt.getInt(VARIANT_KEY));
         *///?}
     }
 
