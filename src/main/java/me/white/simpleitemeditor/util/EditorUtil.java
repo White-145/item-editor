@@ -26,6 +26,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
@@ -273,5 +274,13 @@ public class EditorUtil {
             }
         }
         return components;
+    }
+
+    public static Text colorTranslation(DyeColor color) {
+        //? if >=1.21.5 {
+        return Text.translatable("color.minecraft." + color.getId());
+        //?} else {
+        /*return Text.translatable("color.minecraft." + color.getName());
+        *///?}
     }
 }

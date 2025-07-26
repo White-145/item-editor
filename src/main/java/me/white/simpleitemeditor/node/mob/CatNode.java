@@ -30,7 +30,7 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 public class CatNode implements Node {
-    private static final CommandSyntaxException ISNT_CAT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.isntaxolotl")).create();
+    private static final CommandSyntaxException ISNT_CAT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.isntcat")).create();
     private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.variantalreadyis")).create();
     private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.novariant")).create();
     private static final CommandSyntaxException COLLAR_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.mob.cat.error.collaralreadyis")).create();
@@ -43,14 +43,6 @@ public class CatNode implements Node {
     /*private static final String VARIANT_KEY = "variant";
     private static final String COLLAR_KEY = "CollarColor";
     *///?}
-
-    private static Text colorTranslation(DyeColor color) {
-        //? if >=1.21.5 {
-        return Text.translatable("color.minecraft." + color.getId());
-        //?} else {
-        /*return Text.translatable("color.minecraft." + color.getName());
-        *///?}
-    }
 
     private static boolean isCat(ItemStack stack) {
         return EditorUtil.getEntityType(stack) == EntityType.CAT;
@@ -203,7 +195,7 @@ public class CatNode implements Node {
             }
             DyeColor collar = getCollar(stack);
 
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_COLLAR, colorTranslation(collar)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET_COLLAR, EditorUtil.colorTranslation(collar)));
             return Command.SINGLE_SUCCESS;
         }).build();
 
@@ -223,7 +215,7 @@ public class CatNode implements Node {
             setCollar(stack, collar);
 
             EditorUtil.setStack(context.getSource(), stack);
-            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_COLLAR, colorTranslation(collar)));
+            EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_SET_COLLAR, EditorUtil.colorTranslation(collar)));
             return Command.SINGLE_SUCCESS;
         }).build();
 

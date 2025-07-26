@@ -25,8 +25,9 @@ public class MobNode implements Node {
             new ParrotNode(),
             new RabbitNode(),
             //? if >=1.21.2 {
-            new SalmonNode()
+            new SalmonNode(),
             //?}
+            new SheepNode()
     };
 
     @Override
