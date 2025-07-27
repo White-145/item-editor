@@ -71,7 +71,6 @@ public class ComponentNode implements Node {
             ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
             Map<Identifier, NbtElement> components = EditorUtil.getComponents(stack, context.getSource().getRegistryManager(), true);
 
-            EditorUtil.setStack(context.getSource(), stack);
             EditorUtil.sendFeedback(context.getSource(), Text.translatable(OUTPUT_GET));
             for (Map.Entry<Identifier, NbtElement> entry : components.entrySet()) {
                 if (entry.getValue() != null) {
