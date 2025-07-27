@@ -63,6 +63,9 @@ public class DurabilityNode implements Node {
 
     private static void setMaxDamage(ItemStack stack, int maxDamage) {
         stack.set(DataComponentTypes.MAX_DAMAGE, maxDamage);
+        if (!stack.contains(DataComponentTypes.DAMAGE)) {
+            stack.set(DataComponentTypes.DAMAGE, 0);
+        }
     }
 
     private static void resetMaxDamage(ItemStack stack) {
