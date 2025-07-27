@@ -98,7 +98,10 @@ public class EditCommand {
             new PotionNode(),
             new RarityNode(),
             new TrimNode(),
-            new TooltipNode()
+            new TooltipNode(),
+            //? if >=1.21.5 {
+            new WeaponNode()
+            //?}
     };
 
     public static final ClientCommand PROVIDER = new ClientCommand(Identifier.of("sie", "edit"), (name, registryAccess) -> {
