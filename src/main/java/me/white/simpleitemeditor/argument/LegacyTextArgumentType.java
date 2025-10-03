@@ -233,7 +233,11 @@ public class LegacyTextArgumentType implements ArgumentType<Text> {
             case '<' -> {
                 if (skipUntil(last, 0, '>') == -1) {
                     MinecraftClient client = MinecraftClient.getInstance();
-                    List<String> keybinds = Arrays.stream(client.options.allKeys).map(KeyBinding::getTranslationKey).toList();
+                    //? if >=1.21.9 {
+                    List<String> keybinds = Arrays.stream(client.options.allKeys).map(KeyBinding::getId).toList();
+                    //?} else {
+                    /*List<String> keybinds = Arrays.stream(client.options.allKeys).map(KeyBinding::getTranslationKey).toList();
+                    *///?}
                     builder = builder.createOffset(builder.getStart() + i + 2);
                     for (String key : keybinds) {
                         if (key.startsWith(last)) {

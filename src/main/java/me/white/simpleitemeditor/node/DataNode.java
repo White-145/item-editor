@@ -12,6 +12,13 @@ import me.white.simpleitemeditor.util.EditorUtil;
 import me.white.simpleitemeditor.util.TextUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockWithEntity;
+//? if >=1.21.9 {
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.TypedEntityData;
+//?} else {
+/*import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+*///?}
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
@@ -30,12 +37,15 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+//? if >=1.21.9 {
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+//?}
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 
 import java.util.List;
 
@@ -411,7 +421,30 @@ public class DataNode implements Node {
                 return item instanceof SpawnEggItem;
             }
 
+            //? if >=1.21.9 {
             @Override
+            public NbtCompound get(ItemStack stack) {
+                return ((DataSource)this).getTyped(stack);
+            }
+
+            @Override
+            public void set(ItemStack stack, NbtCompound nbt) {
+                Item item = stack.getItem();
+                if (!(item instanceof SpawnEggItem)) {
+                    return;
+                }
+                EntityType<?> type = EditorUtil.getEntityType(stack);
+                if (nbt.contains("id")) {
+                    Identifier id = Identifier.tryParse(nbt.getString("id").get());
+                    if (Registries.ENTITY_TYPE.containsId(id)) {
+                        type = Registries.ENTITY_TYPE.get(id);
+                    }
+                }
+                ((DataSource)this).setTyped(stack, type, nbt);
+            }
+            //?} else {
+
+            /*@Override
             protected void preprocess(ItemStack stack, NbtCompound nbt) {
                 if (!nbt.contains("id")) {
                     Item item = stack.getItem();
@@ -423,6 +456,7 @@ public class DataNode implements Node {
                     nbt.putString("id", id.toString());
                 }
             }
+            *///?}
         },
         BLOCK(DataComponentTypes.BLOCK_ENTITY_DATA) {
             @Override
@@ -435,7 +469,27 @@ public class DataNode implements Node {
                 return block instanceof BlockWithEntity;
             }
 
+            //? if >=1.21.9 {
             @Override
+            public NbtCompound get(ItemStack stack) {
+                return ((DataSource)this).getTyped(stack);
+            }
+
+            @Override
+            public void set(ItemStack stack, NbtCompound nbt) {
+                Item item = stack.getItem();
+                if (!(item instanceof BlockItem)) {
+                    return;
+                }
+                Block block = ((BlockItem)stack.getItem()).getBlock();
+                if (!(block instanceof BlockWithEntity)) {
+                    return;
+                }
+                BlockEntityType<?> type = ((BlockWithEntity)block).createBlockEntity(BlockPos.ORIGIN, block.getDefaultState()).getType();
+                ((DataSource)this).setTyped(stack, type, nbt);
+            }
+            //?} else {
+            /*@Override
             protected void preprocess(ItemStack stack, NbtCompound nbt) {
                 if (!nbt.contains("id")) {
                     Item item = stack.getItem();
@@ -450,6 +504,7 @@ public class DataNode implements Node {
                     nbt.putString("id", id.toString());
                 }
             }
+            *///?}
         },
         BUCKET(DataComponentTypes.BUCKET_ENTITY_DATA) {
             @Override
@@ -460,9 +515,9 @@ public class DataNode implements Node {
         };
 
         //? if >=1.21.1 {
-        final ComponentType<NbtComponent> component;
+        final ComponentType<?> component;
 
-        DataSource(ComponentType<NbtComponent> component) {
+        DataSource(ComponentType<?> component) {
             this.component = component;
         }
         //?} else {
@@ -474,28 +529,57 @@ public class DataNode implements Node {
         *///?}
 
         public boolean has(ItemStack stack) {
-            if (!stack.contains(component)) {
-                return false;
-            }
-            return !stack.get(component).isEmpty();
+            return stack.contains(component) && !get(stack).isEmpty();
         }
 
         public NbtCompound get(ItemStack stack) {
-            if (!has(stack)) {
-                return new NbtCompound();
-            }
-            return stack.get(component).copyNbt();
+            return getPlain(stack);
         }
 
         public void set(ItemStack stack, NbtCompound nbt) {
-            preprocess(stack, nbt);
-            NbtComponent.set(component, stack, nbt);
+            setPlain(stack, nbt);
+        }
+
+        private NbtCompound getPlain(ItemStack stack) {
+            if (!stack.contains(component)) {
+                return new NbtCompound();
+            }
+            //? if >=1.21.1 {
+            return ((NbtComponent)stack.get(component)).copyNbt();
+            //?} else {
+            /*return stack.get(component).copyNbt();
+            *///?}
+        }
+
+        //? if >=1.21.1 {
+        @SuppressWarnings("unchecked")
+        //?}
+        private void setPlain(ItemStack stack, NbtCompound nbt) {
+            //? if >=1.21.1 {
+            stack.set((ComponentType<NbtComponent>)component, NbtComponent.of(nbt));
+            //?} else {
+            /*stack.set(component, NbtComponent.of(nbt));
+            *///?}
         }
 
         public boolean isApplicable(ItemStack stack) {
             return true;
         }
 
-        protected void preprocess(ItemStack stack, NbtCompound nbt) { }
+        //? if >=1.21.9 {
+        private NbtCompound getTyped(ItemStack stack) {
+            if (!stack.contains(component)) {
+                return new NbtCompound();
+            }
+            return ((TypedEntityData<?>)stack.get(component)).copyNbtWithoutId();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void setTyped(ItemStack stack, Object type, NbtCompound nbt) {
+            stack.set((ComponentType<TypedEntityData<?>>)component, TypedEntityData.create(type, nbt));
+        }
+        //?} else {
+        /*protected void preprocess(ItemStack stack, NbtCompound nbt) { }
+        *///?}
     }
 }

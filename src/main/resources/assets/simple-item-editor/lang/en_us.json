@@ -169,6 +169,7 @@
   "commands.edit.head.error.texturecustomservererror": "Server error occured (%s)",
   "commands.edit.head.error.nosound": "Item doesn't have a note block sound",
   "commands.edit.head.error.soundalreadyis": "Item already has given note block sound",
+  "commands.edit.head.error.timeout": "Server took too long to respond",
   "commands.edit.head.ownerget": "Item has the following head owner: '%s'",
   "commands.edit.head.ownerset": "Item head owner was set to '%s'",
   "commands.edit.head.textureget": "Item has the following head texture: %s",

@@ -37,7 +37,13 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
+//? if >=1.21.9 {
+import java.util.UUID;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+//?} else {
+/*import java.util.Optional;
+*///?}
 import java.util.concurrent.CompletableFuture;
 
 public class HeadNode implements Node {
@@ -51,6 +57,7 @@ public class HeadNode implements Node {
     private static final DynamicCommandExceptionType SERVER_ERROR_EXCEPTION = new DynamicCommandExceptionType(code -> Text.translatable("commands.edit.head.error.texturecustomservererror", code));
     private static final CommandSyntaxException NO_SOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.nosound")).create();
     private static final CommandSyntaxException SOUND_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.soundalreadyis")).create();
+    private static final CommandSyntaxException TIMEOUT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.edit.head.error.timeout")).create();
     private static final String OUTPUT_OWNER_GET = "commands.edit.head.ownerget";
     private static final String OUTPUT_OWNER_SET = "commands.edit.head.ownerset";
     private static final String OUTPUT_TEXTURE_GET = "commands.edit.head.textureget";
@@ -76,17 +83,31 @@ public class HeadNode implements Node {
         if (!hasProfile(stack)) {
             return null;
         }
-        return stack.get(DataComponentTypes.PROFILE).gameProfile();
+        //? if >=1.21.9 {
+        return stack.get(DataComponentTypes.PROFILE).getGameProfile();
+        //?} else {
+        /*return stack.get(DataComponentTypes.PROFILE).gameProfile();
+        *///?}
     }
 
     private static void setProfile(ItemStack stack, Property profile) {
-        PropertyMap properties = new PropertyMap();
+        //? if >=1.21.9 {
+        Multimap<String, Property> multimap = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+        multimap.put("textures", profile);
+        stack.set(DataComponentTypes.PROFILE, ProfileComponent.ofStatic(new GameProfile(UUID.randomUUID(), "*siehead", new PropertyMap(multimap))));
+        //?} else {
+        /*PropertyMap properties = new PropertyMap();
         properties.put("textures", profile);
         stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.empty(), Optional.empty(), properties));
+        *///?}
     }
 
     private static void setProfile(ItemStack stack, String owner) {
-        stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.of(owner), Optional.empty(), new PropertyMap()));
+        //? if >=1.21.9 {
+        stack.set(DataComponentTypes.PROFILE, ProfileComponent.ofDynamic(owner));
+        //?} else {
+        /*stack.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.of(owner), Optional.empty(), new PropertyMap()));
+        *///?}
     }
 
     private static void removeProfile(ItemStack stack) {
@@ -116,7 +137,11 @@ public class HeadNode implements Node {
         if (profile == null) {
             return null;
         }
-        List<Property> textures = profile.getProperties().get("textures").stream().toList();
+        //? if >=1.21.9 {
+        List<Property> textures = profile.properties().get("textures").stream().toList();
+        //?} else {
+        /*List<Property> textures = profile.getProperties().get("textures").stream().toList();
+        *///?}
         if (textures.isEmpty()) {
             return null;
         }
@@ -183,8 +208,8 @@ public class HeadNode implements Node {
             }
         }
 
-        while (true) {
-            try {
+        try {
+            for (int i = 0; i < 20; ++i) {
                 connection = (HttpURLConnection)URI.create(MINESKIN_API_URL + id).toURL().openConnection();
                 connection.addRequestProperty("User-Agent", "SimpleItemEditor-HeadGenerator");
                 connection.addRequestProperty("Accept", "application/json");
@@ -201,12 +226,13 @@ public class HeadNode implements Node {
                     return new Property("textures", data.get("value").getAsString(), data.get("signature").getAsString());
                 }
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } finally {
-                connection.disconnect();
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            connection.disconnect();
         }
+        throw TIMEOUT_EXCEPTION;
     }
 
     public static void setFromUrl(String url, CommandSource source) {
@@ -222,9 +248,12 @@ public class HeadNode implements Node {
             if (!isHead(stack)) {
                 throw ISNT_HEAD_EXCEPTION;
             }
+            System.out.println("got here");
             setProfile(stack, profile);
+            System.out.println("then here");
 
             EditorUtil.setStack(source, stack);
+            System.out.println("feedback should be omw");
             EditorUtil.sendFeedback(source, Text.translatable(OUTPUT_TEXTURE_CUSTOM_OK));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -265,7 +294,11 @@ public class HeadNode implements Node {
             String owner = StringArgumentType.getString(context, "owner");
             if (hasProfile(stack)) {
                 GameProfile profile = getProfile(stack);
-                if (owner.equals(profile.getName())) {
+                //? if >=1.21.9 {
+                if (owner.equals(profile.name())) {
+                //?} else {
+                /*if (owner.equals(profile.getName())) {
+                *///?}
                     throw OWNER_ALREADY_IS_EXCEPTION;
                 }
             }

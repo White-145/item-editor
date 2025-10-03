@@ -84,12 +84,12 @@ public class EditorUtil {
         if (!(item instanceof SpawnEggItem)) {
             return null;
         }
-        //? if >= 1.21.4 {
-        DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
+        //? if >= 1.21.4 && < 1.21.9 {
+        /*DynamicRegistryManager registryManager = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager();
         return ((SpawnEggItem)item).getEntityType(registryManager, stack);
-        //?} else {
-        /*return ((SpawnEggItem)item).getEntityType(stack);
-         *///?}
+        *///?} else {
+        return ((SpawnEggItem)item).getEntityType(stack);
+         //?}
     }
 
     public static boolean isClientSource(CommandSource source) {
