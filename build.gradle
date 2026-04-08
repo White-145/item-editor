@@ -1,0 +1,62 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
+    id 'com.modrinth.minotaur' version '2.+'
+}
+
+version = project.mod_version
+group = project.maven_group
+base.archivesName = "${project.archives_base_name}-${project.minecraft_version}"
+
+loom {
+    accessWidenerPath = file('resources/simple-item-editor.accesswidener')
+    runConfigs.all {
+        ideConfigGenerated(true)
+        runDir = '../../run'
+    }
+}
+
+repositories {
+
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+                'minecraft_version': project.minecraft_version,
+                'loader_version': project.loader_version
+    }
+
+    from('resources') { into '.' }
+}
+
+java {
+    withSourcesJar()
+    JavaVersion compatibility = JavaVersion.VERSION_25
+
+    targetCompatibility = compatibility
+    sourceCompatibility = compatibility
+}
+
+modrinth {
+    projectId = 'simple-item-editor'
+    versionType = 'beta'
+    versionName = "Simple Item Editor ${project.version}"
+    changelog = ''
+    uploadFile = jar
+    gameVersions = [ project.minecraft_version ]
+
+    dependencies {
+        required.project "fabric-api"
+    }
+}

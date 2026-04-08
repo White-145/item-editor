@@ -1,0 +1,130 @@
+package me.white.sie.node.mob;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.CommandNode;
+import me.white.sie.Node;
+import me.white.sie.argument.EnumArgumentType;
+import me.white.sie.util.CommonCommandManager;
+import me.white.sie.util.EditorUtil;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.equine.Llama;
+import net.minecraft.world.item.ItemStack;
+
+public class LlamaNode implements Node {
+    private static final CommandSyntaxException ISNT_LLAMA_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.edit.mob.llama.error.isntllama")).create();
+    private static final CommandSyntaxException VARIANT_ALREADY_IS_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.edit.mob.llama.error.variantalreadyis")).create();
+    private static final CommandSyntaxException NO_VARIANT_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.edit.mob.llama.error.novariant")).create();
+    private static final String OUTPUT_GET_VARIANT = "commands.edit.mob.llama.variantget";
+    private static final String OUTPUT_SET_VARIANT = "commands.edit.mob.llama.variantset";
+    private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.llama.variantremove";
+    private static final String VARIANT_CREAMY = "variant.minecraft.llama.creamy";
+    private static final String VARIANT_WHITE = "variant.minecraft.llama.white";
+    private static final String VARIANT_BROWN = "variant.minecraft.llama.brown";
+    private static final String VARIANT_GRAY = "variant.minecraft.llama.gray";
+
+    private static Component translation(Llama.Variant variant) {
+        return switch (variant) {
+            case CREAMY -> Component.translatable(VARIANT_CREAMY);
+            case WHITE -> Component.translatable(VARIANT_WHITE);
+            case BROWN -> Component.translatable(VARIANT_BROWN);
+            case GRAY -> Component.translatable(VARIANT_GRAY);
+        };
+    }
+
+    private static boolean isLlama(ItemStack stack) {
+        return EditorUtil.getEntityType(stack) == EntityType.LLAMA;
+    }
+
+    private static boolean hasVariant(ItemStack stack) {
+        return stack.has(DataComponents.LLAMA_VARIANT);
+    }
+
+    private static Llama.Variant getVariant(ItemStack stack) {
+        return stack.get(DataComponents.LLAMA_VARIANT);
+    }
+
+    private static void setVariant(ItemStack stack, Llama.Variant variant) {
+        stack.set(DataComponents.LLAMA_VARIANT, variant);
+    }
+
+    private static void removeVariant(ItemStack stack) {
+        stack.remove(DataComponents.LLAMA_VARIANT);
+    }
+
+    @Override
+    public <S extends SharedSuggestionProvider> CommandNode<S> register(CommonCommandManager<S> commandManager, CommandBuildContext registryAccess) {
+        CommandNode<S> node = commandManager.literal("llama").build();
+
+        CommandNode<S> variantNode = commandManager.literal("variant").build();
+
+        CommandNode<S> variantGetNode = commandManager.literal("get").executes(context -> {
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource());
+            if (!isLlama(stack)) {
+                throw ISNT_LLAMA_EXCEPTION;
+            }
+            if (!hasVariant(stack)) {
+                throw NO_VARIANT_EXCEPTION;
+            }
+            Llama.Variant variant = getVariant(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Component.translatable(OUTPUT_GET_VARIANT, translation(variant)));
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> variantSetNode = commandManager.literal("set").build();
+
+        CommandNode<S> variantSetVariantNode = commandManager.argument("variant", EnumArgumentType.enums(Llama.Variant.class)).executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isLlama(stack)) {
+                throw ISNT_LLAMA_EXCEPTION;
+            }
+            Llama.Variant variant = context.getArgument("variant", Llama.Variant.class);
+            if (hasVariant(stack)) {
+                Llama.Variant oldVariant = getVariant(stack);
+                if (variant == oldVariant) {
+                    throw VARIANT_ALREADY_IS_EXCEPTION;
+                }
+            }
+            setVariant(stack, variant);
+
+            EditorUtil.sendFeedback(context.getSource(), Component.translatable(OUTPUT_SET_VARIANT, translation(variant)));
+            EditorUtil.setStack(context.getSource(), stack);
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        CommandNode<S> variantRemoveNode = commandManager.literal("remove").executes(context -> {
+            EditorUtil.checkCanEdit(context.getSource());
+            ItemStack stack = EditorUtil.getCheckedStack(context.getSource()).copy();
+            if (!isLlama(stack)) {
+                throw ISNT_LLAMA_EXCEPTION;
+            }
+            if (!hasVariant(stack)) {
+                throw NO_VARIANT_EXCEPTION;
+            }
+            removeVariant(stack);
+
+            EditorUtil.sendFeedback(context.getSource(), Component.translatable(OUTPUT_REMOVE_VARIANT));
+            EditorUtil.setStack(context.getSource(), stack);
+            return Command.SINGLE_SUCCESS;
+        }).build();
+
+        // ... variant
+        node.addChild(variantNode);
+        // ... get
+        variantNode.addChild(variantGetNode);
+        // ... set <variant>
+        variantNode.addChild(variantSetNode);
+        variantSetNode.addChild(variantSetVariantNode);
+        // ... remove
+        variantNode.addChild(variantRemoveNode);
+
+        return node;
+    }
+}
