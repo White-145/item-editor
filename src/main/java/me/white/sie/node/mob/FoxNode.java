@@ -12,7 +12,11 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.item.ItemStack;
 
@@ -34,7 +38,11 @@ public class FoxNode implements Node {
     }
 
     private static boolean isFox(ItemStack stack) {
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.FOX;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.FOX;
+        *///?}
     }
 
     private static boolean hasVariant(ItemStack stack) {

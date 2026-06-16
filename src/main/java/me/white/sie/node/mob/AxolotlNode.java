@@ -12,7 +12,11 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.item.ItemStack;
 
@@ -40,7 +44,11 @@ public class AxolotlNode implements Node {
     }
 
     private static boolean isAxolotl(ItemStack stack) {
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.AXOLOTL;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.AXOLOTL;
+        *///?}
     }
 
     private static boolean hasVariant(ItemStack stack) {

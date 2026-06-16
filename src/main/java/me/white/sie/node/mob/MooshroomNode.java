@@ -12,7 +12,11 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.item.ItemStack;
 
@@ -34,7 +38,11 @@ public class MooshroomNode implements Node {
     }
 
     private static boolean isMooshroom(ItemStack stack) {
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.MOOSHROOM;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.MOOSHROOM;
+        *///?}
     }
 
     private static boolean hasVariant(ItemStack stack) {

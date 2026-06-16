@@ -15,7 +15,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.pig.PigVariant;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,7 +34,11 @@ public class PigNode implements Node {
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.pig.variantremove";
 
     private static boolean isPig(ItemStack stack) {
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.PIG;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.PIG;
+        *///?}
     }
 
     private static Identifier getId(PigVariant variant) {

@@ -47,7 +47,6 @@ public class BannerNode implements Node {
     private static final String OUTPUT_CLEAR_AFTER = "commands.edit.banner.clearafter";
 
     private static boolean isBanner(ItemStack stack) {
-
         return stack.is(ItemTags.BANNERS) || stack.getItem() == Items.SHIELD;
     }
 
@@ -78,7 +77,29 @@ public class BannerNode implements Node {
             if (stack.getItem() == Items.SHIELD) {
                 stack.set(DataComponents.BASE_COLOR, color);
             }
+            //?if >= 26.2 {
             return stack.transmuteCopy(Items.BANNER.pick(color), stack.getCount());
+            //?} else {
+            /*Item item = switch (color) {
+                case RED -> Items.RED_BANNER;
+                case BLUE -> Items.BLUE_BANNER;
+                case CYAN -> Items.CYAN_BANNER;
+                case GRAY -> Items.GRAY_BANNER;
+                case LIME -> Items.LIME_BANNER;
+                case PINK -> Items.PINK_BANNER;
+                case BLACK -> Items.BLACK_BANNER;
+                case BROWN -> Items.BROWN_BANNER;
+                case GREEN -> Items.GREEN_BANNER;
+                case WHITE -> Items.WHITE_BANNER;
+                case ORANGE -> Items.ORANGE_BANNER;
+                case PURPLE -> Items.PURPLE_BANNER;
+                case YELLOW -> Items.YELLOW_BANNER;
+                case MAGENTA -> Items.MAGENTA_BANNER;
+                case LIGHT_BLUE -> Items.LIGHT_BLUE_BANNER;
+                case LIGHT_GRAY -> Items.LIGHT_GRAY_BANNER;
+            };
+            return stack.transmuteCopy(item, stack.getCount());
+            *///?}
         }
         return stack;
     }

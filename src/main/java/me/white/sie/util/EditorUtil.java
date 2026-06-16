@@ -17,8 +17,10 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EntityType;
+//?if >=26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?}
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.*;
 import net.minecraft.nbt.Tag;
@@ -27,7 +29,9 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.ChatFormatting;
+//?if <26.1.2 {
+/*import net.minecraft.ChatFormatting;
+*///?}
 import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
@@ -53,6 +57,7 @@ public class EditorUtil {
     public static EntityType<?> getEntityType(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof MobBucketItem) {
+            //?if >=26.2 {
             if (item == Items.AXOLOTL_BUCKET) {
                 return EntityTypes.AXOLOTL;
             }
@@ -71,6 +76,26 @@ public class EditorUtil {
             if (item == Items.TROPICAL_FISH_BUCKET) {
                 return EntityTypes.TROPICAL_FISH;
             }
+            //?} else {
+            /*if (item == Items.AXOLOTL_BUCKET) {
+                return EntityType.AXOLOTL;
+            }
+            if (item == Items.COD_BUCKET) {
+                return EntityType.COD;
+            }
+            if (item == Items.PUFFERFISH_BUCKET) {
+                return EntityType.PUFFERFISH;
+            }
+            if (item == Items.SALMON_BUCKET) {
+                return EntityType.SALMON;
+            }
+            if (item == Items.TADPOLE_BUCKET) {
+                return EntityType.TADPOLE;
+            }
+            if (item == Items.TROPICAL_FISH_BUCKET) {
+                return EntityType.TROPICAL_FISH;
+            }
+            *///?}
             return null;
         }
         if (!(item instanceof SpawnEggItem)) {
@@ -197,11 +222,16 @@ public class EditorUtil {
                 result.append("&");
                 if (color == null) {
                     result.append("r");
-                } else if (color.formatValue().startsWith("#")) {
-                    result.append(color.formatValue());
                 } else {
-                    ChatFormatting formatting = ChatFormatting.valueOf(ChatFormatting.class, color.formatValue());
-                    result.append(Integer.toHexString(formatting.ordinal()));
+                    //?if >=26.1.2 {
+                    result.append(color.formatValue());
+                    //?} else {
+                    /*if (color.formatValue().startsWith("#")) {
+                        result.append(color.formatValue());
+                    } else {
+                        result.append(ChatFormatting.getByName(color.formatValue()).getChar());
+                    }
+                    *///?}
                 }
             }
             if (style.isObfuscated()) {

@@ -15,7 +15,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
 import net.minecraft.world.item.EggItem;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +38,11 @@ public class ChickenNode implements Node {
         if (stack.getItem() instanceof EggItem) {
             return true;
         }
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.CHICKEN;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.CHICKEN;
+        *///?}
     }
 
     private static Identifier getId(ChickenVariant variant) {

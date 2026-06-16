@@ -17,7 +17,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+//?if >= 26.2 {
 import net.minecraft.world.entity.EntityTypes;
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,7 +34,11 @@ public class FrogNode implements Node {
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.frog.variantremove";
 
     private static boolean isFrog(ItemStack stack) {
+        //?if >=26.2 {
         return EditorUtil.getEntityType(stack) == EntityTypes.FROG;
+        //?} else {
+        /*return EditorUtil.getEntityType(stack) == EntityType.FROG;
+        *///?}
     }
 
     private static Identifier getId(FrogVariant variant) {
