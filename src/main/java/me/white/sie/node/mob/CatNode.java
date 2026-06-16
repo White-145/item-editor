@@ -17,7 +17,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.feline.CatVariant;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +34,7 @@ public class CatNode implements Node {
     private static final String OUTPUT_SET_COLLAR = "commands.edit.mob.cat.collarset";
 
     private static boolean isCat(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.CAT;
+        return EditorUtil.getEntityType(stack) == EntityTypes.CAT;
     }
 
     private static Identifier getId(CatVariant variant) {

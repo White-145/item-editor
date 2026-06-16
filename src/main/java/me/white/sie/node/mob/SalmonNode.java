@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.item.ItemStack;
 
@@ -36,7 +36,7 @@ public class SalmonNode implements Node {
     }
 
     private static boolean isSalmon(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.SALMON;
+        return EditorUtil.getEntityType(stack) == EntityTypes.SALMON;
     }
 
     private static boolean hasSize(ItemStack stack) {

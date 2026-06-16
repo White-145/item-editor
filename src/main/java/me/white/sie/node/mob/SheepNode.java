@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,7 +25,7 @@ public class SheepNode implements Node {
     private static final String OUTPUT_REMOVE_COLOR = "commands.edit.mob.sheep.colorremove";
 
     private static boolean isSheep(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.SHEEP;
+        return EditorUtil.getEntityType(stack) == EntityTypes.SHEEP;
     }
 
     private static boolean hasColor(ItemStack stack) {

@@ -20,10 +20,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
@@ -50,6 +47,7 @@ public class BannerNode implements Node {
     private static final String OUTPUT_CLEAR_AFTER = "commands.edit.banner.clearafter";
 
     private static boolean isBanner(ItemStack stack) {
+
         return stack.is(ItemTags.BANNERS) || stack.getItem() == Items.SHIELD;
     }
 
@@ -64,85 +62,23 @@ public class BannerNode implements Node {
         if (!hasBaseColor(stack)) {
             return DyeColor.WHITE;
         }
-        if (stack.getItem() != Items.SHIELD) {
-            Item item = stack.getItem();
-            if (item == Items.WHITE_BANNER) {
-                return DyeColor.WHITE;
-            }
-            if (item == Items.ORANGE_BANNER) {
-                return DyeColor.ORANGE;
-            }
-            if (item == Items.MAGENTA_BANNER) {
-                return DyeColor.MAGENTA;
-            }
-            if (item == Items.LIGHT_BLUE_BANNER) {
-                return DyeColor.LIGHT_BLUE;
-            }
-            if (item == Items.YELLOW_BANNER) {
-                return DyeColor.YELLOW;
-            }
-            if (item == Items.LIME_BANNER) {
-                return DyeColor.LIME;
-            }
-            if (item == Items.PINK_BANNER) {
-                return DyeColor.PINK;
-            }
-            if (item == Items.GRAY_BANNER) {
-                return DyeColor.GRAY;
-            }
-            if (item == Items.LIGHT_GRAY_BANNER) {
-                return DyeColor.LIGHT_GRAY;
-            }
-            if (item == Items.CYAN_BANNER) {
-                return DyeColor.CYAN;
-            }
-            if (item == Items.PURPLE_BANNER) {
-                return DyeColor.PURPLE;
-            }
-            if (item == Items.BLUE_BANNER) {
-                return DyeColor.BLUE;
-            }
-            if (item == Items.BROWN_BANNER) {
-                return DyeColor.BROWN;
-            }
-            if (item == Items.GREEN_BANNER) {
-                return DyeColor.GREEN;
-            }
-            if (item == Items.RED_BANNER) {
-                return DyeColor.RED;
-            }
-            if (item == Items.BLACK_BANNER) {
-                return DyeColor.BLACK;
-            }
+        if (stack.getItem() == Items.SHIELD) {
+            return stack.get(DataComponents.BASE_COLOR);
         }
-        return stack.get(DataComponents.BASE_COLOR);
+        if (stack.getItem() instanceof BannerItem) {
+            return ((BannerItem)stack.getItem()).getColor();
+        }
+        return null;
     }
 
     private static ItemStack setBaseColor(ItemStack stack, DyeColor color) {
         if (color == null) {
             stack.remove(DataComponents.BASE_COLOR);
         } else {
-            if (stack.getItem() != Items.SHIELD) {
-                return switch (color) {
-                    case WHITE -> stack.transmuteCopy(Items.WHITE_BANNER, stack.getCount());
-                    case ORANGE -> stack.transmuteCopy(Items.ORANGE_BANNER, stack.getCount());
-                    case MAGENTA -> stack.transmuteCopy(Items.MAGENTA_BANNER, stack.getCount());
-                    case LIGHT_BLUE -> stack.transmuteCopy(Items.LIGHT_BLUE_BANNER, stack.getCount());
-                    case YELLOW -> stack.transmuteCopy(Items.YELLOW_BANNER, stack.getCount());
-                    case LIME -> stack.transmuteCopy(Items.LIME_BANNER, stack.getCount());
-                    case PINK -> stack.transmuteCopy(Items.PINK_BANNER, stack.getCount());
-                    case GRAY -> stack.transmuteCopy(Items.GRAY_BANNER, stack.getCount());
-                    case LIGHT_GRAY -> stack.transmuteCopy(Items.LIGHT_GRAY_BANNER, stack.getCount());
-                    case CYAN -> stack.transmuteCopy(Items.CYAN_BANNER, stack.getCount());
-                    case PURPLE -> stack.transmuteCopy(Items.PURPLE_BANNER, stack.getCount());
-                    case BLUE -> stack.transmuteCopy(Items.BLUE_BANNER, stack.getCount());
-                    case BROWN -> stack.transmuteCopy(Items.BROWN_BANNER, stack.getCount());
-                    case GREEN -> stack.transmuteCopy(Items.GREEN_BANNER, stack.getCount());
-                    case RED -> stack.transmuteCopy(Items.RED_BANNER, stack.getCount());
-                    case BLACK -> stack.transmuteCopy(Items.BLACK_BANNER, stack.getCount());
-                };
+            if (stack.getItem() == Items.SHIELD) {
+                stack.set(DataComponents.BASE_COLOR, color);
             }
-            stack.set(DataComponents.BASE_COLOR, color);
+            return stack.transmuteCopy(Items.BANNER.pick(color), stack.getCount());
         }
         return stack;
     }

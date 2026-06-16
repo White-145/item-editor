@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.item.ItemStack;
 
@@ -38,7 +38,7 @@ public class LlamaNode implements Node {
     }
 
     private static boolean isLlama(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.LLAMA;
+        return EditorUtil.getEntityType(stack) == EntityTypes.LLAMA;
     }
 
     private static boolean hasVariant(ItemStack stack) {

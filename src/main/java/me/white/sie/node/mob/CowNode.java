@@ -15,7 +15,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.CowVariant;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,7 +30,7 @@ public class CowNode implements Node {
     private static final String OUTPUT_REMOVE_VARIANT = "commands.edit.mob.cow.variantremove";
 
     private static boolean isCow(ItemStack stack) {
-        return EditorUtil.getEntityType(stack) == EntityType.COW;
+        return EditorUtil.getEntityType(stack) == EntityTypes.COW;
     }
 
     private static Identifier getId(CowVariant variant) {

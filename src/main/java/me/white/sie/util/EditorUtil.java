@@ -18,6 +18,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.*;
 import net.minecraft.nbt.Tag;
@@ -53,22 +54,22 @@ public class EditorUtil {
         Item item = stack.getItem();
         if (item instanceof MobBucketItem) {
             if (item == Items.AXOLOTL_BUCKET) {
-                return EntityType.AXOLOTL;
+                return EntityTypes.AXOLOTL;
             }
             if (item == Items.COD_BUCKET) {
-                return EntityType.COD;
+                return EntityTypes.COD;
             }
             if (item == Items.PUFFERFISH_BUCKET) {
-                return EntityType.PUFFERFISH;
+                return EntityTypes.PUFFERFISH;
             }
             if (item == Items.SALMON_BUCKET) {
-                return EntityType.SALMON;
+                return EntityTypes.SALMON;
             }
             if (item == Items.TADPOLE_BUCKET) {
-                return EntityType.TADPOLE;
+                return EntityTypes.TADPOLE;
             }
             if (item == Items.TROPICAL_FISH_BUCKET) {
-                return EntityType.TROPICAL_FISH;
+                return EntityTypes.TROPICAL_FISH;
             }
             return null;
         }
@@ -199,7 +200,8 @@ public class EditorUtil {
                 } else if (color.formatValue().startsWith("#")) {
                     result.append(color.formatValue());
                 } else {
-                    result.append(ChatFormatting.getByName(color.formatValue()).getChar());
+                    ChatFormatting formatting = ChatFormatting.valueOf(ChatFormatting.class, color.formatValue());
+                    result.append(Integer.toHexString(formatting.ordinal()));
                 }
             }
             if (style.isObfuscated()) {
